@@ -46,7 +46,7 @@ class HomePage extends StatelessWidget {
                   Icon(
                     Icons.menu_book,
                     color: Colors.green,
-                    size:40,
+                    size:50,
                   ),
 
                   SizedBox(width:20),
