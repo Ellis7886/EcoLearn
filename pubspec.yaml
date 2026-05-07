@@ -46,6 +46,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.6
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -97,4 +98,12 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/images/ecolearn_logo.png"
   adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/images/ecolearn_logo.png"
+
+flutter_native_splash:
+  color: "#000000"
+  image: assets/images/ecolearn_logo.png
+  android: true
+  ios: true
+  android_12:
+    color: "#000000"
+    image: assets/images/ecolearn_logo.png
