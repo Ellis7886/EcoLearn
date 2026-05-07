@@ -66,6 +66,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
   - assets/images/ecolearn_logo.png
+  - assets/images/app_icon.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -96,14 +97,15 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/ecolearn_logo.png"
+  image_path: "assets/images/app_icon.png"
   adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
 
 flutter_native_splash:
   color: "#000000"
-  image: assets/images/ecolearn_logo.png
+  image: assets/images/app_icon.png
   android: true
   ios: true
   android_12:
     color: "#000000"
-    image: assets/images/ecolearn_logo.png
+    image: assets/images/app_icon.png
