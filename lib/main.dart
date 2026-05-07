@@ -30,7 +30,7 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
 
           children: [
-            Image.asset('assets/images/logo.jpeg', height:300,),
+            Image.asset('assets/images/ecolearn_logo.png', height:300,),
 
             Container(
               width: 400,
