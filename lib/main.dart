@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() async{
+import 'firebase_options.dart';
+import 'screens/home_page.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
@@ -21,90 +22,6 @@ class EcoLearnApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Scaffold(
-      backgroundColor: Colors.black,
-
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-
-              children: [
-                Center(
-                  child: Image.asset('assets/images/ecolearn_logo.png', height:300)
-                ),
-
-                ElevatedButton(
-                  onPressed: () async{
-                    await FirebaseFirestore.instance
-                        .collection('test')
-                        .add({
-                      'message': 'Firebase is working!',
-                      'time': DateTime.now(),
-                    });
-
-                    print ('Data added successfully');
-                  },
-                  child: const Text ('Text Firebase'),
-                ),
-
-                const SizedBox(height: 20),
-
-                Container(
-                  width: 400,
-                  padding: const EdgeInsets.all(20),
-
-                  decoration: BoxDecoration(
-                    color: Color(0xFF2B2B2B),
-                    borderRadius: BorderRadius.circular(20)
-                  ),
-
-                  child: const Row(
-                    children: [
-                      Icon(
-                        Icons.menu_book,
-                        color: Color(0xFF9BD028),
-                        size:50,
-                      ),
-
-                      SizedBox(width:20),
-
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-
-                        children: [
-                          Text(
-                              'Lessons',
-                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-
-                          Text(
-                            'Access learning materials',
-                            style: TextStyle(color: Colors.white70)
-                          )
-                        ],
-                      )
-                    ],
-                  )
-                ),
-              ],
-            )
-          )
-        ),
-      ),
     );
   }
 }
