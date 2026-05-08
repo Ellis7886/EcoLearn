@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +46,22 @@ class HomePage extends StatelessWidget {
                 Center(
                   child: Image.asset('assets/images/ecolearn_logo.png', height:300)
                 ),
+
+                ElevatedButton(
+                  onPressed: () async{
+                    await FirebaseFirestore.instance
+                        .collection('test')
+                        .add({
+                      'message': 'Firebase is working!',
+                      'time': DateTime.now(),
+                    });
+
+                    print ('Data added successfully');
+                  },
+                  child: const Text ('Text Firebase'),
+                ),
+
+                const SizedBox(height: 20),
 
                 Container(
                   width: 400,
