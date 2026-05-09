@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/lesson_card.dart';
 import '../services/firestore_service.dart';
@@ -8,6 +9,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.black,
 
@@ -38,7 +40,44 @@ class HomePage extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                const LessonCard(),
+                StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('lessons')
+                      .snapshots(),
+
+                  builder: (context, snapshot) {
+
+                    if (snapshot.connectionState ==
+                        ConnectionState.waiting) {
+
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    if (!snapshot.hasData ||
+                        snapshot.data!.docs.isEmpty) {
+
+                      return const Text(
+                        'No lessons found',
+                        style: TextStyle(color: Colors.white),
+                      );
+                    }
+
+                    final lessons = snapshot.data!.docs;
+
+                    return Column(
+                      children: lessons.map((doc) {
+
+                        return LessonCard(
+                          title: doc['title'],
+                          description: doc['description'],
+                        );
+
+                      }).toList(),
+                    );
+                  },
+                ),
               ],
             ),
           ),

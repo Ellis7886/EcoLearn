@@ -1,47 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class LessonCard extends StatelessWidget {
-  const LessonCard({super.key});
+class LessonCard extends StatelessWidget{
+  final String title;
+  final String description;
+
+  const LessonCard({
+    super.key,
+    required this.title,
+    required this.description,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
+      margin: const EdgeInsets.only(bottom:20),
       padding: const EdgeInsets.all(20),
-
       decoration: BoxDecoration(
         color: const Color(0xFF2B2B2B),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20)
       ),
 
-      child: const Row(
+      child: Row(
         children: [
-
-          Icon(
+          const Icon(
             Icons.menu_book,
             color: Color(0xFF9BD028),
             size: 50,
           ),
 
-          SizedBox(width: 20),
+          const SizedBox(width: 20),
 
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
 
             children: [
-
               Text(
-                'Lessons',
-                style: TextStyle(
+                title,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                  fontWeight: FontWeight.bold
+                )
               ),
-
               Text(
-                'Access learning materials',
-                style: TextStyle(color: Colors.white70),
+                description,
+                style: const TextStyle(
+                  color: Colors.white70,
+                ),
               ),
             ],
           ),
