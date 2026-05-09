@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/lesson_card.dart';
-import '../services/firestore_service.dart';
+import'../models/lesson.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -29,16 +29,6 @@ class HomePage extends StatelessWidget {
                     height: 300,
                   ),
                 ),
-
-                ElevatedButton(
-                  onPressed: () async {
-                    await FirestoreService.addTestData();
-                  },
-
-                  child: const Text('Test Firebase'),
-                ),
-
-                const SizedBox(height: 20),
 
                 StreamBuilder(
                   stream: FirebaseFirestore.instance
@@ -68,12 +58,11 @@ class HomePage extends StatelessWidget {
 
                     return Column(
                       children: lessons.map((doc) {
-
+                        final lesson = Lesson.fromFirestore(doc.data());
                         return LessonCard(
-                          title: doc['title'],
-                          description: doc['description'],
+                          title: lesson.title,
+                          description: lesson.description,
                         );
-
                       }).toList(),
                     );
                   },
