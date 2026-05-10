@@ -39,13 +39,31 @@ class _LoginPageState extends State<LoginPage> {
           builder: (context) => const HomePage(),
         ),
       );
-
-    } catch (e) {
+    }
+    on FirebaseAuthException catch (e) {
       Navigator.pop(context);
+
+      String message = 'Login failed';
+
+      if(e.code == 'user-not-found'){
+        message = 'Email does not exist';
+      }
+      else if(e.code == 'wrong-password'){
+        message = 'Wrong password';
+      }
+      else if(e.code == 'invalid-email'){
+        message = 'Invalid email format';
+      }
+      else if(e.code == 'invalid-credential'){
+        message = 'Email or password is wrong';
+      }
+      else if(e.code == 'too-many-requests'){
+        message = 'Too many attempts, please try again later';
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString()),
+          content: Text(message),
         ),
       );
     }
