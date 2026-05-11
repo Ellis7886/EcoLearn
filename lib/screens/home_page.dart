@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../widgets/lesson_card.dart';
+import '../widgets/home_menu_card.dart';
+import '../widgets/eco_mode_switch.dart';
 import'../models/lesson.dart';
 
 class HomePage extends StatelessWidget {
@@ -26,46 +27,46 @@ class HomePage extends StatelessWidget {
                 Center(
                   child: Image.asset(
                     'assets/images/ecolearn_logo.png',
-                    height: 300,
+                    height: 250,
                   ),
                 ),
 
-                StreamBuilder(
-                  stream: FirebaseFirestore.instance
-                      .collection('lessons')
-                      .snapshots(),
+                const SizedBox(height: 5),
 
-                  builder: (context, snapshot) {
+                const EcoMode(),
 
-                    if (snapshot.connectionState ==
-                        ConnectionState.waiting) {
+                const SizedBox(height: 20),
 
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
+                Text(
+                  'Main Menu',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
 
-                    if (!snapshot.hasData ||
-                        snapshot.data!.docs.isEmpty) {
+                const SizedBox(height: 10),
 
-                      return const Text(
-                        'No lessons found',
-                        style: TextStyle(color: Colors.white),
-                      );
-                    }
+                HomeMenuCard(
+                    title: 'Lessons',
+                    description: 'Access Learning materials',
+                    icon: Icons.menu_book_rounded,
+                    onTap: (){},
+                ),
 
-                    final lessons = snapshot.data!.docs;
+                HomeMenuCard(
+                    title: 'Resources',
+                    description: 'Explore learning resources',
+                    icon: Icons.folder_rounded,
+                    onTap: (){},
+                ),
 
-                    return Column(
-                      children: lessons.map((doc) {
-                        final lesson = Lesson.fromFirestore(doc.data());
-                        return LessonCard(
-                          title: lesson.title,
-                          description: lesson.description,
-                        );
-                      }).toList(),
-                    );
-                  },
+                HomeMenuCard(
+                    title: 'Quiz',
+                    description: 'Test your knowledge',
+                    icon: Icons.quiz_rounded,
+                    onTap: (){},
                 ),
               ],
             ),
