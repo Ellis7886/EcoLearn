@@ -1,0 +1,69 @@
+import 'package:flutter/material.dart';
+
+class BottomNavBar extends StatelessWidget {
+
+  final int currentIndex;
+  final Function(int) onTap;
+
+  const BottomNavBar({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1E1E1E),
+
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(25),
+          topRight: Radius.circular(25),
+        ),
+      ),
+
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
+        onTap: onTap,
+
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+
+        type: BottomNavigationBarType.fixed,
+
+        selectedItemColor: const Color(0xFF9BD028),
+        unselectedItemColor: Colors.white54,
+
+        items: const [
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book),
+            label: 'Lessons',
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.folder),
+            label: 'Resources',
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz),
+            label: 'Quiz',
+          ),
+
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+}

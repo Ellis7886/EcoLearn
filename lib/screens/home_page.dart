@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/home_menu_card.dart';
 import '../widgets/eco_mode_switch.dart';
+import '../widgets/bottom_nav_bar.dart';
 import'../models/lesson.dart';
 
 class HomePage extends StatelessWidget {
@@ -13,6 +14,11 @@ class HomePage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
+
+      bottomNavigationBar: BottomNavBar(
+          currentIndex: 0,
+          onTap: (index){},
+      ),
 
       body: SafeArea(
         child: SingleChildScrollView(
@@ -27,11 +33,9 @@ class HomePage extends StatelessWidget {
                 Center(
                   child: Image.asset(
                     'assets/images/ecolearn_logo.png',
-                    height: 250,
+                    height: 230,
                   ),
                 ),
-
-                const SizedBox(height: 5),
 
                 const EcoMode(),
 
