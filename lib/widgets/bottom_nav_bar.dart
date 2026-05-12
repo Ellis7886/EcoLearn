@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../screens/home_page.dart';
+import '../screens/lessons_page.dart';
+
 class BottomNavBar extends StatelessWidget {
 
   final int currentIndex;
@@ -26,7 +29,26 @@ class BottomNavBar extends StatelessWidget {
 
       child: BottomNavigationBar(
         currentIndex: currentIndex,
-        onTap: onTap,
+        onTap: (index){
+
+          onTap(index);
+
+          if(index == 0){
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HomePage(),
+              ),
+            );
+          }else if(index == 1){
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const LessonsPage(),
+              ),
+            );
+          }
+        },
 
         backgroundColor: Colors.transparent,
         elevation: 0,

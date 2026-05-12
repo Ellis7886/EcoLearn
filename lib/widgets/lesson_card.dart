@@ -66,7 +66,7 @@ class LessonCard extends StatelessWidget {
                       courseCode,
                       style: const TextStyle(
                         color: Color(0xFF9BD028),
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -81,7 +81,7 @@ class LessonCard extends StatelessWidget {
           Text(
             description,
             style: const TextStyle(
-              color: Colors.white70,
+              color: Colors.white,
               fontSize: 15,
             ),
           ),

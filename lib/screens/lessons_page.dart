@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/lesson_card.dart';
+import '../widgets/bottom_nav_bar.dart';
 
 class LessonsPage extends StatelessWidget {
   const LessonsPage({super.key});
@@ -11,6 +12,11 @@ class LessonsPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
+
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 1,
+        onTap: (index){},
+      ),
 
       appBar: AppBar(
         backgroundColor: Colors.black,
