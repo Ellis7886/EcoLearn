@@ -6,6 +6,8 @@ import '../widgets/eco_mode_switch.dart';
 import '../widgets/bottom_nav_bar.dart';
 import'../models/lesson.dart';
 
+import '../screens/lessons_page.dart';
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -56,7 +58,15 @@ class HomePage extends StatelessWidget {
                     title: 'Lessons',
                     description: 'Access Learning materials',
                     icon: Icons.menu_book_rounded,
-                    onTap: (){},
+                    onTap: (){
+                      Navigator.push(
+                        context,
+
+                        MaterialPageRoute(
+                            builder: (context) => const LessonsPage(),
+                        ),
+                      );
+                    },
                 ),
 
                 HomeMenuCard(

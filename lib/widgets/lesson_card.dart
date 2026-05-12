@@ -1,55 +1,117 @@
 import 'package:flutter/material.dart';
 
-class LessonCard extends StatelessWidget{
+class LessonCard extends StatelessWidget {
+
   final String title;
   final String description;
+  final String courseCode;
+  final double progress;
 
   const LessonCard({
     super.key,
     required this.title,
     required this.description,
+    required this.courseCode,
+    required this.progress,
   });
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom:20),
+
+      margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
+
       decoration: BoxDecoration(
         color: const Color(0xFF2B2B2B),
-        borderRadius: BorderRadius.circular(20)
+        borderRadius: BorderRadius.circular(20),
       ),
 
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+
         children: [
-          const Icon(
-            Icons.menu_book,
-            color: Color(0xFF9BD028),
-            size: 50,
-          ),
 
-          const SizedBox(width: 20),
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-
+          Row(
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold
-                )
+
+              const Icon(
+                Icons.menu_book_rounded,
+                color: Color(0xFF9BD028),
+                size: 45,
               ),
-              Text(
-                description,
-                style: const TextStyle(
-                  color: Colors.white70,
+
+              const SizedBox(width: 15),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 5),
+
+                    Text(
+                      courseCode,
+                      style: const TextStyle(
+                        color: Color(0xFF9BD028),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 15),
+
+          Text(
+            description,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 15,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+
+              backgroundColor: Colors.white24,
+              color: const Color(0xFF9BD028),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          Align(
+            alignment: Alignment.centerRight,
+
+            child: Text(
+              '${(progress * 100).toInt()}%',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
