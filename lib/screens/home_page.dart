@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../widgets/home_menu_card.dart';
 import '../widgets/eco_mode_switch.dart';
 import '../widgets/bottom_nav_bar.dart';
-import'../models/lesson.dart';
 
 import '../screens/lessons_page.dart';
 
