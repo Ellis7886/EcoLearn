@@ -12,7 +12,5 @@ class FirestoreService {
       'time': DateTime.now(),
 
     });
-
-    print('Data added successfully');
   }
 }
