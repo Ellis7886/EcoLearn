@@ -1,4 +1,4 @@
-class Lesson{
+class LessonModel{
   final String title;
   final String description;
   final String course;
@@ -7,7 +7,7 @@ class Lesson{
   final int duration;
   final bool completed;
 
-  Lesson({
+  LessonModel({
     required this.title,
     required this.description,
     required this.course,
@@ -17,8 +17,8 @@ class Lesson{
     required this.completed,
   });
 
-  factory Lesson.fromFirestore(Map<String, dynamic>data){
-    return Lesson(
+  factory LessonModel.fromFirestore(Map<String, dynamic>data){
+    return LessonModel(
         title: data['title'] ?? '',
         description: data['description'] ?? '',
         course: data['course'] ?? '',

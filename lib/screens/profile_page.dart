@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../models/user.dart';
+
 import '../widgets/bottom_nav_bar.dart';
 
 import 'login_page.dart';
@@ -12,7 +14,7 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final user = FirebaseAuth.instance.currentUser;
+    final currentUser = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -39,7 +41,7 @@ class ProfilePage extends StatelessWidget {
       body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
             .collection('users')
-            .doc(user!.uid)
+            .doc(currentUser!.uid)
             .get(),
 
         builder: (context, snapshot) {
@@ -65,6 +67,8 @@ class ProfilePage extends StatelessWidget {
           final userData =
           snapshot.data!.data() as Map<String, dynamic>;
 
+          final user = UserModel.fromFirestore(userData);
+
           return Padding(
             padding: const EdgeInsets.all(20),
 
@@ -87,7 +91,7 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 Text(
-                  userData['name'] ?? '',
+                  user.name,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 26,
@@ -98,7 +102,7 @@ class ProfilePage extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 Text(
-                  userData['email'] ?? '',
+                  user.email,
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 16,
@@ -119,7 +123,7 @@ class ProfilePage extends StatelessWidget {
                   ),
 
                   child: Text(
-                    userData['role'] ?? '',
+                    user.role,
                     style: const TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
