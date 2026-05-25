@@ -5,16 +5,88 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user.dart';
 
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/setting_switch.dart';
 
 import 'login_page.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<ProfilePage> createState() =>
+      _ProfilePageState();
+}
 
-    final currentUser = FirebaseAuth.instance.currentUser;
+class _ProfilePageState
+    extends State<ProfilePage> {
+
+  bool ecoMode = true;
+  bool darkTheme = true;
+
+  late Future<DocumentSnapshot> userFuture;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final currentUser =
+        FirebaseAuth.instance.currentUser;
+
+    userFuture = FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser!.uid)
+        .get();
+  }
+
+  Widget buildStatCard(
+      String title,
+      String value,
+      IconData icon,
+      ) {
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+
+      decoration: BoxDecoration(
+        color: const Color(0xFF2B2B2B),
+        borderRadius: BorderRadius.circular(20),
+      ),
+
+      child: Column(
+        children: [
+
+          Icon(
+            icon,
+            color: const Color(0xFF9BD028),
+            size: 35,
+          ),
+
+          const SizedBox(height: 10),
+
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 5),
+
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -34,15 +106,14 @@ class ProfilePage extends StatelessWidget {
 
         title: const Text(
           'Profile',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: Colors.white,
+          ),
         ),
       ),
 
       body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser!.uid)
-            .get(),
+        future: userFuture,
 
         builder: (context, snapshot) {
 
@@ -54,183 +125,233 @@ class ProfilePage extends StatelessWidget {
             );
           }
 
-          if(!snapshot.hasData || !snapshot.data!.exists){
+          if(!snapshot.hasData ||
+              !snapshot.data!.exists){
 
             return const Center(
               child: Text(
                 'User data not found',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: Colors.white,
+                ),
               ),
             );
           }
 
-          final userData =
-          snapshot.data!.data() as Map<String, dynamic>;
+          final user = UserModel.fromFirestore(
+            snapshot.data!.data()
+            as Map<String, dynamic>,
+          );
 
-          final user = UserModel.fromFirestore(userData);
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
 
-          return Padding(
-            padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
 
-            child: Column(
-              children: [
+                children: [
 
-                const SizedBox(height: 30),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(25),
 
-                const CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Color(0xFF9BD028),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2B2B2B),
+                      borderRadius:
+                      BorderRadius.circular(25),
+                    ),
 
-                  child: Icon(
-                    Icons.person,
-                    size: 60,
-                    color: Colors.black,
+                    child: Column(
+                      children: [
+
+                        const CircleAvatar(
+                          radius: 55,
+                          backgroundColor:
+                          Color(0xFF9BD028),
+
+                          child: Icon(
+                            Icons.person,
+                            size: 65,
+                            color: Colors.black,
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        Text(
+                          user.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight:
+                            FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          user.email,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 16,
+                          ),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        Container(
+                          padding:
+                          const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 8,
+                          ),
+
+                          decoration: BoxDecoration(
+                            color:
+                            const Color(0xFF9BD028),
+                            borderRadius:
+                            BorderRadius.circular(30),
+                          ),
+
+                          child: Text(
+                            user.role.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight:
+                              FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
-                Text(
-                  user.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                Text(
-                  user.email,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15,
-                    vertical: 8,
-                  ),
-
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF9BD028),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-
-                  child: Text(
-                    user.role,
-                    style: const TextStyle(
-                      color: Colors.black,
+                  const Text(
+                    'Learning Statistics',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 40),
+                  const SizedBox(height: 15),
 
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2B2B2B),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-
-                  child: const Column(
+                  Row(
                     children: [
 
-                      Row(
-                        mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
-
-                        children: [
-
-                          Text(
-                            'Eco Mode',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                            ),
-                          ),
-
-                          Icon(
-                            Icons.eco,
-                            color: Color(0xFF9BD028),
-                          ),
-                        ],
+                      Expanded(
+                        child: buildStatCard(
+                          'Lessons',
+                          '12',
+                          Icons.menu_book,
+                        ),
                       ),
 
-                      SizedBox(height: 20),
+                      const SizedBox(width: 15),
 
-                      Row(
-                        mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
-
-                        children: [
-
-                          Text(
-                            'Dark Theme',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                            ),
-                          ),
-
-                          Icon(
-                            Icons.dark_mode,
-                            color: Color(0xFF9BD028),
-                          ),
-                        ],
+                      Expanded(
+                        child: buildStatCard(
+                          'Quiz',
+                          '85%',
+                          Icons.quiz,
+                        ),
                       ),
                     ],
                   ),
-                ),
 
-                const Spacer(),
+                  const SizedBox(height: 30),
 
-                SizedBox(
-                  width: double.infinity,
+                  const Text(
+                    'Settings',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
 
-                  child: ElevatedButton(
-                    onPressed: () async {
+                  const SizedBox(height: 15),
 
-                      await FirebaseAuth.instance.signOut();
+                  const SettingSwitch(
+                    title: 'EcoMode',
+                    description: 'Optimize performance and save energy',
+                    icon: Icons.eco,
+                  ),
 
-                      Navigator.pushAndRemoveUntil(
-                        context,
+                  const SettingSwitch(
+                    title: 'Dark Theme',
+                    description: 'Reduce brightness for better comfort',
+                    icon: Icons.dark_mode,
+                  ),
 
-                        MaterialPageRoute(
-                          builder: (context) =>
-                          const LoginPage(),
+                  const SizedBox(height: 40),
+
+                  SizedBox(
+                    width: double.infinity,
+
+                    child: ElevatedButton(
+                      onPressed: () async {
+
+                        await FirebaseAuth.instance
+                            .signOut();
+
+                        Navigator.pushAndRemoveUntil(
+                          context,
+
+                          MaterialPageRoute(
+                            builder: (context) =>
+                            const LoginPage(),
+                          ),
+
+                              (route) => false,
+                        );
+                      },
+
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding:
+                        const EdgeInsets.symmetric(
+                          vertical: 15,
                         ),
 
-                            (route) => false,
-                      );
-                    },
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 15,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                          BorderRadius.circular(15),
+                        ),
                       ),
-                    ),
 
-                    child: const Text(
-                      'Logout',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                      child: const Text(
+                        'Logout',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight:
+                          FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 20),
+
+                  const Center(
+                    child: Text(
+                      'EcoLearn v1.0.0',
+                      style: TextStyle(
+                        color: Colors.white38,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           );
         },
