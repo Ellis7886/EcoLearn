@@ -73,7 +73,7 @@ class _EcoModeState extends State<EcoMode> {
                 });
               },
 
-              activeColor: Colors.white,
+              activeThumbColor: Colors.white,
               activeTrackColor: const Color(0xFF9BD028),
             ),
           ),
