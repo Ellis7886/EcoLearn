@@ -45,7 +45,7 @@ class _HomePageState
 
                 Center(
                   child: Image.asset(
-                    'assets/images/ecolearn_logo.png',
+                    darkTheme ? 'assets/images/ecolearn_logo.png' : 'assets/images/ecolearn_logo_light_theme.png',
                     height: 230,
                   ),
                 ),
