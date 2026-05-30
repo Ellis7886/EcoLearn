@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'register_page.dart';
 import 'loading_page.dart';
 import 'home_page.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -169,6 +171,59 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
+            ),
+
+            const SizedBox(height: 20),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+
+                GestureDetector(
+                  onTap: () {
+                    // Forgot Password
+                  },
+
+                  child: const Text(
+                    'Forgot Password?',
+                    style: TextStyle(
+                      color: Color(0xFF9BD028),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    '|',
+                    style: TextStyle(
+                      color: Colors.white54,
+                    ),
+                  ),
+                ),
+
+                GestureDetector(
+                  onTap: () {
+                    // Register Page
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                const RegisterPage(),
+                        ),
+                    );
+                  },
+
+                  child: const Text(
+                    'Register',
+                    style: TextStyle(
+                      color: Color(0xFF9BD028),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

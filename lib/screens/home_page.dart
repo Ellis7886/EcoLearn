@@ -64,8 +64,6 @@ class _HomePageState
                     setState(() {
                       ecoMode = value;
                     });
-
-                    print('Eco Mode: $value');
                   },
                 ),
 
