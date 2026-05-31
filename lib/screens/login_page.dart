@@ -41,9 +41,10 @@ class _LoginPageState extends State<LoginPage> {
           .doc(user!.uid)
           .get();
 
-      final role = userDoc['role'];
-
+      if (!mounted) return;
       Navigator.pop(context);
+
+      final role = userDoc['role'];
 
       if(role=="student"){
         Navigator.pushReplacement(
@@ -62,6 +63,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     }
     on FirebaseAuthException catch (e) {
+      if (!mounted) return;
       Navigator.pop(context);
 
       String message = 'Login failed';

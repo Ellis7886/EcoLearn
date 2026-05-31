@@ -31,12 +31,15 @@ class _RegisterPageState
 
   Future<void> register() async {
 
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
     if (nameController.text.trim().isEmpty ||
         emailController.text.trim().isEmpty ||
         passwordController.text.trim().isEmpty ||
         confirmPasswordController.text.trim().isEmpty) {
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(
           content: Text(
             'Please fill in all fields',
@@ -50,7 +53,7 @@ class _RegisterPageState
     if (passwordController.text !=
         confirmPasswordController.text) {
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(
           content: Text(
             'Passwords do not match',
@@ -98,22 +101,21 @@ class _RegisterPageState
         Timestamp.now(),
       });
 
-      Navigator.pop(context);
+      if(!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      navigator.pop();
+
+      messenger.showSnackBar(
         const SnackBar(
           content: Text(
             'Registration Successful',
           ),
         ),
       );
-
-      Navigator.pop(context);
-
     }
     on FirebaseAuthException catch (e) {
 
-      Navigator.pop(context);
+      navigator.pop();
 
       String message =
           'Registration Failed';

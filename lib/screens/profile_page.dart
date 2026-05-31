@@ -301,6 +301,8 @@ class _ProfilePageState
                         await FirebaseAuth.instance
                             .signOut();
 
+                        if(!context.mounted) return;
+
                         Navigator.pushAndRemoveUntil(
                           context,
 
