@@ -112,6 +112,8 @@ class _RegisterPageState
           ),
         ),
       );
+
+      Navigator.pop(context);
     }
     on FirebaseAuthException catch (e) {
 
