@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
+import '../themes/app_colors.dart';
+
+import '../provider/app_settings.dart';
 
 import '../widgets/lesson_card.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -10,8 +15,12 @@ class LessonsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    final settings = Provider.of<AppSettings>(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background(
+        settings.darkTheme,
+      ),
 
       bottomNavigationBar: BottomNavBar(
         currentIndex: 1,
@@ -19,16 +28,24 @@ class LessonsPage extends StatelessWidget {
       ),
 
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.background(
+          settings.darkTheme,
+        ),
         elevation: 0,
 
-        iconTheme: const IconThemeData(
-          color: Colors.white,
+        iconTheme: IconThemeData(
+          color: AppColors.text(
+            settings.darkTheme,
+          ),
         ),
 
-        title: const Text(
+        title: Text(
           'Lessons',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: AppColors.text(
+              settings.darkTheme,
+            ),
+          ),
         ),
       ),
 
@@ -50,10 +67,14 @@ class LessonsPage extends StatelessWidget {
           if (!snapshot.hasData ||
               snapshot.data!.docs.isEmpty) {
 
-            return const Center(
+            return Center(
               child: Text(
                 'No lessons found',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(
+                  color: AppColors.text(
+                    settings.darkTheme,
+                  ),
+                ),
               ),
             );
           }

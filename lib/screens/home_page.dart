@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../provider/app_settings.dart';
 
+import '../themes/app_colors.dart';
+
 import '../widgets/home_menu_card.dart';
 import '../widgets/setting_switch.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -27,9 +29,9 @@ class _HomePageState
 
     return Scaffold(
       backgroundColor:
-      settings.darkTheme
-          ? Colors.black
-          : Colors.white,
+      AppColors.background(
+        settings.darkTheme,
+      ),
 
       bottomNavigationBar: BottomNavBar(
         currentIndex: 0,
@@ -83,7 +85,9 @@ class _HomePageState
                 Text(
                   'Main Menu',
                   style: TextStyle(
-                    color: settings.darkTheme ? Colors.white : Colors.black,
+                    color: AppColors.text(
+                      settings.darkTheme,
+                    ),
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
                   ),

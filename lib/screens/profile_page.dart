@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
+import '../themes/app_colors.dart';
+
 import '../provider/app_settings.dart';
 
 import '../models/user.dart';
@@ -91,7 +93,9 @@ class _ProfilePageState
     final settings = Provider.of<AppSettings>(context);
 
     return Scaffold(
-      backgroundColor: settings.darkTheme ? Colors.black : Colors.white,
+      backgroundColor: AppColors.background(
+        settings.darkTheme,
+      ),
 
       bottomNavigationBar: BottomNavBar(
         currentIndex: 4,
@@ -99,17 +103,23 @@ class _ProfilePageState
       ),
 
       appBar: AppBar(
-        backgroundColor: settings.darkTheme ? Colors.black : Colors.white,
+        backgroundColor: AppColors.background(
+          settings.darkTheme,
+        ),
         elevation: 0,
 
         iconTheme: IconThemeData(
-          color: settings.darkTheme ? Colors.white : Colors.black,
+          color: AppColors.text(
+            settings.darkTheme,
+          ),
         ),
 
-        title: const Text(
+        title: Text(
           'Profile',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.text(
+              settings.darkTheme,
+            ),
           ),
         ),
       ),
@@ -233,10 +243,12 @@ class _ProfilePageState
 
                   const SizedBox(height: 30),
 
-                  const Text(
+                  Text(
                     'Learning Statistics',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.text(
+                        settings.darkTheme,
+                      ),
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
@@ -269,10 +281,12 @@ class _ProfilePageState
 
                   const SizedBox(height: 30),
 
-                  const Text(
+                  Text(
                     'Settings',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.text(
+                        settings.darkTheme,
+                      ),
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
