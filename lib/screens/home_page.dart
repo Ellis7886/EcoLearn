@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../provider/app_settings.dart';
 
 import '../widgets/home_menu_card.dart';
 import '../widgets/setting_switch.dart';
@@ -17,15 +20,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState
     extends State<HomePage> {
 
-  bool ecoMode = true;
-  bool darkTheme = true;
-
   @override
   Widget build(BuildContext context) {
 
+    final settings = Provider.of<AppSettings>(context);
+
     return Scaffold(
       backgroundColor:
-      darkTheme ? Colors.black : Colors.white,
+      settings.darkTheme
+          ? Colors.black
+          : Colors.white,
 
       bottomNavigationBar: BottomNavBar(
         currentIndex: 0,
@@ -45,7 +49,7 @@ class _HomePageState
 
                 Center(
                   child: Image.asset(
-                    darkTheme ? 'assets/images/ecolearn_logo.png' : 'assets/images/ecolearn_logo_light_theme.png',
+                    settings.darkTheme ? 'assets/images/ecolearn_logo.png' : 'assets/images/ecolearn_logo_light_theme.png',
                     height: 230,
                   ),
                 ),
@@ -57,14 +61,9 @@ class _HomePageState
 
                   icon: Icons.eco,
 
-                  initialValue: ecoMode,
+                  value: settings.ecoMode,
 
-                  onChanged: (value){
-
-                    setState(() {
-                      ecoMode = value;
-                    });
-                  },
+                  onChanged: settings.toggleEcoMode,
                 ),
 
                 SettingSwitch(
@@ -74,14 +73,9 @@ class _HomePageState
 
                   icon: Icons.dark_mode,
 
-                  initialValue: darkTheme,
+                  value: settings.darkTheme,
 
-                  onChanged: (value){
-
-                    setState(() {
-                      darkTheme = value;
-                    });
-                  },
+                  onChanged: settings.toggleDarkTheme,
                 ),
 
                 const SizedBox(height: 20),
@@ -89,10 +83,7 @@ class _HomePageState
                 Text(
                   'Main Menu',
                   style: TextStyle(
-                    color: darkTheme
-                        ? Colors.white
-                        : Colors.black,
-
+                    color: settings.darkTheme ? Colors.white : Colors.black,
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
                   ),

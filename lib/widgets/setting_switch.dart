@@ -1,38 +1,21 @@
 import 'package:flutter/material.dart';
 
-class SettingSwitch extends StatefulWidget {
+class SettingSwitch extends StatelessWidget {
 
   final String title;
   final String description;
   final IconData icon;
-  final bool initialValue;
-  final Function(bool)? onChanged;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
 
   const SettingSwitch({
     super.key,
     required this.title,
     required this.description,
     required this.icon,
-    this.initialValue = true,
+    required this.value,
     this.onChanged,
   });
-
-  @override
-  State<SettingSwitch> createState() =>
-      _SettingSwitchState();
-}
-
-class _SettingSwitchState
-    extends State<SettingSwitch> {
-
-  late bool switchValue;
-
-  @override
-  void initState() {
-    super.initState();
-
-    switchValue = widget.initialValue;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,13 +32,12 @@ class _SettingSwitchState
       ),
 
       child: Row(
-        crossAxisAlignment:
-        CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
 
         children: [
 
           Icon(
-            widget.icon,
+            icon,
             color: const Color(0xFF9BD028),
             size: 40,
           ),
@@ -70,7 +52,7 @@ class _SettingSwitchState
               children: [
 
                 Text(
-                  widget.title,
+                  title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -81,7 +63,7 @@ class _SettingSwitchState
                 const SizedBox(height: 5),
 
                 Text(
-                  widget.description,
+                  description,
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
@@ -95,18 +77,8 @@ class _SettingSwitchState
             scale: 0.6,
 
             child: Switch(
-              value: switchValue,
-
-              onChanged: (value) {
-
-                setState(() {
-                  switchValue = value;
-                });
-
-                if(widget.onChanged != null){
-                  widget.onChanged!(value);
-                }
-              },
+              value: value,
+              onChanged: onChanged,
 
               activeThumbColor: Colors.white,
 

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
+import '../provider/app_settings.dart';
 
 import '../models/user.dart';
 
@@ -19,9 +22,6 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState
     extends State<ProfilePage> {
-
-  bool ecoMode = true;
-  bool darkTheme = true;
 
   late Future<DocumentSnapshot> userFuture;
 
@@ -88,8 +88,10 @@ class _ProfilePageState
   @override
   Widget build(BuildContext context) {
 
+    final settings = Provider.of<AppSettings>(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: settings.darkTheme ? Colors.black : Colors.white,
 
       bottomNavigationBar: BottomNavBar(
         currentIndex: 4,
@@ -97,11 +99,11 @@ class _ProfilePageState
       ),
 
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: settings.darkTheme ? Colors.black : Colors.white,
         elevation: 0,
 
-        iconTheme: const IconThemeData(
-          color: Colors.white,
+        iconTheme: IconThemeData(
+          color: settings.darkTheme ? Colors.white : Colors.black,
         ),
 
         title: const Text(
@@ -278,16 +280,22 @@ class _ProfilePageState
 
                   const SizedBox(height: 15),
 
-                  const SettingSwitch(
-                    title: 'EcoMode',
-                    description: 'Optimize performance and save energy',
+                  SettingSwitch(
+                    title: 'Eco Mode',
+                    description:
+                    'Optimize performance and save energy',
                     icon: Icons.eco,
+                    value: settings.ecoMode,
+                    onChanged: settings.toggleEcoMode,
                   ),
 
-                  const SettingSwitch(
+                  SettingSwitch(
                     title: 'Dark Theme',
-                    description: 'Reduce brightness for better comfort',
+                    description:
+                    'Reduce brightness for better comfort',
                     icon: Icons.dark_mode,
+                    value: settings.darkTheme,
+                    onChanged: settings.toggleDarkTheme,
                   ),
 
                   const SizedBox(height: 40),
