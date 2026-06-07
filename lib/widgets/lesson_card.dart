@@ -6,6 +6,7 @@ class LessonCard extends StatelessWidget {
   final String description;
   final String courseCode;
   final double progress;
+  final VoidCallback? onTap;
 
   const LessonCard({
     super.key,
@@ -13,107 +14,119 @@ class LessonCard extends StatelessWidget {
     required this.description,
     required this.courseCode,
     required this.progress,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
 
-    return Container(
-      width: double.infinity,
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: onTap,
 
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
+      child: Container(
+        width: double.infinity,
 
-      decoration: BoxDecoration(
-        color: const Color(0xFF2B2B2B),
-        borderRadius: BorderRadius.circular(20),
-      ),
+        margin: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.all(20),
 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        decoration: BoxDecoration(
+          color: const Color(0xFF2B2B2B),
+          borderRadius: BorderRadius.circular(20),
+        ),
 
-        children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
 
-          Row(
-            children: [
+          children: [
 
-              const Icon(
-                Icons.menu_book_rounded,
-                color: Color(0xFF9BD028),
-                size: 45,
-              ),
+            Row(
+              children: [
 
-              const SizedBox(width: 15),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-
-                  children: [
-
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    Text(
-                      courseCode,
-                      style: const TextStyle(
-                        color: Color(0xFF9BD028),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                const Icon(
+                  Icons.menu_book_rounded,
+                  color: Color(0xFF9BD028),
+                  size: 45,
                 ),
-              ),
-            ],
-          ),
 
-          const SizedBox(height: 15),
+                const SizedBox(width: 15),
 
-          Text(
-            description,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+
+                    children: [
+
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      Text(
+                        courseCode,
+                        style: const TextStyle(
+                          color: Color(0xFF9BD028),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.white54,
+                  size: 18,
+                ),
+              ],
             ),
-          ),
 
-          const SizedBox(height: 20),
+            const SizedBox(height: 15),
 
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-
-              backgroundColor: Colors.white24,
-              color: const Color(0xFF9BD028),
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          Align(
-            alignment: Alignment.centerRight,
-
-            child: Text(
-              '${(progress * 100).toInt()}%',
+            Text(
+              description,
               style: const TextStyle(
                 color: Colors.white,
-                fontWeight: FontWeight.bold,
+                fontSize: 15,
               ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 20),
+
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 8,
+
+                backgroundColor: Colors.white24,
+                color: const Color(0xFF9BD028),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            Align(
+              alignment: Alignment.centerRight,
+
+              child: Text(
+                '${(progress * 100).toInt()}%',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
