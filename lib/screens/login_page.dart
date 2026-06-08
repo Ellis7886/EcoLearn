@@ -6,87 +6,128 @@ import 'register_page.dart';
 import 'loading_page.dart';
 import 'home_page.dart';
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<LoginPage> createState() =>
+      _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+class _LoginPageState
+    extends State<LoginPage> {
+
+  final emailController =
+  TextEditingController();
+
+  final passwordController =
+  TextEditingController();
 
   Future<void> login() async {
+
     showDialog(
       context: context,
       barrierDismissible: false,
-
       builder: (context) {
         return const LoadingPage();
       },
     );
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
 
-      final user = FirebaseAuth.instance.currentUser;
+      final user =
+          FirebaseAuth.instance.currentUser;
 
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user!.uid)
-          .get();
-
-      if (!mounted) return;
-      Navigator.pop(context);
-
-      final role = userDoc['role'];
-
-      if(role=="student"){
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const HomePage(),
-          ),
-        );
-      }else if(role=="lecturer"){
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const HomePage(),
-          ),
+      if (user == null) {
+        throw Exception(
+          'User is null after login',
         );
       }
-    }
-    on FirebaseAuthException catch (e) {
+
+      final userDoc =
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (!userDoc.exists) {
+        throw Exception(
+          'User document not found in Firestore',
+        );
+      }
+
       if (!mounted) return;
+
       Navigator.pop(context);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+          const HomePage(),
+        ),
+      );
+
+    }
+
+    on FirebaseAuthException catch (e) {
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
 
       String message = 'Login failed';
 
-      if(e.code == 'user-not-found'){
-        message = 'Email does not exist';
+      if (e.code == 'user-not-found') {
+        message =
+        'Email does not exist';
       }
-      else if(e.code == 'wrong-password'){
-        message = 'Wrong password';
+      else if (e.code ==
+          'wrong-password') {
+        message =
+        'Wrong password';
       }
-      else if(e.code == 'invalid-email'){
-        message = 'Invalid email format';
+      else if (e.code ==
+          'invalid-email') {
+        message =
+        'Invalid email format';
       }
-      else if(e.code == 'invalid-credential'){
-        message = 'Email or password is wrong';
+      else if (e.code ==
+          'invalid-credential') {
+        message =
+        'Email or password is wrong';
       }
-      else if(e.code == 'too-many-requests'){
-        message = 'Too many attempts, please try again later';
+      else if (e.code ==
+          'too-many-requests') {
+        message =
+        'Too many attempts, please try again later';
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         SnackBar(
-          content: Text(message),
+          content:
+          Text(message),
+        ),
+      );
+    }
+
+    catch (e) {
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content:
+          Text(e.toString()),
         ),
       );
     }
@@ -99,10 +140,12 @@ class _LoginPageState extends State<LoginPage> {
       backgroundColor: Colors.black,
 
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding:
+        const EdgeInsets.all(20),
 
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment:
+          MainAxisAlignment.center,
 
           children: [
 
@@ -111,117 +154,208 @@ class _LoginPageState extends State<LoginPage> {
               height: 180,
             ),
 
-            const SizedBox(height: 40),
-
-            TextField(
-              controller: emailController,
-
-              style: const TextStyle(color: Colors.white),
-
-              decoration: InputDecoration(
-                hintText: 'Email',
-                hintStyle: const TextStyle(color: Colors.white54),
-
-                filled: true,
-                fillColor: const Color(0xFF2B2B2B),
-
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
+            const SizedBox(
+              height: 40,
             ),
 
-            const SizedBox(height: 20),
-
             TextField(
-              controller: passwordController,
-              obscureText: true,
+              controller:
+              emailController,
 
-              style: const TextStyle(color: Colors.white),
+              style:
+              const TextStyle(
+                color: Colors.white,
+              ),
 
-              decoration: InputDecoration(
-                hintText: 'Password',
-                hintStyle: const TextStyle(color: Colors.white54),
+              decoration:
+              InputDecoration(
+                hintText:
+                'Email',
+
+                hintStyle:
+                const TextStyle(
+                  color:
+                  Colors.white54,
+                ),
 
                 filled: true,
-                fillColor: const Color(0xFF2B2B2B),
 
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            SizedBox(
-              width: double.infinity,
-
-              child: ElevatedButton(
-                onPressed: login,
-
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF9BD028),
-                  padding: const EdgeInsets.symmetric(vertical: 15),
+                fillColor:
+                const Color(
+                  0xFF2B2B2B,
                 ),
 
-                child: const Text(
-                  'Login',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                border:
+                OutlineInputBorder(
+                  borderRadius:
+                  BorderRadius.circular(
+                    15,
                   ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(
+              height: 20,
+            ),
+
+            TextField(
+              controller:
+              passwordController,
+
+              obscureText: true,
+
+              style:
+              const TextStyle(
+                color: Colors.white,
+              ),
+
+              decoration:
+              InputDecoration(
+                hintText:
+                'Password',
+
+                hintStyle:
+                const TextStyle(
+                  color:
+                  Colors.white54,
+                ),
+
+                filled: true,
+
+                fillColor:
+                const Color(
+                  0xFF2B2B2B,
+                ),
+
+                border:
+                OutlineInputBorder(
+                  borderRadius:
+                  BorderRadius.circular(
+                    15,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(
+              height: 30,
+            ),
+
+            SizedBox(
+              width:
+              double.infinity,
+
+              child:
+              ElevatedButton(
+                onPressed:
+                login,
+
+                style:
+                ElevatedButton.styleFrom(
+                  backgroundColor:
+                  const Color(
+                    0xFF9BD028,
+                  ),
+
+                  padding:
+                  const EdgeInsets.symmetric(
+                    vertical:
+                    15,
+                  ),
+                ),
+
+                child:
+                const Text(
+                  'Login',
+
+                  style:
+                  TextStyle(
+                    color:
+                    Colors.black,
+
+                    fontWeight:
+                    FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(
+              height: 20,
+            ),
 
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment:
+              MainAxisAlignment.center,
+
               children: [
 
                 GestureDetector(
-                  onTap: () {
-                    // Forgot Password
-                  },
+                  onTap: () {},
 
-                  child: const Text(
+                  child:
+                  const Text(
                     'Forgot Password?',
-                    style: TextStyle(
-                      color: Color(0xFF9BD028),
-                      fontWeight: FontWeight.w500,
+
+                    style:
+                    TextStyle(
+                      color:
+                      Color(
+                        0xFF9BD028,
+                      ),
+
+                      fontWeight:
+                      FontWeight.w500,
                     ),
                   ),
                 ),
 
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  padding:
+                  EdgeInsets.symmetric(
+                    horizontal:
+                    10,
+                  ),
+
                   child: Text(
                     '|',
-                    style: TextStyle(
-                      color: Colors.white54,
+
+                    style:
+                    TextStyle(
+                      color:
+                      Colors.white54,
                     ),
                   ),
                 ),
 
                 GestureDetector(
                   onTap: () {
-                    // Register Page
+
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const RegisterPage(),
-                        ),
+                      context,
+
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                        const RegisterPage(),
+                      ),
                     );
                   },
 
-                  child: const Text(
+                  child:
+                  const Text(
                     'Register',
-                    style: TextStyle(
-                      color: Color(0xFF9BD028),
-                      fontWeight: FontWeight.bold,
+
+                    style:
+                    TextStyle(
+                      color:
+                      Color(
+                        0xFF9BD028,
+                      ),
+
+                      fontWeight:
+                      FontWeight.bold,
                     ),
                   ),
                 ),

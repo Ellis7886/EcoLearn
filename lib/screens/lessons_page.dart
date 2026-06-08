@@ -12,7 +12,7 @@ import '../provider/app_settings.dart';
 import '../widgets/lesson_card.dart';
 import '../widgets/bottom_nav_bar.dart';
 
-import 'upload_material_page.dart';
+import 'create_content_page.dart';
 
 class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});
@@ -72,7 +72,7 @@ class _LessonsPageState
 
             MaterialPageRoute(
               builder: (context) =>
-              const UploadMaterialPage(),
+              const CreateContentPage(),
             ),
           );
         },

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MaterialsPage extends StatelessWidget {
-
   final String lessonId;
   final String lessonTitle;
 
@@ -14,7 +13,6 @@ class MaterialsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: Colors.black,
 
@@ -35,29 +33,27 @@ class MaterialsPage extends StatelessWidget {
 
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('materials')
-            .where(
-          'lesson_id',
-          isEqualTo: lessonId,
-        )
+            .collection('content')
+            .where('type', isEqualTo: 'chapter',)
+            .where('lesson_id', isEqualTo: lessonId,)
             .snapshots(),
 
         builder: (context, snapshot) {
 
-          if(snapshot.connectionState ==
-              ConnectionState.waiting){
+          if (snapshot.connectionState ==
+              ConnectionState.waiting) {
 
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
-          if(!snapshot.hasData ||
-              snapshot.data!.docs.isEmpty){
+          if (!snapshot.hasData ||
+              snapshot.data!.docs.isEmpty) {
 
             return const Center(
               child: Text(
-                'No materials available',
+                'No chapters available',
                 style: TextStyle(
                   color: Colors.white,
                 ),
@@ -65,18 +61,21 @@ class MaterialsPage extends StatelessWidget {
             );
           }
 
-          final materials =
+          final chapters =
               snapshot.data!.docs;
 
           return ListView.builder(
-            padding: const EdgeInsets.all(20),
+            padding:
+            const EdgeInsets.all(20),
 
-            itemCount: materials.length,
+            itemCount:
+            chapters.length,
 
-            itemBuilder: (context, index) {
+            itemBuilder:
+                (context, index) {
 
-              final material =
-              materials[index];
+              final chapter =
+              chapters[index];
 
               return Container(
                 margin:
@@ -84,55 +83,230 @@ class MaterialsPage extends StatelessWidget {
                   bottom: 15,
                 ),
 
-                decoration: BoxDecoration(
+                decoration:
+                BoxDecoration(
                   color:
-                  const Color(0xFF2B2B2B),
+                  const Color(
+                    0xFF2B2B2B,
+                  ),
 
                   borderRadius:
-                  BorderRadius.circular(20),
+                  BorderRadius
+                      .circular(
+                    20,
+                  ),
                 ),
 
-                child: ListTile(
-
-                  leading: const Icon(
-                    Icons.description,
-                    color: Color(0xFF9BD028),
-                    size: 35,
+                child: Theme(
+                  data: Theme.of(context)
+                      .copyWith(
+                    dividerColor:
+                    Colors.transparent,
                   ),
 
-                  title: Text(
-                    material['title'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight:
-                      FontWeight.bold,
+                  child: ExpansionTile(
+
+                    leading:
+                    const Icon(
+                      Icons
+                          .menu_book_rounded,
+                      color: Color(
+                        0xFF9BD028,
+                      ),
                     ),
-                  ),
 
-                  subtitle: Text(
-                    material['description'],
-                    style: const TextStyle(
-                      color: Colors.white70,
+                    iconColor:
+                    Colors.white,
+
+                    collapsedIconColor:
+                    Colors.white,
+
+                    title: Text(
+                      chapter['title'] ??
+                          '',
+                      style:
+                      const TextStyle(
+                        color:
+                        Colors.white,
+                        fontWeight:
+                        FontWeight
+                            .bold,
+                      ),
                     ),
-                  ),
 
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.white54,
-                  ),
+                    childrenPadding:
+                    const EdgeInsets
+                        .only(
+                      left: 20,
+                      right: 20,
+                      bottom: 20,
+                    ),
 
-                  onTap: () {
+                    children: [
 
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(
+                      Align(
+                        alignment:
+                        Alignment
+                            .centerLeft,
 
-                      SnackBar(
-                        content: Text(
-                          material['file_name'],
+                        child: Text(
+                          chapter[
+                          'description'] ??
+                              '',
+                          style:
+                          const TextStyle(
+                            color:
+                            Colors.white70,
+                            height:
+                            1.5,
+                          ),
                         ),
                       ),
-                    );
-                  },
+
+                      const SizedBox(
+                        height: 15,
+                      ),
+
+                      StreamBuilder<
+                          QuerySnapshot>(
+                        stream:
+                        FirebaseFirestore.instance
+                            .collection('content')
+                            .where('type', isEqualTo: 'material',)
+                            .where('chapter', isEqualTo: chapter['title'],)
+                            .snapshots(),
+
+                        builder:
+                            (context,
+                            materialSnapshot) {
+
+                          if (!materialSnapshot
+                              .hasData ||
+                              materialSnapshot
+                                  .data!
+                                  .docs
+                                  .isEmpty) {
+
+                            return const Align(
+                              alignment:
+                              Alignment
+                                  .centerLeft,
+
+                              child: Text(
+                                'No materials uploaded',
+                                style:
+                                TextStyle(
+                                  color:
+                                  Colors
+                                      .white54,
+                                ),
+                              ),
+                            );
+                          }
+
+                          final materials =
+                              materialSnapshot
+                                  .data!
+                                  .docs;
+
+                          return Column(
+                            children:
+                            materials.map((material) {
+
+                                IconData icon =
+                                    Icons.description;
+
+                                String fileName =
+                                    material['file_name'] ?? '';
+
+                                if (fileName.endsWith == '.pdf') {
+                                  icon = Icons.picture_as_pdf;
+                                }
+                                else if (fileName.endsWith == '.mp4') {
+                                  icon = Icons.video_library;
+                                }
+                                else if (fileName.endsWith('.jpg') ||
+                                    fileName.endsWith('.jpeg') ||
+                                    fileName.endsWith('.png')) {
+                                  icon = Icons.image;
+                                }
+
+                                return Card(
+                                  color: Colors.black26,
+
+                                  margin:
+                                  const EdgeInsets.only(
+                                    bottom:
+                                    10,
+                                  ),
+
+                                  child:
+                                  ListTile(leading:
+                                    Icon(
+                                      icon,
+                                      color:
+                                      const Color(
+                                        0xFF9BD028,
+                                      ),
+                                    ),
+
+                                    title:
+                                    Text(
+                                      material[
+                                      'title'],
+                                      style:
+                                      const TextStyle(
+                                        color:
+                                        Colors.white,
+                                      ),
+                                    ),
+
+                                    subtitle: Text(
+                                      material['file_name'] ?? '',
+                                      style: const TextStyle(
+                                        color:
+                                        Colors.white70,
+                                      ),
+                                    ),
+
+                                    trailing:
+                                    const Icon(
+                                      Icons
+                                          .arrow_forward_ios,
+                                      color:
+                                      Colors.white54,
+                                      size:
+                                      16,
+                                    ),
+
+                                    onTap:
+                                        () {
+
+                                      ScaffoldMessenger.of(
+                                          context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content:
+                                          Text(
+                                            material['title'],
+                                          ),
+                                        ),
+                                      );
+
+                                      // Future:
+                                      // Open PDF
+                                      // Open Video
+                                      // Open Image
+                                    },
+                                  ),
+                                );
+                              },
+                            ).toList(),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
