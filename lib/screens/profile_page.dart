@@ -18,12 +18,10 @@ class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() =>
-      _ProfilePageState();
+  State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ProfilePageState
-    extends State<ProfilePage> {
+class _ProfilePageState extends State<ProfilePage> {
 
   late Future<DocumentSnapshot> userFuture;
 
@@ -31,8 +29,7 @@ class _ProfilePageState
   void initState() {
     super.initState();
 
-    final currentUser =
-        FirebaseAuth.instance.currentUser;
+    final currentUser = FirebaseAuth.instance.currentUser;
 
     userFuture = FirebaseFirestore.instance
         .collection('users')
@@ -171,8 +168,7 @@ class _ProfilePageState
 
                     decoration: BoxDecoration(
                       color: const Color(0xFF2B2B2B),
-                      borderRadius:
-                      BorderRadius.circular(25),
+                      borderRadius: BorderRadius.circular(25),
                     ),
 
                     child: Column(
@@ -224,16 +220,14 @@ class _ProfilePageState
                           decoration: BoxDecoration(
                             color:
                             const Color(0xFF9BD028),
-                            borderRadius:
-                            BorderRadius.circular(30),
+                            borderRadius: BorderRadius.circular(30),
                           ),
 
                           child: Text(
                             user.role.toUpperCase(),
                             style: const TextStyle(
                               color: Colors.black,
-                              fontWeight:
-                              FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
@@ -296,8 +290,7 @@ class _ProfilePageState
 
                   SettingSwitch(
                     title: 'Eco Mode',
-                    description:
-                    'Optimize performance and save energy',
+                    description: 'Optimize performance and save energy',
                     icon: Icons.eco,
                     value: settings.ecoMode,
                     onChanged: settings.toggleEcoMode,
@@ -305,8 +298,7 @@ class _ProfilePageState
 
                   SettingSwitch(
                     title: 'Dark Theme',
-                    description:
-                    'Reduce brightness for better comfort',
+                    description: 'Reduce brightness for better comfort',
                     icon: Icons.dark_mode,
                     value: settings.darkTheme,
                     onChanged: settings.toggleDarkTheme,
@@ -329,8 +321,7 @@ class _ProfilePageState
                           context,
 
                           MaterialPageRoute(
-                            builder: (context) =>
-                            const LoginPage(),
+                            builder: (context) => const LoginPage(),
                           ),
 
                               (route) => false,
@@ -339,14 +330,12 @@ class _ProfilePageState
 
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
-                        padding:
-                        const EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           vertical: 15,
                         ),
 
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                          BorderRadius.circular(15),
+                          borderRadius: BorderRadius.circular(15),
                         ),
                       ),
 
@@ -354,8 +343,7 @@ class _ProfilePageState
                         'Logout',
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight:
-                          FontWeight.bold,
+                          fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),

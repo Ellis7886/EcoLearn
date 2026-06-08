@@ -61,71 +61,51 @@ class MaterialsPage extends StatelessWidget {
             );
           }
 
-          final chapters =
-              snapshot.data!.docs;
+          final chapters = snapshot.data!.docs;
 
           return ListView.builder(
-            padding:
-            const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
 
-            itemCount:
-            chapters.length,
+            itemCount: chapters.length,
 
-            itemBuilder:
-                (context, index) {
+            itemBuilder: (context, index) {
 
-              final chapter =
-              chapters[index];
+              final chapter = chapters[index];
 
               return Container(
-                margin:
-                const EdgeInsets.only(
+                margin: const EdgeInsets.only(
                   bottom: 15,
                 ),
 
                 decoration:
                 BoxDecoration(
-                  color:
-                  const Color(
-                    0xFF2B2B2B,
-                  ),
+                  color: const Color(0xFF2B2B2B,),
 
                   borderRadius:
-                  BorderRadius
-                      .circular(
-                    20,
-                  ),
+                  BorderRadius.circular(20,),
                 ),
 
                 child: Theme(
                   data: Theme.of(context)
                       .copyWith(
-                    dividerColor:
-                    Colors.transparent,
+                    dividerColor: Colors.transparent,
                   ),
 
                   child: ExpansionTile(
 
                     leading:
                     const Icon(
-                      Icons
-                          .menu_book_rounded,
-                      color: Color(
-                        0xFF9BD028,
-                      ),
+                      Icons.menu_book_rounded,
+                      color: Color(0xFF9BD028),
                     ),
 
-                    iconColor:
-                    Colors.white,
+                    iconColor: Colors.white,
 
-                    collapsedIconColor:
-                    Colors.white,
+                    collapsedIconColor: Colors.white,
 
                     title: Text(
-                      chapter['title'] ??
-                          '',
-                      style:
-                      const TextStyle(
+                      chapter['title'] ?? '',
+                      style: const TextStyle(
                         color:
                         Colors.white,
                         fontWeight:
@@ -135,8 +115,7 @@ class MaterialsPage extends StatelessWidget {
                     ),
 
                     childrenPadding:
-                    const EdgeInsets
-                        .only(
+                    const EdgeInsets.only(
                       left: 20,
                       right: 20,
                       bottom: 20,
@@ -145,16 +124,11 @@ class MaterialsPage extends StatelessWidget {
                     children: [
 
                       Align(
-                        alignment:
-                        Alignment
-                            .centerLeft,
+                        alignment: Alignment.centerLeft,
 
                         child: Text(
-                          chapter[
-                          'description'] ??
-                              '',
-                          style:
-                          const TextStyle(
+                          chapter['description'] ?? '',
+                          style: const TextStyle(
                             color:
                             Colors.white70,
                             height:
@@ -167,19 +141,14 @@ class MaterialsPage extends StatelessWidget {
                         height: 15,
                       ),
 
-                      StreamBuilder<
-                          QuerySnapshot>(
-                        stream:
-                        FirebaseFirestore.instance
+                      StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseFirestore.instance
                             .collection('content')
                             .where('type', isEqualTo: 'material',)
                             .where('chapter', isEqualTo: chapter['title'],)
                             .snapshots(),
 
-                        builder:
-                            (context,
-                            materialSnapshot) {
-
+                        builder: (context, materialSnapshot) {
                           if (!materialSnapshot
                               .hasData ||
                               materialSnapshot
@@ -188,17 +157,13 @@ class MaterialsPage extends StatelessWidget {
                                   .isEmpty) {
 
                             return const Align(
-                              alignment:
-                              Alignment
-                                  .centerLeft,
+                              alignment: Alignment.centerLeft,
 
                               child: Text(
                                 'No materials uploaded',
                                 style:
                                 TextStyle(
-                                  color:
-                                  Colors
-                                      .white54,
+                                  color: Colors.white54,
                                 ),
                               ),
                             );
@@ -210,14 +175,11 @@ class MaterialsPage extends StatelessWidget {
                                   .docs;
 
                           return Column(
-                            children:
-                            materials.map((material) {
+                            children: materials.map((material) {
 
-                                IconData icon =
-                                    Icons.description;
+                                IconData icon = Icons.description;
 
-                                String fileName =
-                                    material['file_name'] ?? '';
+                                String fileName = material['file_name'] ?? '';
 
                                 if (fileName.endsWith == '.pdf') {
                                   icon = Icons.picture_as_pdf;
@@ -236,36 +198,29 @@ class MaterialsPage extends StatelessWidget {
 
                                   margin:
                                   const EdgeInsets.only(
-                                    bottom:
-                                    10,
+                                    bottom: 10,
                                   ),
 
                                   child:
                                   ListTile(leading:
                                     Icon(
                                       icon,
-                                      color:
-                                      const Color(
-                                        0xFF9BD028,
-                                      ),
+                                      color: const Color(0xFF9BD028),
                                     ),
 
                                     title:
                                     Text(
-                                      material[
-                                      'title'],
+                                      material['title'],
                                       style:
                                       const TextStyle(
-                                        color:
-                                        Colors.white,
+                                        color: Colors.white,
                                       ),
                                     ),
 
                                     subtitle: Text(
                                       material['file_name'] ?? '',
                                       style: const TextStyle(
-                                        color:
-                                        Colors.white70,
+                                        color: Colors.white70,
                                       ),
                                     ),
 
@@ -273,23 +228,16 @@ class MaterialsPage extends StatelessWidget {
                                     const Icon(
                                       Icons
                                           .arrow_forward_ios,
-                                      color:
-                                      Colors.white54,
+                                      color: Colors.white54,
                                       size:
                                       16,
                                     ),
 
-                                    onTap:
-                                        () {
-
-                                      ScaffoldMessenger.of(
-                                          context)
-                                          .showSnackBar(
+                                    onTap: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
                                           content:
-                                          Text(
-                                            material['title'],
-                                          ),
+                                          Text(material['title'],),
                                         ),
                                       );
 

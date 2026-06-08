@@ -45,26 +45,20 @@ class ChapterDetailsPage extends StatelessWidget {
           if (!snapshot.hasData) {
 
             return const Center(
-              child:
-              CircularProgressIndicator(),
+              child: CircularProgressIndicator(),
             );
           }
 
-          final data =
-          snapshot.data!.data()
-          as Map<String, dynamic>;
+          final data = snapshot.data!.data() as Map<String, dynamic>;
 
           return SingleChildScrollView(
 
-            padding:
-            const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
 
             child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
-
                 Text(
                   data['title'],
                   style: const TextStyle(

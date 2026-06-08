@@ -44,11 +44,9 @@ class _HomePageState
             padding: const EdgeInsets.all(20),
 
             child: Column(
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
-
                 Center(
                   child: Image.asset(
                     settings.darkTheme ? 'assets/images/ecolearn_logo.png' : 'assets/images/ecolearn_logo_light_theme.png',
@@ -58,25 +56,17 @@ class _HomePageState
 
                 SettingSwitch(
                   title: 'Eco Mode',
-                  description:
-                  'Optimize performance and save energy',
-
+                  description: 'Optimize performance and save energy',
                   icon: Icons.eco,
-
                   value: settings.ecoMode,
-
                   onChanged: settings.toggleEcoMode,
                 ),
 
                 SettingSwitch(
                   title: 'Dark Theme',
-                  description:
-                  'Reduce brightness for better comfort',
-
+                  description: 'Reduce brightness for better comfort',
                   icon: Icons.dark_mode,
-
                   value: settings.darkTheme,
-
                   onChanged: settings.toggleDarkTheme,
                 ),
 
@@ -97,16 +87,11 @@ class _HomePageState
 
                 HomeMenuCard(
                   title: 'Lessons',
-                  description:
-                  'Access learning materials',
-
+                  description: 'Access learning materials',
                   icon: Icons.menu_book_rounded,
-
                   onTap: (){
-
                     Navigator.push(
                       context,
-
                       MaterialPageRoute(
                         builder: (context) =>
                         const LessonsPage(),
@@ -117,21 +102,15 @@ class _HomePageState
 
                 HomeMenuCard(
                   title: 'Resources',
-                  description:
-                  'Explore learning resources',
-
+                  description: 'Explore learning resources',
                   icon: Icons.folder_rounded,
-
                   onTap: (){},
                 ),
 
                 HomeMenuCard(
                   title: 'Quiz',
-                  description:
-                  'Test your knowledge',
-
+                  description: 'Test your knowledge',
                   icon: Icons.quiz_rounded,
-
                   onTap: (){},
                 ),
               ],

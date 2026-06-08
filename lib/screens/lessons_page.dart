@@ -18,12 +18,10 @@ class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});
 
   @override
-  State<LessonsPage> createState() =>
-      _LessonsPageState();
+  State<LessonsPage> createState() => _LessonsPageState();
 }
 
-class _LessonsPageState
-    extends State<LessonsPage> {
+class _LessonsPageState extends State<LessonsPage> {
 
   String role = '';
 
@@ -35,11 +33,9 @@ class _LessonsPageState
 
   Future<void> loadUserRole() async {
 
-    final uid =
-        FirebaseAuth.instance.currentUser!.uid;
+    final uid = FirebaseAuth.instance.currentUser!.uid;
 
-    final doc =
-    await FirebaseFirestore.instance
+    final doc = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
         .get();
@@ -55,13 +51,10 @@ class _LessonsPageState
     final settings = Provider.of<AppSettings>(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background(
-        settings.darkTheme,
-      ),
+      backgroundColor: AppColors.background(settings.darkTheme,),
 
       floatingActionButton:
-      role == 'lecturer'
-          ? FloatingActionButton(
+      role == 'lecturer' ? FloatingActionButton(
         backgroundColor:
         const Color(0xFF9BD028),
 
@@ -69,7 +62,6 @@ class _LessonsPageState
 
           Navigator.push(
             context,
-
             MaterialPageRoute(
               builder: (context) =>
               const CreateContentPage(),
@@ -81,8 +73,7 @@ class _LessonsPageState
           Icons.upload_file,
           color: Colors.black,
         ),
-      )
-          : null,
+      ) : null,
 
       bottomNavigationBar: BottomNavBar(
         currentIndex: 1,
@@ -118,8 +109,7 @@ class _LessonsPageState
 
         builder: (context, snapshot) {
 
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
 
             return const Center(
               child: CircularProgressIndicator(),
@@ -160,8 +150,7 @@ class _LessonsPageState
 
                 onTap: () {
 
-                  Navigator.push(
-                    context,
+                  Navigator.push(context,
 
                     MaterialPageRoute(
                       builder: (context) => MaterialsPage(

@@ -14,14 +14,11 @@ class LoginPage extends StatefulWidget {
       _LoginPageState();
 }
 
-class _LoginPageState
-    extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> {
 
-  final emailController =
-  TextEditingController();
+  final emailController = TextEditingController();
 
-  final passwordController =
-  TextEditingController();
+  final passwordController = TextEditingController();
 
   Future<void> login() async {
 
@@ -40,8 +37,7 @@ class _LoginPageState
         password: passwordController.text.trim(),
       );
 
-      final user =
-          FirebaseAuth.instance.currentUser;
+      final user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
         throw Exception(
@@ -49,8 +45,7 @@ class _LoginPageState
         );
       }
 
-      final userDoc =
-      await FirebaseFirestore.instance
+      final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .get();
@@ -68,8 +63,7 @@ class _LoginPageState
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-          const HomePage(),
+          builder: (context) => const HomePage(),
         ),
       );
 
@@ -84,28 +78,23 @@ class _LoginPageState
       String message = 'Login failed';
 
       if (e.code == 'user-not-found') {
-        message =
-        'Email does not exist';
+        message = 'Email does not exist';
       }
       else if (e.code ==
           'wrong-password') {
-        message =
-        'Wrong password';
+        message = 'Wrong password';
       }
       else if (e.code ==
           'invalid-email') {
-        message =
-        'Invalid email format';
+        message = 'Invalid email format';
       }
       else if (e.code ==
           'invalid-credential') {
-        message =
-        'Email or password is wrong';
+        message = 'Email or password is wrong';
       }
       else if (e.code ==
           'too-many-requests') {
-        message =
-        'Too many attempts, please try again later';
+        message = 'Too many attempts, please try again later';
       }
 
       ScaffoldMessenger.of(context)
@@ -140,8 +129,7 @@ class _LoginPageState
       backgroundColor: Colors.black,
 
       body: Padding(
-        padding:
-        const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
 
         child: Column(
           mainAxisAlignment:
@@ -159,13 +147,9 @@ class _LoginPageState
             ),
 
             TextField(
-              controller:
-              emailController,
+              controller: emailController,
 
-              style:
-              const TextStyle(
-                color: Colors.white,
-              ),
+              style: const TextStyle(color: Colors.white,),
 
               decoration:
               InputDecoration(
@@ -173,17 +157,11 @@ class _LoginPageState
                 'Email',
 
                 hintStyle:
-                const TextStyle(
-                  color:
-                  Colors.white54,
-                ),
+                const TextStyle(color: Colors.white54,),
 
                 filled: true,
 
-                fillColor:
-                const Color(
-                  0xFF2B2B2B,
-                ),
+                fillColor: const Color(0xFF2B2B2B,),
 
                 border:
                 OutlineInputBorder(
@@ -200,8 +178,7 @@ class _LoginPageState
             ),
 
             TextField(
-              controller:
-              passwordController,
+              controller: passwordController,
 
               obscureText: true,
 
@@ -212,26 +189,21 @@ class _LoginPageState
 
               decoration:
               InputDecoration(
-                hintText:
-                'Password',
+                hintText: 'Password',
 
                 hintStyle:
                 const TextStyle(
-                  color:
-                  Colors.white54,
+                  color: Colors.white54,
                 ),
 
                 filled: true,
 
                 fillColor:
-                const Color(
-                  0xFF2B2B2B,
-                ),
+                const Color(0xFF2B2B2B,),
 
                 border:
                 OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius.circular(
+                  borderRadius: BorderRadius.circular(
                     15,
                   ),
                 ),
@@ -243,16 +215,13 @@ class _LoginPageState
             ),
 
             SizedBox(
-              width:
-              double.infinity,
+              width: double.infinity,
 
               child:
               ElevatedButton(
-                onPressed:
-                login,
+                onPressed: login,
 
-                style:
-                ElevatedButton.styleFrom(
+                style: ElevatedButton.styleFrom(
                   backgroundColor:
                   const Color(
                     0xFF9BD028,
@@ -260,22 +229,17 @@ class _LoginPageState
 
                   padding:
                   const EdgeInsets.symmetric(
-                    vertical:
-                    15,
+                    vertical: 15,
                   ),
                 ),
 
-                child:
-                const Text(
+                child: const Text(
                   'Login',
 
-                  style:
-                  TextStyle(
-                    color:
-                    Colors.black,
+                  style: TextStyle(
+                    color: Colors.black,
 
-                    fontWeight:
-                    FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -286,8 +250,7 @@ class _LoginPageState
             ),
 
             Row(
-              mainAxisAlignment:
-              MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
 
               children: [
 
@@ -298,33 +261,26 @@ class _LoginPageState
                   const Text(
                     'Forgot Password?',
 
-                    style:
-                    TextStyle(
-                      color:
-                      Color(
+                    style: TextStyle(
+                      color: Color(
                         0xFF9BD028,
                       ),
 
-                      fontWeight:
-                      FontWeight.w500,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
 
                 const Padding(
-                  padding:
-                  EdgeInsets.symmetric(
-                    horizontal:
-                    10,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10,
                   ),
 
                   child: Text(
                     '|',
 
-                    style:
-                    TextStyle(
-                      color:
-                      Colors.white54,
+                    style: TextStyle(
+                      color: Colors.white54,
                     ),
                   ),
                 ),
@@ -336,8 +292,7 @@ class _LoginPageState
                       context,
 
                       MaterialPageRoute(
-                        builder:
-                            (context) =>
+                        builder: (context) =>
                         const RegisterPage(),
                       ),
                     );
@@ -347,15 +302,10 @@ class _LoginPageState
                   const Text(
                     'Register',
 
-                    style:
-                    TextStyle(
-                      color:
-                      Color(
-                        0xFF9BD028,
-                      ),
+                    style: TextStyle(
+                      color: Color(0xFF9BD028,),
 
-                      fontWeight:
-                      FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),

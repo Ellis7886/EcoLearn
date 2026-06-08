@@ -33,9 +33,7 @@ class EcoLearnApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
 
           theme: ThemeData(
-            brightness: settings.darkTheme
-                ? Brightness.dark
-                : Brightness.light,
+            brightness: settings.darkTheme ? Brightness.dark : Brightness.light,
           ),
 
           home: const LoginPage(),

@@ -8,24 +8,15 @@ class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  State<RegisterPage> createState() =>
-      _RegisterPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState
-    extends State<RegisterPage> {
+class _RegisterPageState extends State<RegisterPage> {
 
-  final nameController =
-  TextEditingController();
-
-  final emailController =
-  TextEditingController();
-
-  final passwordController =
-  TextEditingController();
-
-  final confirmPasswordController =
-  TextEditingController();
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
   String selectedRole = 'student';
 
@@ -50,8 +41,7 @@ class _RegisterPageState
       return;
     }
 
-    if (passwordController.text !=
-        confirmPasswordController.text) {
+    if (passwordController.text != confirmPasswordController.text) {
 
       messenger.showSnackBar(
         const SnackBar(
@@ -74,13 +64,10 @@ class _RegisterPageState
 
     try {
 
-      UserCredential credential =
-      await FirebaseAuth.instance
+      UserCredential credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
-        email:
-        emailController.text.trim(),
-        password:
-        passwordController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
       );
 
       await FirebaseFirestore.instance
@@ -88,17 +75,13 @@ class _RegisterPageState
           .doc(credential.user!.uid)
           .set({
 
-        'name':
-        nameController.text.trim(),
+        'name': nameController.text.trim(),
 
-        'email':
-        emailController.text.trim(),
+        'email': emailController.text.trim(),
 
-        'role':
-        selectedRole,
+        'role': selectedRole,
 
-        'createdAt':
-        Timestamp.now(),
+        'createdAt': Timestamp.now(),
       });
 
       if(!mounted) return;
@@ -119,26 +102,19 @@ class _RegisterPageState
 
       navigator.pop();
 
-      String message =
-          'Registration Failed';
+      String message = 'Registration Failed';
 
-      if (e.code ==
-          'email-already-in-use') {
+      if (e.code == 'email-already-in-use') {
 
-        message =
-        'Email already exists';
+        message = 'Email already exists';
       }
-      else if (e.code ==
-          'invalid-email') {
+      else if (e.code == 'invalid-email') {
 
-        message =
-        'Invalid email format';
+        message = 'Invalid email format';
       }
-      else if (e.code ==
-          'weak-password') {
+      else if (e.code == 'weak-password') {
 
-        message =
-        'Password is too weak';
+        message = 'Password is too weak';
       }
 
       ScaffoldMessenger.of(context)
@@ -174,8 +150,7 @@ class _RegisterPageState
       ),
 
       body: SingleChildScrollView(
-        padding:
-        const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
 
         child: Column(
           children: [
@@ -190,37 +165,26 @@ class _RegisterPageState
             const SizedBox(height: 30),
 
             TextField(
-              controller:
-              nameController,
+              controller: nameController,
 
-              style:
-              const TextStyle(
-                color: Colors.white,
-              ),
+              style: const TextStyle(color: Colors.white,),
 
-              decoration:
-              InputDecoration(
+              decoration: InputDecoration(
                 hintText:
                 'Full Name',
 
-                hintStyle:
-                const TextStyle(
+                hintStyle: const TextStyle(
                   color:
                   Colors.white54,
                 ),
 
                 filled: true,
 
-                fillColor:
-                const Color(
-                    0xFF2B2B2B),
+                fillColor: const Color(0xFF2B2B2B),
 
-                border:
-                OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
-                      .circular(
-                      15),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius
+                      .circular(15),
                 ),
               ),
             ),
@@ -228,34 +192,25 @@ class _RegisterPageState
             const SizedBox(height: 20),
 
             TextField(
-              controller:
-              emailController,
+              controller: emailController,
 
-              style:
-              const TextStyle(
-                color: Colors.white,
-              ),
+              style: const TextStyle(color: Colors.white,),
 
               decoration:
               InputDecoration(
                 hintText: 'Email',
 
-                hintStyle:
-                const TextStyle(
-                  color:
-                  Colors.white54,
+                hintStyle: const TextStyle(
+                  color: Colors.white54,
                 ),
 
                 filled: true,
 
-                fillColor:
-                const Color(
-                    0xFF2B2B2B),
+                fillColor: const Color(0xFF2B2B2B),
 
                 border:
                 OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
+                  borderRadius: BorderRadius
                       .circular(
                       15),
                 ),
@@ -265,8 +220,7 @@ class _RegisterPageState
             const SizedBox(height: 20),
 
             TextField(
-              controller:
-              passwordController,
+              controller: passwordController,
 
               obscureText: true,
 
@@ -277,25 +231,20 @@ class _RegisterPageState
 
               decoration:
               InputDecoration(
-                hintText:
-                'Password',
+                hintText: 'Password',
 
-                hintStyle:
-                const TextStyle(
+                hintStyle: const TextStyle(
                   color:
                   Colors.white54,
                 ),
 
                 filled: true,
 
-                fillColor:
-                const Color(
-                    0xFF2B2B2B),
+                fillColor: const Color(0xFF2B2B2B),
 
                 border:
                 OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
+                  borderRadius: BorderRadius
                       .circular(
                       15),
                 ),
@@ -305,37 +254,26 @@ class _RegisterPageState
             const SizedBox(height: 20),
 
             TextField(
-              controller:
-              confirmPasswordController,
+              controller: confirmPasswordController,
 
               obscureText: true,
 
-              style:
-              const TextStyle(
-                color: Colors.white,
-              ),
+              style: const TextStyle(color: Colors.white,),
 
-              decoration:
-              InputDecoration(
-                hintText:
-                'Confirm Password',
+              decoration: InputDecoration(
+                hintText: 'Confirm Password',
 
-                hintStyle:
-                const TextStyle(
+                hintStyle: const TextStyle(
                   color:
                   Colors.white54,
                 ),
 
                 filled: true,
 
-                fillColor:
-                const Color(
-                    0xFF2B2B2B),
+                fillColor: const Color(0xFF2B2B2B),
 
-                border:
-                OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius
                       .circular(
                       15),
                 ),
@@ -348,28 +286,19 @@ class _RegisterPageState
                 String>(
               initialValue: selectedRole,
 
-              dropdownColor:
-              const Color(
-                  0xFF2B2B2B),
+              dropdownColor: const Color(0xFF2B2B2B),
 
-              style:
-              const TextStyle(
-                color:
-                Colors.white,
+              style: const TextStyle(
+                color: Colors.white,
               ),
 
-              decoration:
-              InputDecoration(
+              decoration: InputDecoration(
                 filled: true,
 
-                fillColor:
-                const Color(
-                    0xFF2B2B2B),
+                fillColor: const Color(0xFF2B2B2B),
 
-                border:
-                OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius
                       .circular(
                       15),
                 ),
@@ -378,27 +307,22 @@ class _RegisterPageState
               items: const [
 
                 DropdownMenuItem(
-                  value:
-                  'student',
+                  value: 'student',
 
-                  child:
-                  Text('Student'),
+                  child: Text('Student'),
                 ),
 
                 DropdownMenuItem(
-                  value:
-                  'lecturer',
+                  value: 'lecturer',
 
-                  child:
-                  Text('Lecturer'),
+                  child: Text('Lecturer'),
                 ),
               ],
 
               onChanged: (value) {
 
                 setState(() {
-                  selectedRole =
-                  value!;
+                  selectedRole = value!;
                 });
               },
             ),
@@ -406,23 +330,17 @@ class _RegisterPageState
             const SizedBox(height: 30),
 
             SizedBox(
-              width:
-              double.infinity,
+              width: double.infinity,
 
               child: ElevatedButton(
-                onPressed:
-                register,
+                onPressed: register,
 
                 style:
-                ElevatedButton
-                    .styleFrom(
-                  backgroundColor:
-                  const Color(
-                      0xFF9BD028),
+                ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF9BD028),
 
                   padding:
-                  const EdgeInsets
-                      .symmetric(
+                  const EdgeInsets.symmetric(
                     vertical: 15,
                   ),
                 ),
@@ -431,14 +349,9 @@ class _RegisterPageState
                 const Text(
                   'Register',
 
-                  style:
-                  TextStyle(
-                    color:
-                    Colors.black,
-
-                    fontWeight:
-                    FontWeight
-                        .bold,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -448,16 +361,12 @@ class _RegisterPageState
 
             Row(
               mainAxisAlignment:
-              MainAxisAlignment
-                  .center,
-
+              MainAxisAlignment.center,
               children: [
-
                 const Text(
                   'Already have an account? ',
                   style: TextStyle(
-                    color:
-                    Colors.white70,
+                    color: Colors.white70,
                   ),
                 ),
 
@@ -471,14 +380,9 @@ class _RegisterPageState
                   const Text(
                     'Login',
 
-                    style:
-                    TextStyle(
-                      color: Color(
-                          0xFF9BD028),
-
-                      fontWeight:
-                      FontWeight
-                          .bold,
+                    style: TextStyle(
+                      color: Color(0xFF9BD028),
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),

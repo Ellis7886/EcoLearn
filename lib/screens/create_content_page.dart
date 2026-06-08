@@ -16,69 +16,49 @@ class CreateContentPage extends StatefulWidget {
 class _CreateContentPageState extends State<CreateContentPage> {
 
   final titleController = TextEditingController();
-
   final descriptionController = TextEditingController();
 
   String? selectedLesson;
-
   String? selectedChapter = "Additional";
-
   String contentType = 'chapter';
-
   File? selectedFile;
-
   String fileName = '';
-
   bool isUploading = false;
 
   Future<void> pickFile() async {
 
-    FilePickerResult? result =
-        await FilePicker.pickFiles();
+    FilePickerResult? result = await FilePicker.pickFiles();
 
     if (result != null) {
-
       setState(() {
-
         selectedFile = File(result.files.single.path!);
-
         fileName = result.files.single.name;
       });
     }
   }
 
   Future<void> postContent() async {
-
     if (selectedLesson == null || titleController.text.trim().isEmpty) {
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Please complete all required fields',
-          ),
+          content: Text('Please complete all required fields'),
         ),
       );
-
       return;
     }
 
     if (contentType == 'material' && selectedFile == null) {
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Please select a file',
-          ),
+          content: Text('Please select a file'),
         ),
       );
-
       return;
     }
 
     try {
-
       setState(() {
         isUploading = true;
       });
@@ -86,50 +66,29 @@ class _CreateContentPageState extends State<CreateContentPage> {
       String fileUrl = '';
 
       if (contentType == 'material') {
+        final storageRef = FirebaseStorage.instance.ref().child('content/$fileName',);
 
-        final storageRef =
-            FirebaseStorage.instance
-                .ref()
-                .child(
-          'content/$fileName',
-        );
+        await storageRef.putFile(selectedFile!,);
 
-        await storageRef.putFile(
-          selectedFile!,
-        );
-
-        fileUrl =
-            await storageRef.getDownloadURL();
+        fileUrl = await storageRef.getDownloadURL();
       }
 
-      await FirebaseFirestore.instance
-          .collection('content')
-          .add({
-
+      await FirebaseFirestore.instance.collection('content').add({
         'lesson_id': selectedLesson,
-
         'type': contentType,
-
         'chapter': contentType == 'material' ? selectedChapter : '',
-
         'title': titleController.text.trim(),
-
         'description': descriptionController.text.trim(),
-
         'file_name': fileName,
-
         'file_url': fileUrl,
-
         'created_at': Timestamp.now(),
       });
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-          Text('Posted successfully'),
+          content: Text('Posted successfully'),
         ),
       );
 
@@ -139,22 +98,14 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            'Error: $e',
-          ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'),
         ),
       );
 
     } finally {
-
       if (mounted) {
-
-        setState(() {
-          isUploading = false;
-        });
+        setState(() {isUploading = false;});
       }
     }
   }
@@ -175,8 +126,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
           ),
         ),
 
-        iconTheme:
-            const IconThemeData(
+        iconTheme: const IconThemeData(
           color: Colors.white,
         ),
       ),
@@ -186,11 +136,9 @@ class _CreateContentPageState extends State<CreateContentPage> {
             const EdgeInsets.all(20),
 
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
             const Text(
               'Content Type',
               style: TextStyle(
@@ -204,48 +152,35 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
             DropdownButtonFormField<String>(
 
-              initialValue:
-                  contentType,
+              initialValue: contentType,
 
-              dropdownColor:
-                  Colors.grey[900],
+              dropdownColor: Colors.grey[900],
 
-              style:
-                  const TextStyle(
-                color:
-                    Colors.white,
+              style: const TextStyle(
+                color: Colors.white,
               ),
 
-              decoration:
-                  InputDecoration(
-                border:
-                    OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(
-                    15,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                      15
                   ),
                 ),
               ),
 
               items: const [
-
                 DropdownMenuItem(
                   value: 'chapter',
-                  child: Text(
-                    'Chapter',
-                  ),
+                  child: Text('Chapter'),
                 ),
 
                 DropdownMenuItem(
                   value: 'material',
-                  child: Text(
-                    'Material',
-                  ),
+                  child: Text('Material'),
                 ),
               ],
 
               onChanged: (value) {
-
                 setState(() {
                   contentType =
                       value!;
@@ -260,8 +195,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
               stream:
                   FirebaseFirestore
                       .instance
-                      .collection(
-                          'lessons')
+                      .collection('lessons')
                       .snapshots(),
 
               builder:
@@ -270,8 +204,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
                 if (!snapshot.hasData) {
 
                   return const Center(
-                    child:
-                        CircularProgressIndicator(),
+                    child: CircularProgressIndicator(),
                   );
                 }
 
@@ -309,12 +242,9 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
                   }).toList(),
 
-                  onChanged:
-                      (value) {
-
+                  onChanged: (value) {
                     setState(() {
-                      selectedLesson =
-                          value;
+                      selectedLesson = value;
                     });
                   },
                 );
@@ -324,24 +254,20 @@ class _CreateContentPageState extends State<CreateContentPage> {
             const SizedBox(height: 20),
 
             TextField(
-              controller:
-                  titleController,
+              controller: titleController,
 
               style:
                   const TextStyle(
-                color:
-                    Colors.white,
+                color: Colors.white,
               ),
 
               decoration:
                   InputDecoration(
-                labelText:
-                    'Title',
+                labelText: 'Title',
 
                 border:
                     OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(
+                  borderRadius: BorderRadius.circular(
                     15,
                   ),
                 ),
@@ -355,21 +281,15 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
               maxLines: 5,
 
-              style:
-                  const TextStyle(
-                color:
-                    Colors.white,
+              style: const TextStyle(
+                color: Colors.white,
               ),
 
-              decoration:
-                  InputDecoration(
-                labelText:
-                    'Description',
+              decoration: InputDecoration(
+                labelText: 'Description',
 
-                border:
-                    OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
                     15,
                   ),
                 ),
@@ -377,8 +297,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
             ),
 
             if (contentType == 'material')
-              Column(
-                children: [
+              Column(children: [
 
                   const SizedBox(height: 20),
 
@@ -386,32 +305,22 @@ class _CreateContentPageState extends State<CreateContentPage> {
                     StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
                           .collection('content')
-                          .where(
-                        'type',
-                        isEqualTo: 'chapter',
-                      )
-                          .where(
-                        'lesson_id',
-                        isEqualTo: selectedLesson,
-                      )
+                          .where('type', isEqualTo: 'chapter',)
+                          .where('lesson_id', isEqualTo: selectedLesson,)
                           .snapshots(),
-
                       builder: (context, snapshot) {
 
                         if (!snapshot.hasData) {
                           return const SizedBox();
                         }
 
-                        final chapters =
-                            snapshot.data!.docs;
+                        final chapters = snapshot.data!.docs;
 
                         return DropdownButtonFormField<String>(
 
-                          initialValue:
-                          selectedChapter,
+                          initialValue: selectedChapter,
 
-                          dropdownColor:
-                          Colors.grey[900],
+                          dropdownColor: Colors.grey[900],
 
                           style: const TextStyle(
                             color: Colors.white,
@@ -420,10 +329,8 @@ class _CreateContentPageState extends State<CreateContentPage> {
                           decoration: InputDecoration(
                             labelText: 'Select Chapter',
 
-                            border:
-                            OutlineInputBorder(
-                              borderRadius:
-                              BorderRadius.circular(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
                                 15,
                               ),
                             ),
@@ -442,8 +349,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
                                   (chapter) {
 
                                 return DropdownMenuItem<String>(
-                                  value:
-                                  chapter['title'],
+                                  value: chapter['title'],
 
                                   child: Text(
                                     chapter['title'],
@@ -456,9 +362,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
                           onChanged: (value) {
 
                             setState(() {
-
-                              selectedChapter =
-                                  value;
+                              selectedChapter = value;
                             });
                           },
                         );
@@ -487,9 +391,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
                   const SizedBox(height: 10),
 
                   Text(
-                    fileName.isEmpty
-                        ? 'No file selected'
-                        : fileName,
+                    fileName.isEmpty ? 'No file selected' : fileName,
 
                     style: const TextStyle(
                       color: Colors.white,
@@ -501,48 +403,27 @@ class _CreateContentPageState extends State<CreateContentPage> {
             const SizedBox(height: 30),
 
             SizedBox(
-              width:
-                  double.infinity,
+              width: double.infinity,
 
-              child:
-                  ElevatedButton(
+              child: ElevatedButton(
 
-                onPressed:
-                    isUploading
-                        ? null
-                        : postContent,
+                onPressed: isUploading ? null : postContent,
 
-                style:
-                    ElevatedButton.styleFrom(
-                  backgroundColor:
-                      const Color(
-                    0xFF9BD028,
-                  ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF9BD028),
 
-                  padding:
-                      const EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     vertical: 15,
                   ),
                 ),
 
-                child:
-                    isUploading
-
-                        ? const CircularProgressIndicator(
-                            color:
-                                Colors.black,
-                          )
-
-                        : const Text(
-                            'POST',
-                            style:
-                                TextStyle(
-                              color:
-                                  Colors.black,
-                              fontWeight:
-                                  FontWeight.bold,
-                            ),
-                          ),
+                child: isUploading ? const CircularProgressIndicator(
+                  color: Colors.black,
+                ) : const Text(
+                  'POST',
+                  style: TextStyle(color: Colors.black,
+                    fontWeight: FontWeight.bold)
+                  ),
               ),
             ),
           ],
