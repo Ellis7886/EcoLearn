@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../screens/home_page.dart';
 import '../screens/lessons_page.dart';
 import '../screens/profile_page.dart';
+import '../screens/resources_page.dart';
 
 class BottomNavBar extends StatelessWidget {
 
@@ -46,6 +47,13 @@ class BottomNavBar extends StatelessWidget {
               context,
               MaterialPageRoute(
                   builder: (context) => const LessonsPage(),
+              ),
+            );
+          }else if(index == 2){
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ResourcesPage(),
               ),
             );
           }else if(index == 4){
