@@ -6,7 +6,15 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:file_picker/file_picker.dart';
 
 class CreateContentPage extends StatefulWidget {
-  const CreateContentPage({super.key});
+
+  final String lessonId;
+  final String lessonTitle;
+
+  const CreateContentPage({
+    super.key,
+    required this.lessonId,
+    required this.lessonTitle,
+  });
 
   @override
   State<CreateContentPage> createState() =>
@@ -74,7 +82,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
       }
 
       await FirebaseFirestore.instance.collection('content').add({
-        'lesson_id': selectedLesson,
+        'lesson_id': widget.lessonId,
         'type': contentType,
         'chapter': contentType == 'material' ? selectedChapter : '',
         'title': titleController.text.trim(),
@@ -139,6 +147,27 @@ class _CreateContentPageState extends State<CreateContentPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
+
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(15),
+
+              decoration: BoxDecoration(
+                color: const Color(0xFF2B2B2B),
+                borderRadius: BorderRadius.circular(15),
+              ),
+
+              child: Text(
+                'Lesson: ${widget.lessonTitle}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
             const Text(
               'Content Type',
               style: TextStyle(
@@ -185,69 +214,6 @@ class _CreateContentPageState extends State<CreateContentPage> {
                   contentType =
                       value!;
                 });
-              },
-            ),
-
-            const SizedBox(height: 20),
-
-            StreamBuilder<QuerySnapshot>(
-
-              stream:
-                  FirebaseFirestore
-                      .instance
-                      .collection('lessons')
-                      .snapshots(),
-
-              builder:
-                  (context, snapshot) {
-
-                if (!snapshot.hasData) {
-
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-
-                final lessons = snapshot.data!.docs;
-
-                return DropdownButtonFormField<String>(
-
-                  initialValue: selectedLesson,
-
-                  dropdownColor: Colors.grey[900],
-
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
-
-                  decoration: InputDecoration(
-                    labelText: 'Select Lesson',
-
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                        15,
-                      ),
-                    ),
-                  ),
-
-                  items:lessons.map((doc) {
-
-                    return DropdownMenuItem(
-                      value: doc.id,
-
-                      child: Text(
-                        doc['title'],
-                      ),
-                    );
-
-                  }).toList(),
-
-                  onChanged: (value) {
-                    setState(() {
-                      selectedLesson = value;
-                    });
-                  },
-                );
               },
             ),
 

@@ -1,3 +1,4 @@
+import 'package:ecolearn/screens/create_content_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -15,6 +16,29 @@ class MaterialsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF9BD028),
+
+        onPressed: () {
+
+          Navigator.push(
+            context,
+
+            MaterialPageRoute(
+              builder: (_) => CreateContentPage(
+                lessonId: lessonId,
+                lessonTitle: lessonTitle,
+              ),
+            ),
+          );
+        },
+
+        child: const Icon(
+          Icons.upload_file,
+          color: Colors.black,
+        ),
+      ),
 
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -106,11 +130,8 @@ class MaterialsPage extends StatelessWidget {
                     title: Text(
                       chapter['title'] ?? '',
                       style: const TextStyle(
-                        color:
-                        Colors.white,
-                        fontWeight:
-                        FontWeight
-                            .bold,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
@@ -129,10 +150,8 @@ class MaterialsPage extends StatelessWidget {
                         child: Text(
                           chapter['description'] ?? '',
                           style: const TextStyle(
-                            color:
-                            Colors.white70,
-                            height:
-                            1.5,
+                            color: Colors.white70,
+                            height: 1.5,
                           ),
                         ),
                       ),
@@ -181,15 +200,15 @@ class MaterialsPage extends StatelessWidget {
 
                                 String fileName = material['file_name'] ?? '';
 
-                                if (fileName.endsWith == '.pdf') {
+                                if (fileName.toLowerCase().endsWith('.pdf')) {
                                   icon = Icons.picture_as_pdf;
                                 }
-                                else if (fileName.endsWith == '.mp4') {
+                                else if (fileName.toLowerCase().endsWith('.mp4')) {
                                   icon = Icons.video_library;
                                 }
-                                else if (fileName.endsWith('.jpg') ||
-                                    fileName.endsWith('.jpeg') ||
-                                    fileName.endsWith('.png')) {
+                                else if (fileName.toLowerCase().endsWith('.jpg') ||
+                                    fileName.toLowerCase().endsWith('.jpeg') ||
+                                    fileName.toLowerCase().endsWith('.png')) {
                                   icon = Icons.image;
                                 }
 

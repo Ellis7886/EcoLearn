@@ -1,3 +1,5 @@
+import 'package:ecolearn/screens/create_lesson_page.dart';
+
 import 'lessons_materials_page.dart';
 
 import 'package:flutter/material.dart';
@@ -11,8 +13,6 @@ import '../provider/app_settings.dart';
 
 import '../widgets/lesson_card.dart';
 import '../widgets/bottom_nav_bar.dart';
-
-import 'create_content_page.dart';
 
 class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});
@@ -64,13 +64,13 @@ class _LessonsPageState extends State<LessonsPage> {
             context,
             MaterialPageRoute(
               builder: (context) =>
-              const CreateContentPage(),
+              const CreateLessonPage(),
             ),
           );
         },
 
         child: const Icon(
-          Icons.upload_file,
+          Icons.add,
           color: Colors.black,
         ),
       ) : null,
