@@ -1,3 +1,4 @@
+import 'package:ecolearn/screens/quiz_page.dart';
 import 'package:ecolearn/screens/resources_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -120,7 +121,15 @@ class _HomePageState
                   title: 'Quiz',
                   description: 'Test your knowledge',
                   icon: Icons.quiz_rounded,
-                  onTap: (){},
+                  onTap: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                        const QuizPage(),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
