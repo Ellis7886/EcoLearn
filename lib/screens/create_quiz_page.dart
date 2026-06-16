@@ -1,3 +1,4 @@
+import 'package:ecolearn/screens/manage_questions_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -13,15 +14,12 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
 
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
-  final totalQuestionsController = TextEditingController();
 
   bool isSaving = false;
 
   Future<void> saveQuiz() async {
 
-    if (titleController.text.trim().isEmpty ||
-        descriptionController.text.trim().isEmpty ||
-        totalQuestionsController.text.trim().isEmpty) {
+    if (titleController.text.trim().isEmpty || descriptionController.text.trim().isEmpty) {
 
       ScaffoldMessenger.of(context).showSnackBar(
 
@@ -36,26 +34,16 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
     }
 
     try {
-
       setState(() {
         isSaving = true;
       });
 
-      await FirebaseFirestore.instance
+      final docRef = await FirebaseFirestore.instance
           .collection('quizzes')
           .add({
-
         'title': titleController.text.trim(),
-
         'description': descriptionController.text.trim(),
-
-        'total_questions':
-        int.parse(
-          totalQuestionsController.text,
-        ),
-
-        'created_at':
-        Timestamp.now(),
+        'created_at': Timestamp.now(),
       });
 
       if (!mounted) return;
@@ -69,7 +57,16 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
         ),
       );
 
-      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ManageQuestionsPage(
+            quizId: docRef.id,
+            quizTitle:
+            titleController.text.trim(),
+          ),
+        ),
+      );
 
     } catch (e) {
 
@@ -181,38 +178,6 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
 
             const SizedBox(
               height: 20,
-            ),
-
-            TextField(
-              controller:totalQuestionsController,
-
-              keyboardType: TextInputType.number,
-
-              style:
-              const TextStyle(
-                color: Colors.white,
-              ),
-
-              decoration:
-              InputDecoration(
-                labelText: 'Total Questions',
-
-                labelStyle:
-                const TextStyle(
-                  color: Colors.white70,
-                ),
-
-                border:
-                OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    15,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(
-              height: 30,
             ),
 
             SizedBox(

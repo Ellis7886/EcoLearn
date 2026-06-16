@@ -189,13 +189,11 @@ class _QuizPageState extends State<QuizPage> {
                         height: 5,
                       ),
 
-                      Text(
-                        '${quiz['total_questions'] ?? 0} Questions',
-                        style: const TextStyle(
-                          color:
-                          Color(0xFF9BD028),
-                          fontWeight:
-                          FontWeight.bold,
+                      const Text(
+                        'Tap to view quiz',
+                        style: TextStyle(
+                          color: Color(0xFF9BD028),
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
