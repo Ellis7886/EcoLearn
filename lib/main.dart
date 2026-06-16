@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
-import 'screens/login_page.dart';
+import 'screens/security/login_page.dart';
 import 'provider/app_settings.dart';
 
 void main() async {

@@ -1,4 +1,4 @@
-import 'package:ecolearn/screens/create_lesson_page.dart';
+import 'package:ecolearn/screens/lesson/create_lesson_page.dart';
 
 import 'lessons_materials_page.dart';
 
@@ -7,12 +7,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
-import '../themes/app_colors.dart';
+import '../../themes/app_colors.dart';
 
-import '../provider/app_settings.dart';
+import '../../provider/app_settings.dart';
 
-import '../widgets/lesson_card.dart';
-import '../widgets/bottom_nav_bar.dart';
+import '../../widgets/lesson_card.dart';
+import '../../widgets/bottom_nav_bar.dart';
 
 class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});

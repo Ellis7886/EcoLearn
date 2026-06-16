@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'pdf_viewer_page.dart';
+import '../pdf_viewer_page.dart';
 
-import '../widgets/bottom_nav_bar.dart';
+import '../../widgets/bottom_nav_bar.dart';
 
 class ResourcesPage extends StatelessWidget {
   const ResourcesPage({super.key});

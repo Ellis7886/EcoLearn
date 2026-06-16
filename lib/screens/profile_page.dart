@@ -12,7 +12,7 @@ import '../models/user.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/setting_switch.dart';
 
-import 'login_page.dart';
+import 'security/login_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

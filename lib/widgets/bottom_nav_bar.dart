@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../screens/home_page.dart';
-import '../screens/lessons_page.dart';
+import '../screens/lesson/lessons_page.dart';
 import '../screens/profile_page.dart';
-import '../screens/resources_page.dart';
-import '../screens/quiz_page.dart';
+import '../screens/resource/resources_page.dart';
 
 class BottomNavBar extends StatelessWidget {
 
@@ -57,14 +56,7 @@ class BottomNavBar extends StatelessWidget {
                 builder: (context) => const ResourcesPage(),
               ),
             );
-          }else if(index == 3){
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const QuizPage(),
-              ),
-            );
-          }else if(index == 4){
+          } else if(index == 4){
             Navigator.push(
               context,
               MaterialPageRoute(

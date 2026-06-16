@@ -1,4 +1,4 @@
-import 'package:ecolearn/screens/create_content_page.dart';
+import 'package:ecolearn/screens/lesson/create_content_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
