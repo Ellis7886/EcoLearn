@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../provider/app_settings.dart';
+import '../themes/app_colors.dart';
 
 class SettingSwitch extends StatelessWidget {
 
@@ -20,25 +24,52 @@ class SettingSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    final settings =
+    Provider.of<AppSettings>(context);
+
     return Container(
       width: double.infinity,
 
       padding: const EdgeInsets.all(15),
-      margin: const EdgeInsets.only(bottom: 15),
+      margin: const EdgeInsets.only(
+        bottom: 15,
+      ),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF2B2B2B),
-        borderRadius: BorderRadius.circular(20),
+
+        color: AppColors.card(
+          settings.darkTheme,
+        ),
+
+        borderRadius:
+        BorderRadius.circular(20),
+
+        boxShadow:
+        settings.darkTheme
+
+            ? []
+
+            : [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: const Offset(
+              0,
+              4,
+            ),
+          ),
+        ],
       ),
 
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment:
+        CrossAxisAlignment.center,
 
         children: [
 
           Icon(
             icon,
-            color: const Color(0xFF9BD028),
+            color: AppColors.primary,
             size: 40,
           ),
 
@@ -53,10 +84,16 @@ class SettingSwitch extends StatelessWidget {
 
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+
+                  style: TextStyle(
+                    color:
+                    AppColors.text(
+                      settings.darkTheme,
+                    ),
+
                     fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                    fontWeight:
+                    FontWeight.bold,
                   ),
                 ),
 
@@ -64,8 +101,13 @@ class SettingSwitch extends StatelessWidget {
 
                 Text(
                   description,
-                  style: const TextStyle(
-                    color: Colors.white70,
+
+                  style: TextStyle(
+                    color:
+                    AppColors.subText(
+                      settings.darkTheme,
+                    ),
+
                     fontSize: 14,
                   ),
                 ),
@@ -79,10 +121,18 @@ class SettingSwitch extends StatelessWidget {
             child: Switch(
               value: value,
               onChanged: onChanged,
-              activeThumbColor: Colors.white,
-              activeTrackColor: const Color(0xFF9BD028),
-              inactiveThumbColor: Colors.white,
-              inactiveTrackColor: Colors.white24,
+
+              activeThumbColor:
+              Colors.white,
+
+              activeTrackColor:
+              AppColors.primary,
+
+              inactiveThumbColor:
+              Colors.white,
+
+              inactiveTrackColor:
+              Colors.grey,
             ),
           ),
         ],

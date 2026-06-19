@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../provider/app_settings.dart';
+import '../themes/app_colors.dart';
 
 import '../screens/home_page.dart';
 import '../screens/lesson/lessons_page.dart';
-import '../screens/profile_page.dart';
 import '../screens/resource/resources_page.dart';
+import '../screens/quiz/quiz_page.dart';
+import '../screens/profile_page.dart';
 
 class BottomNavBar extends StatelessWidget {
 
@@ -19,60 +24,117 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1E1E1E),
+    final settings = Provider.of<AppSettings>(context);
 
-        borderRadius: BorderRadius.only(
+    return Container(
+
+      decoration: BoxDecoration(
+
+        color: AppColors.card(
+          settings.darkTheme,
+        ),
+
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(25),
           topRight: Radius.circular(25),
         ),
+
+        boxShadow:
+        settings.darkTheme
+
+            ? []
+
+            : [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: const Offset(
+              0,
+              -2,
+            ),
+          ),
+        ],
       ),
 
       child: BottomNavigationBar(
         currentIndex: currentIndex,
-        onTap: (index){
+
+        onTap: (index) {
 
           onTap(index);
 
-          if(index == 0){
+          if (index == 0) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const HomePage(),
+                builder: (_) =>
+                const HomePage(),
               ),
             );
-          }else if(index == 1){
+          }
+
+          else if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => const LessonsPage(),
+                builder: (_) =>
+                const LessonsPage(),
               ),
             );
-          }else if(index == 2){
+          }
+
+          else if (index == 2) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const ResourcesPage(),
+                builder: (_) =>
+                const ResourcesPage(),
               ),
             );
-          } else if(index == 4){
+          }
+
+          else if (index == 3) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const ProfilePage(),
+                builder: (_) =>
+                const QuizPage(),
+              ),
+            );
+          }
+
+          else if (index == 4) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                const ProfilePage(),
               ),
             );
           }
         },
 
         backgroundColor: Colors.transparent,
+
         elevation: 0,
 
         type: BottomNavigationBarType.fixed,
 
-        selectedItemColor: const Color(0xFF9BD028),
-        unselectedItemColor: Colors.white54,
+        selectedItemColor:
+        AppColors.primary,
+
+        unselectedItemColor:
+        AppColors.subText(
+          settings.darkTheme,
+        ),
+
+        selectedLabelStyle:
+        const TextStyle(
+          fontWeight:
+          FontWeight.bold,
+        ),
+
+        showUnselectedLabels: true,
 
         items: const [
 

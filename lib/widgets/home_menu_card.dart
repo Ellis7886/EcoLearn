@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../provider/app_settings.dart';
+import '../themes/app_colors.dart';
 
 class HomeMenuCard extends StatelessWidget {
 
@@ -18,67 +22,124 @@ class HomeMenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    final settings =
+    Provider.of<AppSettings>(context);
+
     return GestureDetector(
       onTap: onTap,
 
       child: Container(
         width: double.infinity,
 
-        padding: const EdgeInsets.all(10),
-        margin: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(
+          bottom: 20,
+        ),
 
         decoration: BoxDecoration(
-          color: const Color(0xFF2B2B2B),
-          borderRadius: BorderRadius.circular(20),
+
+          color: AppColors.card(
+            settings.darkTheme,
+          ),
+
+          borderRadius:
+          BorderRadius.circular(20),
+
+          boxShadow:
+          settings.darkTheme
+
+              ? []
+
+              : [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 10,
+              offset: const Offset(
+                0,
+                4,
+              ),
+            ),
+          ],
         ),
 
         child: Row(
           children: [
 
             Container(
-              padding: const EdgeInsets.all(5),
+              padding:
+              const EdgeInsets.all(8),
+
+              decoration: BoxDecoration(
+                color: AppColors.primary
+                    .withValues(alpha: 0.15),
+
+                borderRadius:
+                BorderRadius.circular(
+                  12,
+                ),
+              ),
 
               child: Icon(
                 icon,
-                color: const Color(0xFF9BD028),
-                size: 40,
+                color: AppColors.primary,
+                size: 34,
               ),
             ),
 
-            const SizedBox(width: 25),
+            const SizedBox(width: 20),
 
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
 
                 children: [
 
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+
+                    style: TextStyle(
+                      color:
+                      AppColors.text(
+                        settings.darkTheme,
+                      ),
+
                       fontSize: 20,
-                      fontWeight: FontWeight.bold,
+
+                      fontWeight:
+                      FontWeight.bold,
                     ),
                   ),
 
-                  const SizedBox(height: 5),
+                  const SizedBox(
+                    height: 5,
+                  ),
 
                   Text(
                     description,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 15,
+
+                    style: TextStyle(
+                      color:
+                      AppColors.subText(
+                        settings.darkTheme,
+                      ),
+
+                      fontSize: 14,
                     ),
                   ),
                 ],
               ),
             ),
 
-            const Icon(
+            Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white38,
-              size: 15,
+
+              color:
+              AppColors.subText(
+                settings.darkTheme,
+              ),
+
+              size: 16,
             ),
           ],
         ),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
+
+import '../../provider/app_settings.dart';
+import '../../themes/app_colors.dart';
 
 import '../pdf_viewer_page.dart';
 
@@ -31,16 +35,24 @@ class ResourcesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    final settings = Provider.of<AppSettings>(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background(
+        settings.darkTheme,
+      ),
 
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.card(
+          settings.darkTheme,
+        ),
 
-        title: const Text(
+        title: Text(
           'Resources',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.text(
+              settings.darkTheme,
+            ),
           ),
         ),
 
@@ -154,8 +166,7 @@ class ResourcesPage extends StatelessWidget {
                     children: [
 
                       Align(
-                        alignment:
-                        Alignment.centerLeft,
+                        alignment: Alignment.centerLeft,
 
                         child: Text(
                           resource['description'] ?? '',
@@ -169,8 +180,7 @@ class ResourcesPage extends StatelessWidget {
                       const SizedBox(height: 12),
 
                       Align(
-                        alignment:
-                        Alignment.centerLeft,
+                        alignment: Alignment.centerLeft,
 
                         child: Text(
                           'Chapter: ${resource['chapter'] ?? 'Additional Materials'}',
@@ -185,8 +195,7 @@ class ResourcesPage extends StatelessWidget {
                       const SizedBox(height: 8),
 
                       Align(
-                        alignment:
-                        Alignment.centerLeft,
+                        alignment: Alignment.centerLeft,
 
                         child: Text(
                           resource['file_name'] ?? '',
@@ -255,8 +264,7 @@ class ResourcesPage extends StatelessWidget {
                               0xFF9BD028,
                             ),
 
-                            foregroundColor:
-                            Colors.black,
+                            foregroundColor: Colors.white,
                           ),
                         ),
                       ),
