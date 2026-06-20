@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+
+import '../../provider/app_settings.dart';
+import '../../themes/app_colors.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
 import 'create_quiz_page.dart';
@@ -45,30 +49,38 @@ class _QuizPageState
   @override
   Widget build(BuildContext context) {
 
+    final settings = Provider.of<AppSettings>(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background(settings.darkTheme,),
 
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor:
+        AppColors.background(
+          settings.darkTheme,
+        ),
 
-        title: const Text(
+        elevation: 0,
+
+        title: Text(
           'Quiz',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.text(
+              settings.darkTheme,
+            ),
           ),
         ),
 
-        iconTheme: const IconThemeData(
-          color: Colors.white,
+        iconTheme: IconThemeData(
+          color: AppColors.text(
+            settings.darkTheme,
+          ),
         ),
       ),
 
       floatingActionButton:
-      role == 'lecturer'
-
-          ? FloatingActionButton(
-        backgroundColor:
-        const Color(0xFF9BD028),
+      role == 'lecturer' ? FloatingActionButton(
+        backgroundColor: AppColors.primary,
 
         onPressed: () {
 
@@ -113,13 +125,15 @@ class _QuizPageState
           if (!snapshot.hasData ||
               snapshot.data!.docs.isEmpty) {
 
-            return const Center(
+            return Center(
               child: Text(
                 'No quizzes available',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.text(
+                    settings.darkTheme,
+                  ),
                 ),
-              ),
+              )
             );
           }
 

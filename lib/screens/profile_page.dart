@@ -41,14 +41,23 @@ class _ProfilePageState extends State<ProfilePage> {
       String title,
       String value,
       IconData icon,
+      bool darkTheme,
       ) {
 
     return Container(
       padding: const EdgeInsets.all(20),
 
       decoration: BoxDecoration(
-        color: const Color(0xFF2B2B2B),
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.card(darkTheme,),
+        borderRadius: BorderRadius.circular(25),
+
+        boxShadow: darkTheme ? [] : [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
 
       child: Column(
@@ -56,7 +65,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
           Icon(
             icon,
-            color: const Color(0xFF9BD028),
+            color: AppColors.primary,
             size: 35,
           ),
 
@@ -64,8 +73,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
           Text(
             value,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: AppColors.text(
+                darkTheme,
+              ),
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -75,8 +86,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: AppColors.subText(darkTheme,),
             ),
           ),
         ],
@@ -167,8 +178,19 @@ class _ProfilePageState extends State<ProfilePage> {
                     padding: const EdgeInsets.all(25),
 
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2B2B2B),
+                      color: AppColors.card(
+                        settings.darkTheme,
+                      ),
+
                       borderRadius: BorderRadius.circular(25),
+
+                      boxShadow: settings.darkTheme ? [] : [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
 
                     child: Column(
@@ -176,8 +198,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                         const CircleAvatar(
                           radius: 55,
-                          backgroundColor:
-                          Color(0xFF9BD028),
+                          backgroundColor: AppColors.primary,
 
                           child: Icon(
                             Icons.person,
@@ -190,11 +211,12 @@ class _ProfilePageState extends State<ProfilePage> {
 
                         Text(
                           user.name,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: AppColors.text(
+                              settings.darkTheme,
+                            ),
                             fontSize: 28,
-                            fontWeight:
-                            FontWeight.bold,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
 
@@ -202,8 +224,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
                         Text(
                           user.email,
-                          style: const TextStyle(
-                            color: Colors.white70,
+                          style: TextStyle(
+                            color: AppColors.subText(
+                              settings.darkTheme,
+                            ),
                             fontSize: 16,
                           ),
                         ),
@@ -218,8 +242,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
 
                           decoration: BoxDecoration(
-                            color:
-                            const Color(0xFF9BD028),
+                            color: AppColors.primary,
                             borderRadius: BorderRadius.circular(30),
                           ),
 
@@ -258,6 +281,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           'Lessons',
                           '12',
                           Icons.menu_book,
+                          settings.darkTheme,
                         ),
                       ),
 
@@ -268,6 +292,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           'Quiz',
                           '85%',
                           Icons.quiz,
+                          settings.darkTheme,
                         ),
                       ),
                     ],
@@ -352,11 +377,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
                   const SizedBox(height: 20),
 
-                  const Center(
+                  Center(
                     child: Text(
                       'EcoLearn v1.0.0',
                       style: TextStyle(
-                        color: Colors.white38,
+                        color: AppColors.subText(
+                          settings.darkTheme,
+                        ),
                       ),
                     ),
                   ),

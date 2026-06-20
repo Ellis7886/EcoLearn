@@ -23,7 +23,7 @@ class AppColors {
   static Color subText(bool darkTheme) {
     return darkTheme
         ? Colors.white70
-        : const Color(0xFF757575);
+        : const Color(0xFF323232);
   }
 
   // Main EcoLearn Green

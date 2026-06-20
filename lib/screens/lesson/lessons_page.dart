@@ -55,8 +55,7 @@ class _LessonsPageState extends State<LessonsPage> {
 
       floatingActionButton:
       role == 'lecturer' ? FloatingActionButton(
-        backgroundColor:
-        const Color(0xFF9BD028),
+        backgroundColor: AppColors.primary,
 
         onPressed: () {
 

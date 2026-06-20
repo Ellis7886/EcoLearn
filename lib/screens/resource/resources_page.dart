@@ -9,6 +9,7 @@ import '../../themes/app_colors.dart';
 import '../pdf_viewer_page.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
+import '../../widgets/resource_card.dart';
 
 class ResourcesPage extends StatelessWidget {
   const ResourcesPage({super.key});
@@ -56,8 +57,10 @@ class ResourcesPage extends StatelessWidget {
           ),
         ),
 
-        iconTheme: const IconThemeData(
-          color: Colors.white,
+        iconTheme: IconThemeData(
+          color: AppColors.text(
+            settings.darkTheme,
+          ),
         ),
       ),
 
@@ -122,155 +125,60 @@ class ResourcesPage extends StatelessWidget {
                 icon = Icons.image;
               }
 
-              return Container(
-                margin: const EdgeInsets.only(
-                  bottom: 15,
-                ),
+              return ResourceCard(
 
-                decoration:
-                BoxDecoration(
-                  color: const Color(0xFF2B2B2B,),
+                icon: icon,
 
-                  borderRadius: BorderRadius.circular(
-                    20,
-                  ),
-                ),
+                title:
+                resource['title'] ?? '',
 
-                child: Theme(
-                  data: Theme.of(context).copyWith(
-                    dividerColor: Colors.transparent,
-                  ),
+                description:
+                resource['description'] ?? '',
 
-                  child: ExpansionTile(
+                chapter:
+                resource['chapter'] ??
+                    'Additional Materials',
 
-                    leading: Icon(
-                      icon,
-                      color: const Color(0xFF9BD028),
-                      size: 35,
-                    ),
+                fileName:
+                resource['file_name'] ?? '',
 
-                    iconColor: Colors.white,
-                    collapsedIconColor: Colors.white,
+                onOpen: () {
 
-                    title: Text(
-                      resource['title'] ?? '',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  final String fileName =
+                  resource['file_name'];
 
-                    childrenPadding:
-                    const EdgeInsets.all(16),
+                  if (fileName
+                      .toLowerCase()
+                      .endsWith('.pdf')) {
 
-                    children: [
+                    Navigator.push(
+                      context,
 
-                      Align(
-                        alignment: Alignment.centerLeft,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            PdfViewerPage(
+                              pdfUrl:
+                              resource['file_url'],
 
-                        child: Text(
-                          resource['description'] ?? '',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            height: 1.5,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      Align(
-                        alignment: Alignment.centerLeft,
-
-                        child: Text(
-                          'Chapter: ${resource['chapter'] ?? 'Additional Materials'}',
-
-                          style: const TextStyle(
-                            color: Color(0xFF9BD028),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      Align(
-                        alignment: Alignment.centerLeft,
-
-                        child: Text(
-                          resource['file_name'] ?? '',
-                          style: const TextStyle(
-                            color: Colors.white54,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      SizedBox(
-                        width: double.infinity,
-
-                        child: ElevatedButton.icon(
-
-                          onPressed: () {
-
-                            final String fileName =
-                            resource['file_name'];
-
-                            if(fileName
-                                .toLowerCase()
-                                .endsWith('.pdf')) {
-
-                              Navigator.push(
-                                context,
-
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      PdfViewerPage(
-                                        pdfUrl:
-                                        resource['file_url'],
-
-                                        title:
-                                        resource['title'],
-                                      ),
-                                ),
-                              );
-
-                            } else {
-
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Only PDF preview is supported',
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-
-                          icon: const Icon(
-                            Icons.open_in_new,
-                          ),
-
-                          label: const Text(
-                            'Open Material',
-                          ),
-
-                          style:
-                          ElevatedButton.styleFrom(
-                            backgroundColor:
-                            const Color(
-                              0xFF9BD028,
+                              title:
+                              resource['title'],
                             ),
+                      ),
+                    );
 
-                            foregroundColor: Colors.white,
-                          ),
+                  } else {
+
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(
+
+                      const SnackBar(
+                        content: Text(
+                          'Only PDF preview is supported',
                         ),
                       ),
-                    ],
-                  ),
-                ),
+                    );
+                  }
+                },
               );
             },
           );
