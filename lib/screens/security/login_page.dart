@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'forgot_password_page.dart';
 import 'register_page.dart';
 import '../loading_page.dart';
 import '../home_page.dart';
@@ -255,17 +256,22 @@ class _LoginPageState extends State<LoginPage> {
               children: [
 
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                        const ForgotPasswordPage(),
+                      ),
+                    );
+                  },
 
                   child:
                   const Text(
                     'Forgot Password?',
 
                     style: TextStyle(
-                      color: Color(
-                        0xFF9BD028,
-                      ),
-
+                      color: Color(0xFF9BD028,),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -287,10 +293,8 @@ class _LoginPageState extends State<LoginPage> {
 
                 GestureDetector(
                   onTap: () {
-
                     Navigator.push(
                       context,
-
                       MaterialPageRoute(
                         builder: (context) =>
                         const RegisterPage(),
@@ -301,7 +305,6 @@ class _LoginPageState extends State<LoginPage> {
                   child:
                   const Text(
                     'Register',
-
                     style: TextStyle(
                       color: Color(0xFF9BD028,),
 

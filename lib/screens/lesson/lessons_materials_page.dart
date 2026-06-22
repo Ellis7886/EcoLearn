@@ -2,6 +2,8 @@ import 'package:ecolearn/screens/lesson/create_content_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../widgets/bottom_nav_bar.dart';
+
 class MaterialsPage extends StatelessWidget {
   final String lessonId;
   final String lessonTitle;
@@ -38,6 +40,11 @@ class MaterialsPage extends StatelessWidget {
           Icons.upload_file,
           color: Colors.black,
         ),
+      ),
+
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 1,
+        onTap: (index){},
       ),
 
       appBar: AppBar(

@@ -21,6 +21,7 @@ class ChapterDetailsPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
 
+
         title: Text(
           chapterTitle,
           style: const TextStyle(

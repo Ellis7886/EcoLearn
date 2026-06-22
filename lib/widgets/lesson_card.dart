@@ -11,6 +11,8 @@ class LessonCard extends StatelessWidget {
   final String courseCode;
   final double progress;
   final VoidCallback? onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const LessonCard({
     super.key,
@@ -19,6 +21,8 @@ class LessonCard extends StatelessWidget {
     required this.courseCode,
     required this.progress,
     this.onTap,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -93,9 +97,10 @@ class LessonCard extends StatelessWidget {
 
                       Text(
                         title,
-
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: AppColors.text(settings.darkTheme,),
+                          color: AppColors.text(settings.darkTheme),
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -107,7 +112,6 @@ class LessonCard extends StatelessWidget {
 
                       Text(
                         courseCode,
-
                         style: TextStyle(
                           color: AppColors.primary,
                           fontSize: 15,
@@ -118,13 +122,58 @@ class LessonCard extends StatelessWidget {
                   ),
                 ),
 
-                Icon(
-                  Icons.arrow_forward_ios,
-                  color:
-                  AppColors.subText(
-                    settings.darkTheme,
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: AppColors.subText(
+                      settings.darkTheme,
+                    ),
                   ),
-                  size: 15,
+
+                  onSelected: (value) {
+
+                    if (value == 'edit') {
+                      onEdit?.call();
+                    }
+
+                    if (value == 'delete') {
+                      onDelete?.call();
+                    }
+                  },
+
+                  itemBuilder: (context) => [
+
+                    const PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit),
+                          SizedBox(width: 10),
+                          Text('Edit'),
+                        ],
+                      ),
+                    ),
+
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+
+                          Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ),
+
+                          SizedBox(width: 10),
+
+                          Text(
+                            'Delete',
+                            style: TextStyle(color: Colors.red,),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
