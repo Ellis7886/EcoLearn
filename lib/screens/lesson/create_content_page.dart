@@ -46,7 +46,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
   }
 
   Future<void> postContent() async {
-    if (selectedLesson == null || titleController.text.trim().isEmpty) {
+    if (titleController.text.trim().isEmpty) {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -267,12 +267,12 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
                   const SizedBox(height: 20),
 
-                  if (selectedLesson != null)
+                  if (widget.lessonId.isNotEmpty)
                     StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
                           .collection('content')
                           .where('type', isEqualTo: 'chapter',)
-                          .where('lesson_id', isEqualTo: selectedLesson,)
+                          .where('lesson_id', isEqualTo: widget.lessonId,)
                           .snapshots(),
                       builder: (context, snapshot) {
 
