@@ -76,16 +76,13 @@ class ResourcesPage extends StatelessWidget {
 
         builder: (context, snapshot) {
 
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
-
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-
             return const Center(
               child: Text(
                 'No resources available',
@@ -100,87 +97,150 @@ class ResourcesPage extends StatelessWidget {
               .where((doc) => doc['type'] == 'material')
               .toList();
 
-          return ListView.builder(
+          Map<String, List<QueryDocumentSnapshot>> groupedResources = {};
+
+          for (var resource in resources) {
+
+            final chapter = resource['chapter'] ?? 'Additional Materials';
+
+            if (!groupedResources.containsKey(chapter)) {
+              groupedResources[chapter] = [];
+            }
+
+            groupedResources[chapter]!.add(resource);
+          }
+
+          return ListView(
             padding: const EdgeInsets.all(20),
 
-            itemCount: resources.length,
+            children: groupedResources.entries.map((entry) {
 
-            itemBuilder: (context, index) {
+              final chapter = entry.key;
+              final chapterResources = entry.value;
 
-              final resource = resources[index];
+              return Container(
+                margin: const EdgeInsets.only(
+                  bottom: 15,
+                ),
 
-              IconData icon = Icons.description;
+                decoration: BoxDecoration(
+                  color: AppColors.card(settings.darkTheme,),
+                  borderRadius: BorderRadius.circular(20,),
+                ),
 
-              String fileName = resource['file_name'] ?? '';
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    dividerColor: Colors.transparent,
+                  ),
 
-              if (fileName.toLowerCase().endsWith('.pdf')) {
-                icon = Icons.picture_as_pdf;
-              }
-              else if (fileName.toLowerCase().endsWith('.mp4')) {
-                icon = Icons.video_library;
-              }
-              else if (fileName.toLowerCase().endsWith('.jpg') ||
-                  fileName.toLowerCase().endsWith('.jpeg') ||
-                  fileName.toLowerCase().endsWith('.png')) {
-                icon = Icons.image;
-              }
+                  child: ExpansionTile(
 
-              return ResourceCard(
+                    tilePadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 5,
+                    ),
 
-                icon: icon,
+                    childrenPadding: const EdgeInsets.all(15,),
 
-                title:
-                resource['title'] ?? '',
+                    iconColor: AppColors.primary,
+                    collapsedIconColor: AppColors.primary,
 
-                description:
-                resource['description'] ?? '',
-
-                chapter:
-                resource['chapter'] ??
-                    'Additional Materials',
-
-                fileName:
-                resource['file_name'] ?? '',
-
-                onOpen: () {
-
-                  final String fileName =
-                  resource['file_name'];
-
-                  if (fileName
-                      .toLowerCase()
-                      .endsWith('.pdf')) {
-
-                    Navigator.push(
-                      context,
-
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            PdfViewerPage(
-                              pdfUrl:
-                              resource['file_url'],
-
-                              title:
-                              resource['title'],
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            chapter,
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
-                      ),
-                    );
-
-                  } else {
-
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(
-
-                      const SnackBar(
-                        content: Text(
-                          'Only PDF preview is supported',
+                          ),
                         ),
-                      ),
-                    );
-                  }
-                },
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20,),
+                          ),
+
+                          child: Text(
+                            '${chapterResources.length}',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    children: chapterResources.map((resource) {
+
+                      IconData icon = Icons.description;
+
+                      String fileName = resource['file_name'] ?? '';
+
+                      if (fileName.toLowerCase().endsWith('.pdf')) {
+                        icon = Icons.picture_as_pdf;
+                      }
+                      else if (fileName.toLowerCase().endsWith('.mp4')) {
+                        icon = Icons.video_library;
+                      }
+                      else if (fileName.toLowerCase().endsWith('.jpg') ||
+                          fileName.toLowerCase().endsWith('.jpeg') ||
+                          fileName.toLowerCase().endsWith('.png')) {
+                        icon = Icons.image;
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: 10,
+                        ),
+
+                        child: ResourceCard(
+                          icon: icon,
+                          title: resource['title'] ?? '',
+                          description: resource['description'] ?? '',
+                          chapter: resource['chapter'] ?? 'Additional Materials',
+                          fileName: resource['file_name'] ?? '',
+
+                          onOpen: () {
+
+                            if (fileName
+                                .toLowerCase()
+                                .endsWith('.pdf')) {
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PdfViewerPage(
+                                    pdfUrl: resource['file_url'],
+                                    title: resource['title'],
+                                  ),
+                                ),
+                              );
+                            }
+                            else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Only PDF preview is supported',),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
               );
-            },
+            }).toList(),
           );
         },
       ),

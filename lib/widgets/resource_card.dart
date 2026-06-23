@@ -26,25 +26,17 @@ class ResourceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final settings =
-    Provider.of<AppSettings>(context);
+    final settings = Provider.of<AppSettings>(context);
 
     return Container(
-      margin: const EdgeInsets.only(
-        bottom: 15,
-      ),
+      margin: const EdgeInsets.only(bottom: 15,),
 
       decoration: BoxDecoration(
-        color: AppColors.card(
-          settings.darkTheme,
-        ),
+        color: AppColors.card(settings.darkTheme,),
 
-        borderRadius:
-        BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20),
 
-        boxShadow: settings.darkTheme
-            ? []
-            : [
+        boxShadow: settings.darkTheme ? [] : [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 8,
@@ -70,10 +62,7 @@ class ResourceCard extends StatelessWidget {
             settings.darkTheme,
           ),
 
-          collapsedIconColor:
-          AppColors.text(
-            settings.darkTheme,
-          ),
+          collapsedIconColor: AppColors.text(settings.darkTheme,),
 
           title: Text(
             title,
@@ -82,74 +71,25 @@ class ResourceCard extends StatelessWidget {
               color: AppColors.text(
                 settings.darkTheme,
               ),
-
-              fontWeight:
-              FontWeight.bold,
-
+              fontWeight: FontWeight.bold,
               fontSize: 18,
             ),
           ),
 
-          childrenPadding:
-          const EdgeInsets.all(16),
+          childrenPadding: const EdgeInsets.all(16),
 
           children: [
 
             Align(
-              alignment:
-              Alignment.centerLeft,
+              alignment: Alignment.centerLeft,
 
               child: Text(
                 description,
-
                 style: TextStyle(
-                  color:
-                  AppColors.subText(
+                  color: AppColors.subText(
                     settings.darkTheme,
                   ),
-
                   height: 1.5,
-                ),
-              ),
-            ),
-
-            const SizedBox(
-              height: 12,
-            ),
-
-            Align(
-              alignment:
-              Alignment.centerLeft,
-
-              child: Text(
-                'Chapter: $chapter',
-
-                style: const TextStyle(
-                  color:
-                  AppColors.primary,
-
-                  fontWeight:
-                  FontWeight.bold,
-                ),
-              ),
-            ),
-
-            const SizedBox(
-              height: 8,
-            ),
-
-            Align(
-              alignment:
-              Alignment.centerLeft,
-
-              child: Text(
-                fileName,
-
-                style: TextStyle(
-                  color:
-                  AppColors.subText(
-                    settings.darkTheme,
-                  ),
                 ),
               ),
             ),
@@ -159,11 +99,9 @@ class ResourceCard extends StatelessWidget {
             ),
 
             SizedBox(
-              width:
-              double.infinity,
+              width: double.infinity,
 
-              child:
-              ElevatedButton.icon(
+              child: ElevatedButton.icon(
 
                 onPressed: onOpen,
 
@@ -175,13 +113,9 @@ class ResourceCard extends StatelessWidget {
                   'Open Material',
                 ),
 
-                style:
-                ElevatedButton.styleFrom(
-                  backgroundColor:
-                  AppColors.primary,
-
-                  foregroundColor:
-                  settings.darkTheme ? Colors.black : Colors.white,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: settings.darkTheme ? Colors.black : Colors.white,
                 ),
               ),
             ),

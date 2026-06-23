@@ -29,18 +29,27 @@ class _CreateContentPageState extends State<CreateContentPage> {
   String? selectedLesson;
   String? selectedChapter = "Additional";
   String contentType = 'chapter';
-  File? selectedFile;
-  String fileName = '';
+  List<File> selectedFiles = [];
+  List<String> fileNames = [];
   bool isUploading = false;
 
   Future<void> pickFile() async {
 
-    FilePickerResult? result = await FilePicker.pickFiles();
+    FilePickerResult? result = await FilePicker.pickFiles(
+      allowMultiple: true,
+    );
 
     if (result != null) {
+
       setState(() {
-        selectedFile = File(result.files.single.path!);
-        fileName = result.files.single.name;
+
+        selectedFiles = result.paths
+            .map((path) => File(path!))
+            .toList();
+
+        fileNames = result.files
+            .map((file) => file.name)
+            .toList();
       });
     }
   }
@@ -56,7 +65,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
       return;
     }
 
-    if (contentType == 'material' && selectedFile == null) {
+    if (contentType == 'material' && selectedFiles.isEmpty) {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -71,26 +80,76 @@ class _CreateContentPageState extends State<CreateContentPage> {
         isUploading = true;
       });
 
-      String fileUrl = '';
-
       if (contentType == 'material') {
-        final storageRef = FirebaseStorage.instance.ref().child('content/$fileName',);
 
-        await storageRef.putFile(selectedFile!,);
+        for (int i = 0;
+        i < selectedFiles.length;
+        i++) {
 
-        fileUrl = await storageRef.getDownloadURL();
+          final storageRef =
+          FirebaseStorage.instance
+              .ref()
+              .child(
+            'content/${fileNames[i]}',
+          );
+
+          await storageRef.putFile(
+            selectedFiles[i],
+          );
+
+          final fileUrl =
+          await storageRef.getDownloadURL();
+
+          await FirebaseFirestore.instance
+              .collection('content')
+              .add({
+
+            'lesson_id': widget.lessonId,
+
+            'type': 'material',
+
+            'chapter': selectedChapter,
+
+            'title': fileNames[i],
+
+            'description':
+            descriptionController.text.trim(),
+
+            'file_name': fileNames[i],
+
+            'file_url': fileUrl,
+
+            'created_at':
+            Timestamp.now(),
+          });
+        }
       }
+      else {
 
-      await FirebaseFirestore.instance.collection('content').add({
-        'lesson_id': widget.lessonId,
-        'type': contentType,
-        'chapter': contentType == 'material' ? selectedChapter : '',
-        'title': titleController.text.trim(),
-        'description': descriptionController.text.trim(),
-        'file_name': fileName,
-        'file_url': fileUrl,
-        'created_at': Timestamp.now(),
-      });
+        await FirebaseFirestore.instance
+            .collection('content')
+            .add({
+
+          'lesson_id': widget.lessonId,
+
+          'type': 'chapter',
+
+          'chapter': '',
+
+          'title':
+          titleController.text.trim(),
+
+          'description':
+          descriptionController.text.trim(),
+
+          'file_name': '',
+
+          'file_url': '',
+
+          'created_at':
+          Timestamp.now(),
+        });
+      }
 
       if (!mounted) return;
 
@@ -211,8 +270,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
               onChanged: (value) {
                 setState(() {
-                  contentType =
-                      value!;
+                  contentType = value!;
                 });
               },
             ),
@@ -222,15 +280,12 @@ class _CreateContentPageState extends State<CreateContentPage> {
             TextField(
               controller: titleController,
 
-              style:
-                  const TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
               ),
 
-              decoration:
-                  InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Title',
-
                 border:
                     OutlineInputBorder(
                   borderRadius: BorderRadius.circular(
@@ -356,13 +411,40 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
                   const SizedBox(height: 10),
 
-                  Text(
-                    fileName.isEmpty ? 'No file selected' : fileName,
+                Column(
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
 
-                    style: const TextStyle(
-                      color: Colors.white,
+                  children:
+
+                  fileNames.isEmpty
+
+                      ? [
+                    const Text(
+                      'No file selected',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
+                  ]
+
+                      : fileNames.map((name) {
+
+                    return Padding(
+                      padding:
+                      const EdgeInsets.only(
+                        bottom: 5,
+                      ),
+
+                      child: Text(
+                        name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                )
                 ],
               ),
 
