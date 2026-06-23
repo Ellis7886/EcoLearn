@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 import 'create_lesson_page.dart';
+import 'edit_lesson_page.dart';
 
 import '../../themes/app_colors.dart';
 
@@ -104,7 +105,10 @@ class _LessonsPageState extends State<LessonsPage> {
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
             .collection('lessons')
-            .snapshots(),
+            .orderBy(
+          'created_at',
+          descending: true,
+        ).snapshots(),
 
         builder: (context, snapshot) {
 
@@ -148,8 +152,8 @@ class _LessonsPageState extends State<LessonsPage> {
 
                 onTap: () {
 
-                  Navigator.push(context,
-
+                  Navigator.push(
+                    context,
                     MaterialPageRoute(
                       builder: (context) => MaterialsPage(
                         lessonId: lessons[index].id,
@@ -157,6 +161,83 @@ class _LessonsPageState extends State<LessonsPage> {
                       ),
                     ),
                   );
+                },
+
+                onEdit: () {
+
+                  Navigator.push(
+                    context,
+
+                    MaterialPageRoute(
+                      builder: (context) => EditLessonPage(
+                        lessonId: lessons[index].id,
+                        title: lesson['title'],
+                        description: lesson['description'],
+                        courseCode: lesson['course_code'],
+                      ),
+                    ),
+                  );
+                },
+
+                onDelete: () async {
+
+                  final messenger = ScaffoldMessenger.of(context);
+
+                  final confirm = await showDialog<bool>(
+                    context: context,
+
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text(
+                        'Delete Lesson',
+                      ),
+
+                      content: const Text(
+                        'Are you sure you want to delete this lesson?',
+                      ),
+
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(
+                              dialogContext,
+                              false,
+                            );
+                          },
+
+                          child: const Text(
+                            'Cancel',
+                          ),
+                        ),
+
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(
+                              dialogContext,
+                              true,
+                            );
+                          },
+
+                          child: const Text(
+                            'Delete',
+                            style: TextStyle(color: Colors.red,),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirm == true) {
+                    await FirebaseFirestore.instance
+                        .collection('lessons')
+                        .doc(lessons[index].id)
+                        .delete();
+
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Lesson deleted successfully',),
+                      ),
+                    );
+                  }
                 },
               );
             },

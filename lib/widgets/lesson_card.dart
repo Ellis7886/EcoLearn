@@ -95,14 +95,17 @@ class LessonCard extends StatelessWidget {
 
                     children: [
 
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: AppColors.text(settings.darkTheme),
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      Tooltip(
+                        message: title,
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.text(settings.darkTheme),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
 
@@ -206,12 +209,7 @@ class LessonCard extends StatelessWidget {
                 minHeight: 8,
 
                 backgroundColor:
-                settings.darkTheme
-
-                    ? Colors.white12
-
-                    : Colors.black12,
-
+                settings.darkTheme ? Colors.white12 : Colors.black12,
                 color:
                 AppColors.primary,
               ),
