@@ -83,11 +83,13 @@ class ResourcesPage extends StatelessWidget {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 'No resources available',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.text(
+                    settings.darkTheme,
+                  ),
                 ),
               ),
             );

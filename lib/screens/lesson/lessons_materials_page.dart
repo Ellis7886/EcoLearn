@@ -1,6 +1,11 @@
 import 'package:ecolearn/screens/lesson/create_content_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
+import '../../provider/app_settings.dart';
+
+import '../../themes/app_colors.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
 
@@ -16,8 +21,12 @@ class MaterialsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<AppSettings>(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+        backgroundColor: AppColors.background(
+          settings.darkTheme,
+        ),
 
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF9BD028),
@@ -26,7 +35,6 @@ class MaterialsPage extends StatelessWidget {
 
           Navigator.push(
             context,
-
             MaterialPageRoute(
               builder: (_) => CreateContentPage(
                 lessonId: lessonId,
@@ -48,17 +56,23 @@ class MaterialsPage extends StatelessWidget {
       ),
 
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.background(
+          settings.darkTheme,
+        ),
 
         title: Text(
           lessonTitle,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: AppColors.text(
+              settings.darkTheme,
+            ),
           ),
         ),
 
-        iconTheme: const IconThemeData(
-          color: Colors.white,
+        iconTheme: IconThemeData(
+          color: AppColors.text(
+            settings.darkTheme,
+          ),
         ),
       ),
 
@@ -71,9 +85,7 @@ class MaterialsPage extends StatelessWidget {
 
         builder: (context, snapshot) {
 
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
-
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -82,11 +94,13 @@ class MaterialsPage extends StatelessWidget {
           if (!snapshot.hasData ||
               snapshot.data!.docs.isEmpty) {
 
-            return const Center(
+            return Center(
               child: Text(
                 'No chapters available',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.text(
+                    settings.darkTheme,
+                  ),
                 ),
               ),
             );
@@ -104,42 +118,154 @@ class MaterialsPage extends StatelessWidget {
               final chapter = chapters[index];
 
               return Container(
-                margin: const EdgeInsets.only(
-                  bottom: 15,
-                ),
+                margin: const EdgeInsets.only(bottom: 15,),
 
-                decoration:
-                BoxDecoration(
-                  color: const Color(0xFF2B2B2B,),
-
-                  borderRadius:
-                  BorderRadius.circular(20,),
+                decoration: BoxDecoration(
+                  color: AppColors.card(
+                    settings.darkTheme,
+                  ),
+                  borderRadius: BorderRadius.circular(20,),
                 ),
 
                 child: Theme(
-                  data: Theme.of(context)
-                      .copyWith(
+                  data: Theme.of(context).copyWith(
                     dividerColor: Colors.transparent,
                   ),
 
                   child: ExpansionTile(
 
-                    leading:
-                    const Icon(
+                    leading: const Icon(
                       Icons.menu_book_rounded,
                       color: Color(0xFF9BD028),
                     ),
 
-                    iconColor: Colors.white,
+                    iconColor: AppColors.text(
+                      settings.darkTheme,
+                    ),
+                    collapsedIconColor: AppColors.text(
+                      settings.darkTheme,
+                    ),
 
-                    collapsedIconColor: Colors.white,
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            chapter['title'] ?? '',
+                            style: TextStyle(
+                              color: AppColors.text(
+                                settings.darkTheme,
+                              ),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
 
-                    title: Text(
-                      chapter['title'] ?? '',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                        PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_vert,
+                            color: AppColors.text(
+                              settings.darkTheme,
+                            ),
+                          ),
+
+                          onSelected: (value) async {
+
+                            if (value == 'edit') {
+                              // Navigate to Edit Chapter Page
+                            }
+                            else if (value == 'delete') {
+                              final messenger = ScaffoldMessenger.of(context);
+                              final confirm = await showDialog<bool>(
+                                context: context,
+                                builder: (_) => AlertDialog(
+                                  title: const Text('Delete Chapter'),
+                                  content: const Text(
+                                    'Delete this chapter and all materials?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text('Cancel'),
+                                    ),
+
+                                    TextButton(
+                                      onPressed:() =>
+                                          Navigator.pop(context, true),
+                                      child: const Text(
+                                        'Delete',
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              if (confirm == true) {
+                                // Delete all materials inside chapter
+                                final materials = await FirebaseFirestore.instance
+                                    .collection('content')
+                                    .where('type', isEqualTo: 'material',)
+                                    .where('chapter', isEqualTo: chapter['title'],
+                                ).get();
+
+                                for (var doc in materials.docs) {
+                                  await doc.reference.delete();
+                                }
+
+                                // Delete chapter
+                                await FirebaseFirestore.instance
+                                    .collection('content')
+                                    .doc(chapter.id)
+                                    .delete();
+
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Chapter deleted successfully',
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+
+                          itemBuilder: (context) => const [
+
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit),
+                                  SizedBox(width: 10),
+                                  Text('Edit'),
+                                ],
+                              ),
+                            ),
+
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Delete',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
 
                     childrenPadding:
@@ -156,8 +282,10 @@ class MaterialsPage extends StatelessWidget {
 
                         child: Text(
                           chapter['description'] ?? '',
-                          style: const TextStyle(
-                            color: Colors.white70,
+                          style: TextStyle(
+                            color: AppColors.subText(
+                              settings.darkTheme,
+                            ),
                             height: 1.5,
                           ),
                         ),
@@ -195,16 +323,11 @@ class MaterialsPage extends StatelessWidget {
                             );
                           }
 
-                          final materials =
-                              materialSnapshot
-                                  .data!
-                                  .docs;
+                          final materials = materialSnapshot.data!.docs;
 
                           return Column(
                             children: materials.map((material) {
-
                                 IconData icon = Icons.description;
-
                                 String fileName = material['file_name'] ?? '';
 
                                 if (fileName.toLowerCase().endsWith('.pdf')) {
@@ -220,8 +343,9 @@ class MaterialsPage extends StatelessWidget {
                                 }
 
                                 return Card(
-                                  color: Colors.black26,
-
+                                  color: AppColors.card(
+                                    settings.darkTheme,
+                                  ),
                                   margin:
                                   const EdgeInsets.only(
                                     bottom: 10,
@@ -237,26 +361,125 @@ class MaterialsPage extends StatelessWidget {
                                     title:
                                     Text(
                                       material['title'],
-                                      style:
-                                      const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: AppColors.text(
+                                          settings.darkTheme,
+                                        ),
                                       ),
                                     ),
 
                                     subtitle: Text(
                                       material['file_name'] ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
+                                      style: TextStyle(
+                                        color: AppColors.subText(
+                                          settings.darkTheme,
+                                        ),
                                       ),
                                     ),
 
-                                    trailing:
-                                    const Icon(
-                                      Icons
-                                          .arrow_forward_ios,
-                                      color: Colors.white54,
-                                      size:
-                                      16,
+                                    trailing: PopupMenuButton<String>(
+                                      icon: Icon(
+                                        Icons.more_vert,
+                                        color: AppColors.text(
+                                          settings.darkTheme,
+                                        ),
+                                      ),
+
+                                      onSelected: (value) async {
+
+                                        if (value == 'edit') {
+                                          // Navigate to EditMaterialPage
+                                        }
+                                        else if (value == 'delete') {
+                                          final messenger = ScaffoldMessenger.of(context);
+                                          final confirm = await showDialog<bool>(
+                                            context: context,
+                                            builder: (_) => AlertDialog(
+                                              title: const Text(
+                                                'Delete Material',
+                                              ),
+
+                                              content: const Text(
+                                                'Delete this material?',
+                                              ),
+
+                                              actions: [
+
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(
+                                                    context,
+                                                    false,
+                                                  ),
+
+                                                  child: const Text(
+                                                    'Cancel',
+                                                  ),
+                                                ),
+
+                                                TextButton(
+                                                  onPressed: () => Navigator.pop(
+                                                    context,
+                                                    true,
+                                                  ),
+
+                                                  child: const Text(
+                                                    'Delete',
+                                                    style: TextStyle(color: Colors.red,),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+
+                                          if (confirm == true) {
+                                            await FirebaseFirestore.instance
+                                                .collection('content')
+                                                .doc(material.id)
+                                                .delete();
+
+                                            messenger.showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Material deleted',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        }
+                                      },
+
+                                      itemBuilder: (context) => const [
+
+                                        PopupMenuItem(
+                                          value: 'edit',
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.edit),
+                                              SizedBox(width: 10),
+                                              Text('Edit'),
+                                            ],
+                                          ),
+                                        ),
+
+                                        PopupMenuItem(
+                                          value: 'delete',
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.delete,
+                                                color: Colors.red,
+                                              ),
+                                              SizedBox(width: 10),
+                                              Text(
+                                                'Delete',
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
 
                                     onTap: () {
