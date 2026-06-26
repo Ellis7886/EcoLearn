@@ -140,9 +140,7 @@ class ResourcesPage extends StatelessWidget {
 
                   borderRadius: BorderRadius.circular(20),
 
-                  boxShadow: settings.darkTheme
-                      ? []
-                      : [
+                  boxShadow: settings.darkTheme ? [] : [
                     BoxShadow(
                       color: Colors.black12,
                       blurRadius: 10,

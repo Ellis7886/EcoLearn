@@ -48,7 +48,7 @@ class MaterialsPage extends StatelessWidget {
           }
 
           return FloatingActionButton(
-            backgroundColor: const Color(0xFF9BD028),
+            backgroundColor: AppColors.primary,
 
             onPressed: () {
               Navigator.push(
@@ -144,7 +144,18 @@ class MaterialsPage extends StatelessWidget {
                   color: AppColors.card(
                     settings.darkTheme,
                   ),
-                  borderRadius: BorderRadius.circular(20,),
+
+                  borderRadius: BorderRadius.circular(20),
+
+                  boxShadow: settings.darkTheme
+                      ? []
+                      : [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
 
                 child: Theme(
@@ -154,9 +165,22 @@ class MaterialsPage extends StatelessWidget {
 
                   child: ExpansionTile(
 
-                    leading: const Icon(
-                      Icons.menu_book_rounded,
-                      color: Color(0xFF9BD028),
+                    leading: Container(
+                      width: 45,
+                      height: 45,
+
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight(
+                          settings.darkTheme,
+                        ),
+
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+
+                      child: const Icon(
+                        Icons.menu_book_rounded,
+                        color: AppColors.primary,
+                      ),
                     ),
 
                     iconColor: AppColors.text(
@@ -303,20 +327,40 @@ class MaterialsPage extends StatelessWidget {
                                   icon = Icons.image;
                                 }
 
-                                return Card(
-                                  color: AppColors.card(
-                                    settings.darkTheme,
-                                  ),
-                                  margin:
-                                  const EdgeInsets.only(
+                                return Container(
+                                  margin: const EdgeInsets.only(
                                     bottom: 10,
+                                  ),
+
+                                  decoration: BoxDecoration(
+                                    color: AppColors.card(
+                                      settings.darkTheme,
+                                    ),
+
+                                    borderRadius: BorderRadius.circular(15),
+
+                                    border: Border.all(
+                                      color: AppColors.border(
+                                        settings.darkTheme,
+                                      ),
+                                    ),
+
+                                    boxShadow: settings.darkTheme
+                                        ? []
+                                        : [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
 
                                   child:
                                   ListTile(leading:
                                     Icon(
                                       icon,
-                                      color: const Color(0xFF9BD028),
+                                      color: AppColors.primary,
                                     ),
 
                                     title:
