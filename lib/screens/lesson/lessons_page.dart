@@ -1,4 +1,4 @@
-import 'lessons_materials_page.dart';
+import 'lessons_content_page.dart';
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
