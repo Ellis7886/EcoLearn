@@ -86,8 +86,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
         i < selectedFiles.length;
         i++) {
 
-          final storageRef =
-          FirebaseStorage.instance
+          final storageRef = FirebaseStorage.instance
               .ref()
               .child(
             'content/${fileNames[i]}',
@@ -97,30 +96,21 @@ class _CreateContentPageState extends State<CreateContentPage> {
             selectedFiles[i],
           );
 
-          final fileUrl =
-          await storageRef.getDownloadURL();
+          final fileUrl = await storageRef.getDownloadURL();
 
           await FirebaseFirestore.instance
               .collection('content')
               .add({
 
             'lesson_id': widget.lessonId,
-
+            'lesson_title': widget.lessonTitle,
             'type': 'material',
-
             'chapter': selectedChapter,
-
             'title': fileNames[i],
-
-            'description':
-            descriptionController.text.trim(),
-
+            'description': descriptionController.text.trim(),
             'file_name': fileNames[i],
-
             'file_url': fileUrl,
-
-            'created_at':
-            Timestamp.now(),
+            'created_at': Timestamp.now(),
           });
         }
       }
@@ -131,23 +121,14 @@ class _CreateContentPageState extends State<CreateContentPage> {
             .add({
 
           'lesson_id': widget.lessonId,
-
+          'lesson_title': widget.lessonTitle,
           'type': 'chapter',
-
           'chapter': '',
-
-          'title':
-          titleController.text.trim(),
-
-          'description':
-          descriptionController.text.trim(),
-
+          'title': titleController.text.trim(),
+          'description': descriptionController.text.trim(),
           'file_name': '',
-
           'file_url': '',
-
-          'created_at':
-          Timestamp.now(),
+          'created_at': Timestamp.now(),
         });
       }
 

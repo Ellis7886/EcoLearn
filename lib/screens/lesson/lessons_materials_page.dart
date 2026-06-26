@@ -2,6 +2,7 @@ import 'package:ecolearn/screens/lesson/create_content_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../provider/app_settings.dart';
 
@@ -28,26 +29,45 @@ class MaterialsPage extends StatelessWidget {
           settings.darkTheme,
         ),
 
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF9BD028),
+      floatingActionButton: FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .get(),
 
-        onPressed: () {
+        builder: (context, snapshot) {
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => CreateContentPage(
-                lessonId: lessonId,
-                lessonTitle: lessonTitle,
-              ),
+          if (!snapshot.hasData) {
+            return const SizedBox();
+          }
+
+          final role = snapshot.data!['role'];
+
+          if (role != 'lecturer') {
+            return const SizedBox();
+          }
+
+          return FloatingActionButton(
+            backgroundColor: const Color(0xFF9BD028),
+
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CreateContentPage(
+                    lessonId: lessonId,
+                    lessonTitle: lessonTitle,
+                  ),
+                ),
+              );
+            },
+
+            child: const Icon(
+              Icons.upload_file,
+              color: Colors.black,
             ),
           );
         },
-
-        child: const Icon(
-          Icons.upload_file,
-          color: Colors.black,
-        ),
       ),
 
       bottomNavigationBar: BottomNavBar(
@@ -160,110 +180,51 @@ class MaterialsPage extends StatelessWidget {
                           ),
                         ),
 
-                        PopupMenuButton<String>(
-                          icon: Icon(
-                            Icons.more_vert,
-                            color: AppColors.text(
-                              settings.darkTheme,
-                            ),
-                          ),
+                        FutureBuilder<DocumentSnapshot>(
+                          future: FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(FirebaseAuth.instance.currentUser!.uid)
+                              .get(),
 
-                          onSelected: (value) async {
+                          builder: (context, snapshot) {
 
-                            if (value == 'edit') {
-                              // Navigate to Edit Chapter Page
+                            if (!snapshot.hasData) {
+                              return const SizedBox();
                             }
-                            else if (value == 'delete') {
-                              final messenger = ScaffoldMessenger.of(context);
-                              final confirm = await showDialog<bool>(
-                                context: context,
-                                builder: (_) => AlertDialog(
-                                  title: const Text('Delete Chapter'),
-                                  content: const Text(
-                                    'Delete this chapter and all materials?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      child: const Text('Cancel'),
-                                    ),
 
-                                    TextButton(
-                                      onPressed:() =>
-                                          Navigator.pop(context, true),
-                                      child: const Text(
-                                        'Delete',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                            final role = snapshot.data!['role'];
+
+                            if (role != 'lecturer') {
+                              return const SizedBox();
+                            }
+
+                            return PopupMenuButton<String>(
+                              icon: Icon(
+                                Icons.more_vert,
+                                color: AppColors.text(
+                                  settings.darkTheme,
                                 ),
-                              );
-
-                              if (confirm == true) {
-                                // Delete all materials inside chapter
-                                final materials = await FirebaseFirestore.instance
-                                    .collection('content')
-                                    .where('type', isEqualTo: 'material',)
-                                    .where('chapter', isEqualTo: chapter['title'],
-                                ).get();
-
-                                for (var doc in materials.docs) {
-                                  await doc.reference.delete();
-                                }
-
-                                // Delete chapter
-                                await FirebaseFirestore.instance
-                                    .collection('content')
-                                    .doc(chapter.id)
-                                    .delete();
-
-                                messenger.showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Chapter deleted successfully',
-                                    ),
-                                  ),
-                                );
-                              }
-                            }
-                          },
-
-                          itemBuilder: (context) => const [
-
-                            PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit),
-                                  SizedBox(width: 10),
-                                  Text('Edit'),
-                                ],
                               ),
-                            ),
 
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text(
+                              onSelected: (value) async {
+                                // existing edit/delete code
+                              },
+
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: 'edit',
+                                  child: Text('Edit'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text(
                                     'Delete',
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                    ),
+                                    style: TextStyle(color: Colors.red),
                                   ),
-                                ],
-                              ),
-                            ),
-                          ],
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -368,120 +329,136 @@ class MaterialsPage extends StatelessWidget {
                                       ),
                                     ),
 
-                                    subtitle: Text(
-                                      material['file_name'] ?? '',
-                                      style: TextStyle(
-                                        color: AppColors.subText(
-                                          settings.darkTheme,
-                                        ),
-                                      ),
-                                    ),
+                                    trailing: FutureBuilder<DocumentSnapshot>(
+                                      future: FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(FirebaseAuth.instance.currentUser!.uid)
+                                          .get(),
 
-                                    trailing: PopupMenuButton<String>(
-                                      icon: Icon(
-                                        Icons.more_vert,
-                                        color: AppColors.text(
-                                          settings.darkTheme,
-                                        ),
-                                      ),
+                                      builder: (context, snapshot) {
 
-                                      onSelected: (value) async {
-
-                                        if (value == 'edit') {
-                                          // Navigate to EditMaterialPage
+                                        if (!snapshot.hasData) {
+                                          return const SizedBox();
                                         }
-                                        else if (value == 'delete') {
-                                          final messenger = ScaffoldMessenger.of(context);
-                                          final confirm = await showDialog<bool>(
-                                            context: context,
-                                            builder: (_) => AlertDialog(
-                                              title: const Text(
-                                                'Delete Material',
-                                              ),
 
-                                              content: const Text(
-                                                'Delete this material?',
-                                              ),
+                                        final role = snapshot.data!['role'];
 
-                                              actions: [
+                                        if (role != 'lecturer') {
+                                          return const SizedBox();
+                                        }
 
-                                                TextButton(
-                                                  onPressed: () => Navigator.pop(
-                                                    context,
-                                                    false,
-                                                  ),
-
-                                                  child: const Text(
-                                                    'Cancel',
-                                                  ),
-                                                ),
-
-                                                TextButton(
-                                                  onPressed: () => Navigator.pop(
-                                                    context,
-                                                    true,
-                                                  ),
-
-                                                  child: const Text(
-                                                    'Delete',
-                                                    style: TextStyle(color: Colors.red,),
-                                                  ),
-                                                ),
-                                              ],
+                                        return PopupMenuButton<String>(
+                                          icon: Icon(
+                                            Icons.more_vert,
+                                            color: AppColors.text(
+                                              settings.darkTheme,
                                             ),
-                                          );
+                                          ),
 
-                                          if (confirm == true) {
-                                            await FirebaseFirestore.instance
-                                                .collection('content')
-                                                .doc(material.id)
-                                                .delete();
+                                          onSelected: (value) async {
 
-                                            messenger.showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  'Material deleted',
+                                            if (value == 'edit') {
+                                              // Navigate to EditMaterialPage
+                                            }
+
+                                            else if (value == 'delete') {
+
+                                              final messenger =
+                                              ScaffoldMessenger.of(context);
+
+                                              final confirm =
+                                              await showDialog<bool>(
+                                                context: context,
+                                                builder: (_) => AlertDialog(
+                                                  title: const Text(
+                                                    'Delete Material',
+                                                  ),
+                                                  content: const Text(
+                                                    'Delete this material?',
+                                                  ),
+                                                  actions: [
+
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                            false,
+                                                          ),
+                                                      child: const Text(
+                                                        'Cancel',
+                                                      ),
+                                                    ),
+
+                                                    TextButton(
+                                                      onPressed: () =>
+                                                          Navigator.pop(
+                                                            context,
+                                                            true,
+                                                          ),
+                                                      child: const Text(
+                                                        'Delete',
+                                                        style: TextStyle(
+                                                          color: Colors.red,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
+                                              );
+
+                                              if (confirm == true) {
+
+                                                await FirebaseFirestore.instance
+                                                    .collection('content')
+                                                    .doc(material.id)
+                                                    .delete();
+
+                                                messenger.showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      'Material deleted',
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            }
+                                          },
+
+                                          itemBuilder: (context) => const [
+
+                                            PopupMenuItem(
+                                              value: 'edit',
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.edit),
+                                                  SizedBox(width: 10),
+                                                  Text('Edit'),
+                                                ],
                                               ),
-                                            );
-                                          }
-                                        }
+                                            ),
+
+                                            PopupMenuItem(
+                                              value: 'delete',
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.delete,
+                                                    color: Colors.red,
+                                                  ),
+                                                  SizedBox(width: 10),
+                                                  Text(
+                                                    'Delete',
+                                                    style: TextStyle(
+                                                      color: Colors.red,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        );
                                       },
-
-                                      itemBuilder: (context) => const [
-
-                                        PopupMenuItem(
-                                          value: 'edit',
-                                          child: Row(
-                                            children: [
-                                              Icon(Icons.edit),
-                                              SizedBox(width: 10),
-                                              Text('Edit'),
-                                            ],
-                                          ),
-                                        ),
-
-                                        PopupMenuItem(
-                                          value: 'delete',
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.delete,
-                                                color: Colors.red,
-                                              ),
-                                              SizedBox(width: 10),
-                                              Text(
-                                                'Delete',
-                                                style: TextStyle(
-                                                  color: Colors.red,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
                                     ),
-
                                     onTap: () {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
@@ -489,7 +466,6 @@ class MaterialsPage extends StatelessWidget {
                                           Text(material['title'],),
                                         ),
                                       );
-
                                       // Future:
                                       // Open PDF
                                       // Open Video

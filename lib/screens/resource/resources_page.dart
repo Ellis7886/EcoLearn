@@ -9,7 +9,6 @@ import '../../themes/app_colors.dart';
 import '../pdf_viewer_page.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
-import '../../widgets/resource_card.dart';
 
 class ResourcesPage extends StatelessWidget {
   const ResourcesPage({super.key});
@@ -99,17 +98,25 @@ class ResourcesPage extends StatelessWidget {
               .where((doc) => doc['type'] == 'material')
               .toList();
 
-          Map<String, List<QueryDocumentSnapshot>> groupedResources = {};
+          Map<String, Map<String, List<QueryDocumentSnapshot>>> groupedResources = {};
 
           for (var resource in resources) {
 
+            final lesson = resource['lesson_title'] ?? 'Unknown Lesson';
+
             final chapter = resource['chapter'] ?? 'Additional Materials';
 
-            if (!groupedResources.containsKey(chapter)) {
-              groupedResources[chapter] = [];
-            }
+            groupedResources.putIfAbsent(
+              lesson, () => {},
+            );
 
-            groupedResources[chapter]!.add(resource);
+            groupedResources[lesson]!.putIfAbsent(
+              chapter, () => [],
+            );
+
+            groupedResources[lesson]![chapter]!.add(
+              resource,
+            );
           }
 
           return ListView(
@@ -119,6 +126,7 @@ class ResourcesPage extends StatelessWidget {
 
               final chapter = entry.key;
               final chapterResources = entry.value;
+              final totalMaterials = chapterResources.values.fold<int>(0, (total, list) => total + list.length,);
 
               return Container(
                 margin: const EdgeInsets.only(
@@ -126,8 +134,21 @@ class ResourcesPage extends StatelessWidget {
                 ),
 
                 decoration: BoxDecoration(
-                  color: AppColors.card(settings.darkTheme,),
-                  borderRadius: BorderRadius.circular(20,),
+                  color: settings.darkTheme
+                      ? const Color(0xFF2B2B2B)
+                      : Colors.white,
+
+                  borderRadius: BorderRadius.circular(20),
+
+                  boxShadow: settings.darkTheme
+                      ? []
+                      : [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
 
                 child: Theme(
@@ -153,9 +174,11 @@ class ResourcesPage extends StatelessWidget {
                           child: Text(
                             chapter,
                             style: TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 18,
+                              color: settings.darkTheme
+                                  ? Colors.white
+                                  : Colors.black,
                               fontWeight: FontWeight.bold,
+                              fontSize: 18,
                             ),
                           ),
                         ),
@@ -172,52 +195,49 @@ class ResourcesPage extends StatelessWidget {
                           ),
 
                           child: Text(
-                            '${chapterResources.length}',
+                            '$totalMaterials Files',
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: AppColors.subText(
+                                settings.darkTheme,
+                              ),
                               fontWeight: FontWeight.bold,
+                              fontSize: 13,
                             ),
                           ),
                         ),
                       ],
                     ),
 
-                    children: chapterResources.map((resource) {
+                    children: chapterResources.entries.map((chapterEntry) {
 
-                      IconData icon = Icons.description;
+                      final chapterName = chapterEntry.key;
+                      final resources = chapterEntry.value;
 
-                      String fileName = resource['file_name'] ?? '';
+                      return ExpansionTile(
 
-                      if (fileName.toLowerCase().endsWith('.pdf')) {
-                        icon = Icons.picture_as_pdf;
-                      }
-                      else if (fileName.toLowerCase().endsWith('.mp4')) {
-                        icon = Icons.video_library;
-                      }
-                      else if (fileName.toLowerCase().endsWith('.jpg') ||
-                          fileName.toLowerCase().endsWith('.jpeg') ||
-                          fileName.toLowerCase().endsWith('.png')) {
-                        icon = Icons.image;
-                      }
-
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: 10,
+                        title: Text(
+                          chapterName,
+                          style: TextStyle(
+                            color: AppColors.text(
+                              settings.darkTheme,
+                            ),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
 
-                        child: ResourceCard(
-                          icon: icon,
-                          title: resource['title'] ?? '',
-                          description: resource['description'] ?? '',
-                          chapter: resource['chapter'] ?? 'Additional Materials',
-                          fileName: resource['file_name'] ?? '',
+                        children: resources.map((resource) {
 
-                          onOpen: () {
+                          return ListTile(
+                            title: Text(
+                              resource['title'],
+                              style: TextStyle(
+                                color: AppColors.text(
+                                  settings.darkTheme,
+                                ),
+                              ),
+                            ),
 
-                            if (fileName
-                                .toLowerCase()
-                                .endsWith('.pdf')) {
-
+                            onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -227,16 +247,9 @@ class ResourcesPage extends StatelessWidget {
                                   ),
                                 ),
                               );
-                            }
-                            else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Only PDF preview is supported',),
-                                ),
-                              );
-                            }
-                          },
-                        ),
+                            },
+                          );
+                        }).toList(),
                       );
                     }).toList(),
                   ),

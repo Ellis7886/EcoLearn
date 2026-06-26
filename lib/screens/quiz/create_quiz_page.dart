@@ -5,26 +5,22 @@ class CreateQuizPage extends StatefulWidget {
   const CreateQuizPage({super.key});
 
   @override
-  State<CreateQuizPage> createState() =>
-      _CreateQuizPageState();
+  State<CreateQuizPage> createState() => _CreateQuizPageState();
 }
 
-class _CreateQuizPageState
-    extends State<CreateQuizPage> {
+class _CreateQuizPageState extends State<CreateQuizPage> {
 
   final titleController = TextEditingController();
-
-  final descriptionController = TextEditingController();
-
-  String? selectedLesson;
+  final totalQuestionsController = TextEditingController();
+  final passingMarksController = TextEditingController();
 
   bool isSaving = false;
 
   Future<void> createQuiz() async {
 
     if (titleController.text.trim().isEmpty ||
-        descriptionController.text.trim().isEmpty ||
-        selectedLesson == null) {
+        totalQuestionsController.text.trim().isEmpty ||
+        passingMarksController.text.trim().isEmpty) {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -49,9 +45,13 @@ class _CreateQuizPageState
 
         'title': titleController.text.trim(),
 
-        'description': descriptionController.text.trim(),
+        'total_questions': int.parse(
+          totalQuestionsController.text.trim(),
+        ),
 
-        'lesson_id': selectedLesson,
+        'passing_marks': int.parse(
+          passingMarksController.text.trim(),
+        ),
 
         'created_at': Timestamp.now(),
       });
@@ -60,8 +60,9 @@ class _CreateQuizPageState
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-          Text('Quiz created successfully'),
+          content: Text(
+            'Quiz created successfully',
+          ),
         ),
       );
 
@@ -112,8 +113,7 @@ class _CreateQuizPageState
       ),
 
       body: SingleChildScrollView(
-        padding:
-        const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
 
         child: Column(
           children: [
@@ -126,16 +126,13 @@ class _CreateQuizPageState
               ),
 
               decoration: InputDecoration(
-                labelText:
-                'Quiz Title',
+                labelText: 'Quiz Title',
 
-                labelStyle:
-                const TextStyle(
+                labelStyle: const TextStyle(
                   color: Colors.white70,
                 ),
 
-                border:
-                OutlineInputBorder(
+                border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(
                     15,
                   ),
@@ -148,25 +145,24 @@ class _CreateQuizPageState
             ),
 
             TextField(
-              controller: descriptionController,
-
-              maxLines: 4,
+              controller: totalQuestionsController,
+              keyboardType: TextInputType.number,
 
               style: const TextStyle(
                 color: Colors.white,
               ),
 
               decoration: InputDecoration(
-                labelText: 'Quiz Description',
+                labelText: 'Total Questions',
 
-                labelStyle:
-                const TextStyle(
+                labelStyle: const TextStyle(
                   color: Colors.white70,
                 ),
 
-                border:
-                OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15,),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    15,
+                  ),
                 ),
               ),
             ),
@@ -175,77 +171,27 @@ class _CreateQuizPageState
               height: 20,
             ),
 
-            StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('lessons')
-                  .snapshots(),
+            TextField(
+              controller: passingMarksController,
+              keyboardType: TextInputType.number,
 
-              builder:
-                  (context, snapshot) {
+              style: const TextStyle(
+                color: Colors.white,
+              ),
 
-                if (!snapshot.hasData) {
+              decoration: InputDecoration(
+                labelText: 'Passing Marks',
 
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
+                labelStyle: const TextStyle(
+                  color: Colors.white70,
+                ),
 
-                final lessons =
-                    snapshot.data!.docs;
-
-                return DropdownButtonFormField<String>(
-
-                  initialValue: selectedLesson,
-
-                  dropdownColor: Colors.grey[900],
-
-                  style: const TextStyle(
-                    color:
-                    Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(
+                    15,
                   ),
-
-                  decoration:
-                  InputDecoration(
-                    labelText:
-                    'Select Lesson',
-
-                    labelStyle:
-                    const TextStyle(
-                      color:
-                      Colors.white70,
-                    ),
-
-                    border:
-                    OutlineInputBorder(
-                      borderRadius:
-                      BorderRadius.circular(
-                        15,
-                      ),
-                    ),
-                  ),
-
-                  items:
-                  lessons.map((doc) {
-
-                    return DropdownMenuItem(
-                      value: doc.id,
-
-                      child: Text(
-                        doc['title'],
-                      ),
-                    );
-
-                  }).toList(),
-
-                  onChanged: (value) {
-
-                    setState(() {
-                      selectedLesson =
-                          value;
-                    });
-                  },
-                );
-              },
+                ),
+              ),
             ),
 
             const SizedBox(
@@ -253,32 +199,25 @@ class _CreateQuizPageState
             ),
 
             SizedBox(
-              width:
-              double.infinity,
+              width: double.infinity,
 
-              child:
-              ElevatedButton(
+              child: ElevatedButton(
 
-                onPressed:
-                isSaving
+                onPressed: isSaving
                     ? null
                     : createQuiz,
 
-                style:
-                ElevatedButton.styleFrom(
-                  backgroundColor:
-                  const Color(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(
                     0xFF9BD028,
                   ),
 
-                  padding:
-                  const EdgeInsets.symmetric(
+                  padding: const EdgeInsets.symmetric(
                     vertical: 15,
                   ),
                 ),
 
-                child:
-                isSaving
+                child: isSaving
 
                     ? const CircularProgressIndicator(
                   color: Colors.black,
@@ -288,8 +227,7 @@ class _CreateQuizPageState
                   'CREATE QUIZ',
                   style: TextStyle(
                     color: Colors.black,
-                    fontWeight:
-                    FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),

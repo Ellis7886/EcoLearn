@@ -49,8 +49,7 @@ class LessonCard extends StatelessWidget {
             settings.darkTheme,
           ),
 
-          borderRadius:
-          BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20),
 
           boxShadow:
           settings.darkTheme ? [] : [

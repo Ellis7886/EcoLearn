@@ -1,66 +1,36 @@
+import 'package:ecolearn/screens/quiz/create_quiz_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 import '../../provider/app_settings.dart';
+
 import '../../themes/app_colors.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
-import 'create_quiz_page.dart';
 
-class QuizPage extends StatefulWidget {
-  const QuizPage({super.key});
-
-  @override
-  State<QuizPage> createState() =>
-      _QuizPageState();
-}
-
-class _QuizPageState
-    extends State<QuizPage> {
-
-  String role = '';
-
-  @override
-  void initState() {
-    super.initState();
-    loadUserRole();
-  }
-
-  Future<void> loadUserRole() async {
-
-    final uid =
-        FirebaseAuth.instance.currentUser!.uid;
-
-    final doc =
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
-
-    if (!mounted) return;
-
-    setState(() {
-      role = doc['role'];
-    });
-  }
+class QuizPage extends StatelessWidget {
+  const QuizPage({super.key,});
 
   @override
   Widget build(BuildContext context) {
-
     final settings = Provider.of<AppSettings>(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background(settings.darkTheme,),
+      backgroundColor: AppColors.background(
+        settings.darkTheme,
+      ),
+
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: 3,
+        onTap: (index){},
+      ),
 
       appBar: AppBar(
-        backgroundColor:
-        AppColors.background(
+        backgroundColor: AppColors.background(
           settings.darkTheme,
         ),
-
-        elevation: 0,
 
         title: Text(
           'Quiz',
@@ -78,42 +48,13 @@ class _QuizPageState
         ),
       ),
 
-      floatingActionButton:
-      role == 'lecturer' ? FloatingActionButton(
-        backgroundColor: AppColors.primary,
-
-        onPressed: () {
-
-          Navigator.push(
-            context,
-
-            MaterialPageRoute(
-              builder: (_) =>
-              const CreateQuizPage(),
-            ),
-          );
-        },
-
-        child: const Icon(
-          Icons.add,
-          color: Colors.black,
-        ),
-      ) : null,
-
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: 3,
-        onTap: (index) {},
-      ),
-
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('quizzes')
-            .orderBy(
-          'created_at',
-          descending: true,
-        ).snapshots(),
+          .collection('quizzes')
+          .snapshots(),
 
         builder: (context, snapshot) {
+
           if (snapshot.connectionState ==
               ConnectionState.waiting) {
 
@@ -133,84 +74,212 @@ class _QuizPageState
                     settings.darkTheme,
                   ),
                 ),
-              )
+              ),
             );
           }
 
           final quizzes = snapshot.data!.docs;
 
           return ListView.builder(
-            padding:
-            const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(20),
 
-            itemCount:
-            quizzes.length,
+            itemCount: quizzes.length,
 
-            itemBuilder:
-                (context, index) {
+            itemBuilder: (context, index) {
 
               final quiz = quizzes[index];
 
+              final title =
+                  quiz['title'] ?? '';
+
+              final totalQuestions =
+                  quiz['total_questions'] ?? 0;
+
+              final passingMarks =
+                  quiz['passing_marks'] ?? 0;
+
               return Container(
-                margin: const EdgeInsets.only(bottom: 15,),
-
-                decoration:
-                BoxDecoration(
-                  color: const Color(0xFF2B2B2B,),
-
-                  borderRadius:
-                  BorderRadius.circular(20,),
+                margin: const EdgeInsets.only(
+                  bottom: 15,
                 ),
 
-                child: ListTile(
+                decoration: BoxDecoration(
+                  color: AppColors.card(settings.darkTheme,),
 
-                  leading:
-                  const Icon(
-                    Icons.quiz, color: Color(0xFF9BD028,),
-                    size: 35,
-                  ),
+                  borderRadius: BorderRadius.circular(20,),
+                ),
 
-                  title: Text(
-                    quiz['title'] ?? '',
+                child: Padding(
+                  padding:
+                  const EdgeInsets.all(16),
 
-                    style:
-                    const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Column(
+                    crossAxisAlignment:
+                    CrossAxisAlignment.start,
 
-                  subtitle: Text(
-                    quiz['description'] ?? '',
+                    children: [
 
-                    style:
-                    const TextStyle(
-                      color: Colors.white70,
-                    ),
-                  ),
+                      Row(
+                        children: [
 
-                  trailing:
-                  const Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.white54,
-                    size: 16,
-                  ),
+                          Container(
+                            padding:
+                            const EdgeInsets.all(
+                              12,
+                            ),
 
-                  onTap: () {
+                            decoration:
+                            BoxDecoration(
+                              color:
+                              const Color(
+                                0xFF9BD028,
+                              ).withValues(
+                                alpha: 0.15,
+                              ),
 
-                    ScaffoldMessenger.of(
-                        context)
-                        .showSnackBar(
+                              borderRadius:
+                              BorderRadius.circular(
+                                12,
+                              ),
+                            ),
 
-                      SnackBar(
-                        content: Text(
-                          quiz['title'],
+                            child: const Icon(
+                              Icons.quiz,
+                              color: Color(
+                                0xFF9BD028,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(
+                            width: 12,
+                          ),
+
+                          Expanded(
+                            child: Text(
+                              title,
+
+                              style: TextStyle(
+                                color: AppColors.text(
+                                  settings.darkTheme,
+                                ),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(
+                        height: 15,
+                      ),
+
+                      Text(
+                        '$totalQuestions Questions',
+
+                        style:
+                        TextStyle(
+                          color: AppColors.subText(
+                            settings.darkTheme,
+                          ),
                         ),
                       ),
-                    );
-                    // Future:
-                    // Open Quiz
-                  },
+
+                      const SizedBox(
+                        height: 5,
+                      ),
+
+                      Text(
+                        'Passing Marks: $passingMarks',
+
+                        style:
+                        TextStyle(
+                          color: AppColors.subText(
+                            settings.darkTheme,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 15,
+                      ),
+
+                      SizedBox(
+                        width:
+                        double.infinity,
+
+                        child:
+                        ElevatedButton(
+
+                          onPressed: () {
+
+                            // Navigate to
+                            // TakeQuizPage
+
+                          },
+
+                          style:
+                          ElevatedButton
+                              .styleFrom(
+                            backgroundColor:
+                            const Color(
+                              0xFF9BD028,
+                            ),
+                          ),
+
+                          child: const Text(
+                            'START QUIZ',
+
+                            style: TextStyle(
+                              color:
+                              Colors.black,
+
+                              fontWeight:
+                              FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .get(),
+
+        builder: (context, snapshot) {
+
+          if (!snapshot.hasData) {
+            return const SizedBox();
+          }
+
+          final role = snapshot.data!['role'] ?? 'student';
+
+          if (role != 'lecturer') {
+            return const SizedBox();
+          }
+
+          return FloatingActionButton(
+            backgroundColor: AppColors.primary,
+
+            child: const Icon(
+              Icons.add,
+              color: Colors.black,
+            ),
+
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const CreateQuizPage(),
                 ),
               );
             },

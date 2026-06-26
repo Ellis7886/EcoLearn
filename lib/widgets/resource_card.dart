@@ -71,7 +71,6 @@ class ResourceCard extends StatelessWidget {
               color: AppColors.text(
                 settings.darkTheme,
               ),
-              fontWeight: FontWeight.bold,
               fontSize: 18,
             ),
           ),

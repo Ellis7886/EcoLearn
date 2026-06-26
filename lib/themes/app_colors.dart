@@ -27,8 +27,7 @@ class AppColors {
   }
 
   // Main EcoLearn Green
-  static const Color primary =
-  Color(0xFF689F38);
+  static const Color primary = Color(0xFF689F38);
 
   // Light green background for icons
   static Color primaryLight(bool darkTheme) {
