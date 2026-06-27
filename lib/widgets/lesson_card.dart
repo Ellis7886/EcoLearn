@@ -194,46 +194,6 @@ class LessonCard extends StatelessWidget {
                 fontSize: 15,
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            ClipRRect(
-              borderRadius:
-              BorderRadius.circular(10),
-
-              child:
-              LinearProgressIndicator(
-                value: progress,
-
-                minHeight: 8,
-
-                backgroundColor:
-                settings.darkTheme ? Colors.white12 : Colors.black12,
-                color:
-                AppColors.primary,
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            Align(
-              alignment:
-              Alignment.centerRight,
-
-              child: Text(
-                '${(progress * 100).toInt()}%',
-
-                style: TextStyle(
-                  color:
-                  AppColors.text(
-                    settings.darkTheme,
-                  ),
-
-                  fontWeight:
-                  FontWeight.bold,
-                ),
-              ),
-            ),
           ],
         ),
       ),
