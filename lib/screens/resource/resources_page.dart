@@ -7,6 +7,7 @@ import '../../provider/app_settings.dart';
 import '../../themes/app_colors.dart';
 
 import '../pdf_viewer_page.dart';
+import '../video_player_page.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
 
@@ -218,6 +219,33 @@ class ResourcesPage extends StatelessWidget {
                         ),
 
                         children: resources.map((resource) {
+
+                          IconData icon = Icons.description;
+
+                          final fileType = (resource['file_type'] ?? '')
+                              .toString()
+                              .toLowerCase();
+
+                          String subtitle = 'Open Material';
+
+                          if (fileType.contains('pdf')) {
+                            subtitle = 'Open PDF';
+                          }
+                          else if (fileType.contains('video') ||
+                              fileType.contains('mp4')) {
+                            subtitle = 'Watch Video';
+                          }
+                          else if (fileType.contains('jpg') ||
+                              fileType.contains('jpeg') ||
+                              fileType.contains('png') ||
+                              fileType.contains('image')) {
+                            subtitle = 'View Image';
+                          }
+                          else if (fileType.contains('doc') ||
+                              fileType.contains('docx')) {
+                            subtitle = 'Open Document';
+                          }
+
                           return Container(
                             margin: const EdgeInsets.only(
                               bottom: 10,
@@ -246,8 +274,8 @@ class ResourcesPage extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(10,),
                                 ),
 
-                                child: const Icon(
-                                  Icons.picture_as_pdf,
+                                child: Icon(
+                                  icon,
                                   color: AppColors.primary,
                                 ),
                               ),
@@ -261,7 +289,7 @@ class ResourcesPage extends StatelessWidget {
                               ),
 
                               subtitle: Text(
-                                'Open the Material',
+                                subtitle,
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontSize: 12,
@@ -275,15 +303,35 @@ class ResourcesPage extends StatelessWidget {
                               ),
 
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => PdfViewerPage(
-                                      pdfUrl: resource['file_url'],
-                                      title: resource['title'],
+                                final fileType = (resource['file_type'] ?? '')
+                                    .toString()
+                                    .toLowerCase();
+
+                                if (fileType.contains('pdf')) {Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PdfViewerPage(
+                                        pdfUrl: resource['file_url'],
+                                        title: resource['title'],
+                                      ),
                                     ),
-                                  ),
-                                );
+                                  );
+                                }
+                                else if (fileType.contains('video') ||
+                                    fileType.contains('mp4')) {Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => VideoPlayerPage(
+                                        videoUrl: resource['file_url'],
+                                        title: resource['title'],
+                                      ),
+                                    ),
+                                  );
+                                }
+
+                                else {
+                                  openFile(resource['file_url']);
+                                }
                               },
                             ),
                           );
