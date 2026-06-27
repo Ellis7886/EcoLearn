@@ -10,6 +10,9 @@ import '../../themes/app_colors.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
 
+import '../video_player_page.dart';
+import '../pdf_viewer_page.dart';
+
 class LessonsContentPage extends StatelessWidget {
   final String lessonId;
   final String lessonTitle;
@@ -27,9 +30,7 @@ class LessonsContentPage extends StatelessWidget {
     final settings = Provider.of<AppSettings>(context);
 
     return Scaffold(
-        backgroundColor: AppColors.background(
-          settings.darkTheme,
-        ),
+      backgroundColor: AppColors.background(settings.darkTheme,),
 
       floatingActionButton: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
@@ -79,23 +80,17 @@ class LessonsContentPage extends StatelessWidget {
       ),
 
       appBar: AppBar(
-        backgroundColor: AppColors.background(
-          settings.darkTheme,
-        ),
+        backgroundColor: AppColors.background(settings.darkTheme,),
 
         title: Text(
           lessonTitle,
           style: TextStyle(
-            color: AppColors.text(
-              settings.darkTheme,
-            ),
+            color: AppColors.text(settings.darkTheme,),
           ),
         ),
 
         iconTheme: IconThemeData(
-          color: AppColors.text(
-            settings.darkTheme,
-          ),
+          color: AppColors.text(settings.darkTheme,),
         ),
       ),
 
@@ -114,9 +109,7 @@ class LessonsContentPage extends StatelessWidget {
             );
           }
 
-          if (!snapshot.hasData ||
-              snapshot.data!.docs.isEmpty) {
-
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Text(
                 'No chapters available',
@@ -133,26 +126,16 @@ class LessonsContentPage extends StatelessWidget {
 
           return ListView.builder(
             padding: const EdgeInsets.all(20),
-
             itemCount: chapters.length,
-
             itemBuilder: (context, index) {
-
               final chapter = chapters[index];
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 15,),
-
                 decoration: BoxDecoration(
-                  color: AppColors.card(
-                    settings.darkTheme,
-                  ),
-
+                  color: AppColors.card(settings.darkTheme,),
                   borderRadius: BorderRadius.circular(20),
-
-                  boxShadow: settings.darkTheme
-                      ? []
-                      : [
+                  boxShadow: settings.darkTheme ? [] : [
                     BoxShadow(
                       color: Colors.black12,
                       blurRadius: 10,
@@ -167,16 +150,11 @@ class LessonsContentPage extends StatelessWidget {
                   ),
 
                   child: ExpansionTile(
-
                     leading: Container(
                       width: 45,
                       height: 45,
-
                       decoration: BoxDecoration(
-                        color: AppColors.primaryLight(
-                          settings.darkTheme,
-                        ),
-
+                        color: AppColors.primaryLight(settings.darkTheme,),
                         borderRadius: BorderRadius.circular(12),
                       ),
 
@@ -186,12 +164,8 @@ class LessonsContentPage extends StatelessWidget {
                       ),
                     ),
 
-                    iconColor: AppColors.text(
-                      settings.darkTheme,
-                    ),
-                    collapsedIconColor: AppColors.text(
-                      settings.darkTheme,
-                    ),
+                    iconColor: AppColors.text(settings.darkTheme,),
+                    collapsedIconColor: AppColors.text(settings.darkTheme,),
 
                     title: Row(
                       children: [
@@ -199,9 +173,7 @@ class LessonsContentPage extends StatelessWidget {
                           child: Text(
                             chapter['title'] ?? '',
                             style: TextStyle(
-                              color: AppColors.text(
-                                settings.darkTheme,
-                              ),
+                              color: AppColors.text(settings.darkTheme,),
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -228,9 +200,7 @@ class LessonsContentPage extends StatelessWidget {
                             return PopupMenuButton<String>(
                               icon: Icon(
                                 Icons.more_vert,
-                                color: AppColors.text(
-                                  settings.darkTheme,
-                                ),
+                                color: AppColors.text(settings.darkTheme,),
                               ),
 
                               onSelected: (value) async {
@@ -271,9 +241,7 @@ class LessonsContentPage extends StatelessWidget {
                         child: Text(
                           chapter['description'] ?? '',
                           style: TextStyle(
-                            color: AppColors.subText(
-                              settings.darkTheme,
-                            ),
+                            color: AppColors.subText(settings.darkTheme,),
                             height: 1.5,
                           ),
                         ),
@@ -304,9 +272,7 @@ class LessonsContentPage extends StatelessWidget {
                               child: Text(
                                 'No materials uploaded',
                                 style:
-                                TextStyle(
-                                  color: Colors.white54,
-                                ),
+                                TextStyle(color: Colors.white54,),
                               ),
                             );
                           }
@@ -315,20 +281,29 @@ class LessonsContentPage extends StatelessWidget {
 
                           return Column(
                             children: materials.map((material) {
-                                IconData icon = Icons.description;
-                                String fileName = material['file_name'] ?? '';
+                              IconData icon = Icons.description;
 
-                                if (fileName.toLowerCase().endsWith('.pdf')) {
-                                  icon = Icons.picture_as_pdf;
-                                }
-                                else if (fileName.toLowerCase().endsWith('.mp4')) {
-                                  icon = Icons.video_library;
-                                }
-                                else if (fileName.toLowerCase().endsWith('.jpg') ||
-                                    fileName.toLowerCase().endsWith('.jpeg') ||
-                                    fileName.toLowerCase().endsWith('.png')) {
-                                  icon = Icons.image;
-                                }
+                              final fileType =
+                              (material['file_type'] ?? '').toString().toLowerCase();
+
+                              if (fileType.contains('pdf')) {
+                                icon = Icons.picture_as_pdf;
+                              }
+                              else if (fileType.contains('mp4') ||
+                                  fileType.contains('video')) {
+                                icon = Icons.video_library;
+                              }
+                              else if (fileType.contains('jpg') ||
+                                  fileType.contains('jpeg') ||
+                                  fileType.contains('png') ||
+                                  fileType.contains('image')) {
+                                icon = Icons.image;
+                              }
+                              else if (fileType.contains('doc') ||
+                                  fileType.contains('docx') ||
+                                  fileType.contains('word')) {
+                                icon = Icons.article;
+                              }
 
                                 return Container(
                                   margin: const EdgeInsets.only(
@@ -336,18 +311,11 @@ class LessonsContentPage extends StatelessWidget {
                                   ),
 
                                   decoration: BoxDecoration(
-                                    color: AppColors.card(
-                                      settings.darkTheme,
-                                    ),
-
+                                    color: AppColors.card(settings.darkTheme,),
                                     borderRadius: BorderRadius.circular(15),
-
                                     border: Border.all(
-                                      color: AppColors.border(
-                                        settings.darkTheme,
-                                      ),
+                                      color: AppColors.border(settings.darkTheme,),
                                     ),
-
                                     boxShadow: settings.darkTheme
                                         ? []
                                         : [
@@ -370,9 +338,7 @@ class LessonsContentPage extends StatelessWidget {
                                     Text(
                                       material['title'],
                                       style: TextStyle(
-                                        color: AppColors.text(
-                                          settings.darkTheme,
-                                        ),
+                                        color: AppColors.text(settings.darkTheme,),
                                       ),
                                     ),
 
@@ -397,9 +363,7 @@ class LessonsContentPage extends StatelessWidget {
                                         return PopupMenuButton<String>(
                                           icon: Icon(
                                             Icons.more_vert,
-                                            color: AppColors.text(
-                                              settings.darkTheme,
-                                            ),
+                                            color: AppColors.text(settings.darkTheme,),
                                           ),
 
                                           onSelected: (value) async {
@@ -410,11 +374,9 @@ class LessonsContentPage extends StatelessWidget {
 
                                             else if (value == 'delete') {
 
-                                              final messenger =
-                                              ScaffoldMessenger.of(context);
+                                              final messenger = ScaffoldMessenger.of(context);
 
-                                              final confirm =
-                                              await showDialog<bool>(
+                                              final confirm = await showDialog<bool>(
                                                 context: context,
                                                 builder: (_) => AlertDialog(
                                                   title: const Text(
@@ -506,18 +468,37 @@ class LessonsContentPage extends StatelessWidget {
                                         );
                                       },
                                     ),
-                                    onTap: () {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content:
-                                          Text(material['title'],),
-                                        ),
-                                      );
-                                      // Future:
-                                      // Open PDF
-                                      // Open Video
-                                      // Open Image
-                                    },
+                                      onTap: () {
+
+                                        final fileType =
+                                        (material['file_type'] ?? '').toString().toLowerCase();
+
+                                        if (fileType.contains('pdf')) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => PdfViewerPage(
+                                                pdfUrl: material['file_url'],
+                                                title: material['title'],
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        else if (fileType.contains('video') ||
+                                            fileType.contains('mp4')) {
+
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => VideoPlayerPage(
+                                                videoUrl: material['file_url'],
+                                                title: material['title'],
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      }
                                   ),
                                 );
                               },

@@ -19,8 +19,7 @@ class CreateContentPage extends StatefulWidget {
   });
 
   @override
-  State<CreateContentPage> createState() =>
-      _CreateContentPageState();
+  State<CreateContentPage> createState() => _CreateContentPageState();
 }
 
 class _CreateContentPageState extends State<CreateContentPage> {
@@ -33,18 +32,15 @@ class _CreateContentPageState extends State<CreateContentPage> {
   String contentType = 'chapter';
   List<File> selectedFiles = [];
   List<String> fileNames = [];
+  List<String> fileTypes = [];
   bool isUploading = false;
 
   Future<void> pickFile() async {
 
-    FilePickerResult? result = await FilePicker.pickFiles(
-      allowMultiple: true,
-    );
+    FilePickerResult? result = await FilePicker.pickFiles(allowMultiple: true,);
 
     if (result != null) {
-
       setState(() {
-
         selectedFiles = result.paths
             .map((path) => File(path!))
             .toList();
@@ -52,23 +48,23 @@ class _CreateContentPageState extends State<CreateContentPage> {
         fileNames = result.files
             .map((file) => file.name)
             .toList();
+
+        fileTypes = result.files
+            .map((file) => file.extension?.toLowerCase() ?? '')
+            .toList();
       });
     }
   }
 
   Future<void> postContent() async {
     if (titleController.text.trim().isEmpty) {
-
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please complete all required fields'),
-        ),
+        const SnackBar(content: Text('Please complete all required fields'),),
       );
       return;
     }
 
     if (contentType == 'material' && selectedFiles.isEmpty) {
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select a file'),
@@ -83,27 +79,24 @@ class _CreateContentPageState extends State<CreateContentPage> {
       });
 
       if (contentType == 'material') {
-
-        for (int i = 0;
-        i < selectedFiles.length;
-        i++) {
-
+        for (int i = 0; i < selectedFiles.length; i++) {
           final storageRef = FirebaseStorage.instance
               .ref()
               .child(
             'content/${fileNames[i]}',
           );
 
-          await storageRef.putFile(
-            selectedFiles[i],
-          );
+          await storageRef.putFile(selectedFiles[i]);
+
+          final metadata = await storageRef.getMetadata();
+
+          final fileType = metadata.contentType ?? '';
 
           final fileUrl = await storageRef.getDownloadURL();
 
           await FirebaseFirestore.instance
               .collection('content')
               .add({
-
             'lesson_id': widget.lessonId,
             'lesson_title': widget.lessonTitle,
             'course_code': widget.lessonCode,
@@ -112,17 +105,16 @@ class _CreateContentPageState extends State<CreateContentPage> {
             'title': fileNames[i],
             'description': descriptionController.text.trim(),
             'file_name': fileNames[i],
+            'file_type': fileType,
             'file_url': fileUrl,
             'created_at': Timestamp.now(),
           });
         }
       }
       else {
-
         await FirebaseFirestore.instance
             .collection('content')
             .add({
-
           'lesson_id': widget.lessonId,
           'lesson_title': widget.lessonTitle,
           'course_code': widget.lessonCode,
@@ -145,17 +137,15 @@ class _CreateContentPageState extends State<CreateContentPage> {
       );
 
       Navigator.pop(context);
-
-    } catch (e) {
-
+    }
+    catch (e) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'),
         ),
       );
-
-    } finally {
+    }
+    finally {
       if (mounted) {
         setState(() {isUploading = false;});
       }
@@ -184,18 +174,15 @@ class _CreateContentPageState extends State<CreateContentPage> {
       ),
 
       body: SingleChildScrollView(
-        padding:
-            const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
 
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(15),
-
               decoration: BoxDecoration(
                 color: const Color(0xFF2B2B2B),
                 borderRadius: BorderRadius.circular(15),
@@ -224,20 +211,14 @@ class _CreateContentPageState extends State<CreateContentPage> {
             const SizedBox(height: 10),
 
             DropdownButtonFormField<String>(
-
               initialValue: contentType,
-
               dropdownColor: Colors.grey[900],
-
               style: const TextStyle(
                 color: Colors.white,
               ),
-
               decoration: InputDecoration(
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                      15
-                  ),
+                  borderRadius: BorderRadius.circular(15),
                 ),
               ),
 
@@ -264,18 +245,13 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
             TextField(
               controller: titleController,
-
               style: const TextStyle(
                 color: Colors.white,
               ),
-
               decoration: InputDecoration(
                 labelText: 'Title',
-                border:
-                    OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    15,
-                  ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15,),
                 ),
               ),
             ),
@@ -284,20 +260,15 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
             TextField(
               controller: descriptionController,
-
               maxLines: 5,
-
               style: const TextStyle(
                 color: Colors.white,
               ),
 
               decoration: InputDecoration(
                 labelText: 'Description',
-
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    15,
-                  ),
+                  borderRadius: BorderRadius.circular(15,),
                 ),
               ),
             ),
@@ -325,16 +296,12 @@ class _CreateContentPageState extends State<CreateContentPage> {
                         return DropdownButtonFormField<String>(
 
                           initialValue: selectedChapter,
-
                           dropdownColor: Colors.grey[900],
-
                           style: const TextStyle(
                             color: Colors.white,
                           ),
-
                           decoration: InputDecoration(
                             labelText: 'Select Chapter',
-
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(
                                 15,
@@ -356,7 +323,6 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
                                 return DropdownMenuItem<String>(
                                   value: chapter['title'],
-
                                   child: Text(
                                     chapter['title'],
                                   ),
@@ -366,7 +332,6 @@ class _CreateContentPageState extends State<CreateContentPage> {
                           ],
 
                           onChanged: (value) {
-
                             setState(() {
                               selectedChapter = value;
                             });
@@ -379,15 +344,11 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
                   SizedBox(
                     width: double.infinity,
-
                     child: ElevatedButton.icon(
-
                       onPressed: pickFile,
-
                       icon: const Icon(
                         Icons.attach_file,
                       ),
-
                       label: const Text(
                         'Select File',
                       ),
@@ -399,28 +360,17 @@ class _CreateContentPageState extends State<CreateContentPage> {
                 Column(
                   crossAxisAlignment:
                   CrossAxisAlignment.start,
-
-                  children:
-
-                  fileNames.isEmpty
-
-                      ? [
+                  children: fileNames.isEmpty ? [
                     const Text(
                       'No file selected',
                       style: TextStyle(
                         color: Colors.white,
                       ),
                     ),
-                  ]
-
-                      : fileNames.map((name) {
+                  ] : fileNames.map((name) {
 
                     return Padding(
-                      padding:
-                      const EdgeInsets.only(
-                        bottom: 5,
-                      ),
-
+                      padding: const EdgeInsets.only(bottom: 5,),
                       child: Text(
                         name,
                         style: const TextStyle(
@@ -437,26 +387,20 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
             SizedBox(
               width: double.infinity,
-
               child: ElevatedButton(
-
                 onPressed: isUploading ? null : postContent,
-
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF9BD028),
-
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 15,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 15,),
                 ),
 
-                child: isUploading ? const CircularProgressIndicator(
-                  color: Colors.black,
-                ) : const Text(
-                  'POST',
-                  style: TextStyle(color: Colors.black,
-                    fontWeight: FontWeight.bold)
-                  ),
+                child: isUploading ? const CircularProgressIndicator(color: Colors.black,) : const Text(
+                    'POST',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold
+                    )
+                ),
               ),
             ),
           ],

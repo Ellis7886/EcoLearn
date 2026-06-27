@@ -18,14 +18,12 @@ class ResourcesPage extends StatelessWidget {
     final Uri uri = Uri.parse(url);
 
     if (await canLaunchUrl(uri)) {
-
       await launchUrl(
         uri,
         mode: LaunchMode.externalApplication,
       );
-
-    } else {
-
+    }
+    else {
       throw Exception(
         'Could not open file',
       );
@@ -38,28 +36,20 @@ class ResourcesPage extends StatelessWidget {
     final settings = Provider.of<AppSettings>(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background(
-        settings.darkTheme,
-      ),
+      backgroundColor: AppColors.background(settings.darkTheme,),
 
       appBar: AppBar(
-        backgroundColor: AppColors.card(
-          settings.darkTheme,
-        ),
+        backgroundColor: AppColors.card(settings.darkTheme,),
 
         title: Text(
           'Resources',
           style: TextStyle(
-            color: AppColors.text(
-              settings.darkTheme,
-            ),
+            color: AppColors.text(settings.darkTheme,),
           ),
         ),
 
         iconTheme: IconThemeData(
-          color: AppColors.text(
-            settings.darkTheme,
-          ),
+          color: AppColors.text(settings.darkTheme,),
         ),
       ),
 
@@ -76,9 +66,7 @@ class ResourcesPage extends StatelessWidget {
         builder: (context, snapshot) {
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator(),);
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -86,9 +74,7 @@ class ResourcesPage extends StatelessWidget {
               child: Text(
                 'No resources available',
                 style: TextStyle(
-                  color: AppColors.text(
-                    settings.darkTheme,
-                  ),
+                  color: AppColors.text(settings.darkTheme,),
                 ),
               ),
             );
@@ -101,11 +87,10 @@ class ResourcesPage extends StatelessWidget {
           Map<String, dynamic> groupedResources = {};
 
           for (var resource in resources) {
+            final data = resource.data() as Map<String, dynamic>;
 
             final lesson = resource['lesson_title'] ?? 'Unknown Lesson';
-
-            final courseCode = resource['course_code'] ?? '';
-
+            final courseCode = data['course_code'] ?? '';
             final chapter = resource['chapter'] ?? 'Additional Materials';
 
             groupedResources.putIfAbsent(
@@ -143,9 +128,7 @@ class ResourcesPage extends StatelessWidget {
                   color: settings.darkTheme
                       ? const Color(0xFF2B2B2B)
                       : Colors.white,
-
                   borderRadius: BorderRadius.circular(20),
-
                   boxShadow: settings.darkTheme ? [] : [
                     BoxShadow(
                       color: Colors.black12,
@@ -161,14 +144,11 @@ class ResourcesPage extends StatelessWidget {
                   ),
 
                   child: ExpansionTile(
-
                     tilePadding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 5,
                     ),
-
                     childrenPadding: const EdgeInsets.all(15,),
-
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
 
@@ -177,9 +157,7 @@ class ResourcesPage extends StatelessWidget {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-
                             children: [
-
                               Text(
                                 lessonTitle,
                                 style: TextStyle(
@@ -192,7 +170,6 @@ class ResourcesPage extends StatelessWidget {
                               ),
 
                               const SizedBox(height: 4),
-
                               Text(
                                 courseCode,
                                 style: const TextStyle(
@@ -219,9 +196,7 @@ class ResourcesPage extends StatelessWidget {
                           child: Text(
                             '$totalMaterials Files',
                             style: TextStyle(
-                              color: AppColors.subText(
-                                settings.darkTheme,
-                              ),
+                              color: AppColors.subText(settings.darkTheme,),
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                             ),
@@ -231,24 +206,18 @@ class ResourcesPage extends StatelessWidget {
                     ),
 
                     children: chapterResources.entries.map((chapterEntry) {
-
                       final chapterName = chapterEntry.key;
                       final resources = chapterEntry.value;
-
                       return ExpansionTile(
-
                         title: Text(
                           chapterName,
                           style: TextStyle(
-                            color: AppColors.text(
-                              settings.darkTheme,
-                            ),
+                            color: AppColors.text(settings.darkTheme,),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
 
                         children: resources.map((resource) {
-
                           return Container(
                             margin: const EdgeInsets.only(
                               bottom: 10,
@@ -258,9 +227,7 @@ class ResourcesPage extends StatelessWidget {
                               color: settings.darkTheme
                                   ? const Color(0xFF1F1F1F)
                                   : const Color(0xFFF5F9EF),
-
                               borderRadius: BorderRadius.circular(12),
-
                               border: Border.all(
                                 color: AppColors.primary.withValues(
                                   alpha: 0.3,
@@ -269,19 +236,14 @@ class ResourcesPage extends StatelessWidget {
                             ),
 
                             child: ListTile(
-
                               leading: Container(
                                 width: 40,
                                 height: 40,
-
                                 decoration: BoxDecoration(
                                   color: AppColors.primary.withValues(
                                     alpha: 0.15,
                                   ),
-
-                                  borderRadius: BorderRadius.circular(
-                                    10,
-                                  ),
+                                  borderRadius: BorderRadius.circular(10,),
                                 ),
 
                                 child: const Icon(
@@ -293,9 +255,7 @@ class ResourcesPage extends StatelessWidget {
                               title: Text(
                                 resource['title'],
                                 style: TextStyle(
-                                  color: AppColors.text(
-                                    settings.darkTheme,
-                                  ),
+                                  color: AppColors.text(settings.darkTheme,),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
