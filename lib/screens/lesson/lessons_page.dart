@@ -155,9 +155,10 @@ class _LessonsPageState extends State<LessonsPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => MaterialsPage(
+                      builder: (context) => LessonsContentPage(
                         lessonId: lessons[index].id,
                         lessonTitle: lesson['title'],
+                        lessonCode: lesson['course_code'],
                       ),
                     ),
                   );

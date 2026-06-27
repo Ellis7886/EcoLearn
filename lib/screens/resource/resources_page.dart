@@ -98,25 +98,30 @@ class ResourcesPage extends StatelessWidget {
               .where((doc) => doc['type'] == 'material')
               .toList();
 
-          Map<String, Map<String, List<QueryDocumentSnapshot>>> groupedResources = {};
+          Map<String, dynamic> groupedResources = {};
 
           for (var resource in resources) {
 
             final lesson = resource['lesson_title'] ?? 'Unknown Lesson';
 
+            final courseCode = resource['course_code'] ?? '';
+
             final chapter = resource['chapter'] ?? 'Additional Materials';
 
             groupedResources.putIfAbsent(
-              lesson, () => {},
+              lesson,
+                  () => {
+                'courseCode': courseCode,
+                'chapters': <String, List<QueryDocumentSnapshot>>{},
+              },
             );
 
-            groupedResources[lesson]!.putIfAbsent(
-              chapter, () => [],
+            (groupedResources[lesson]['chapters']
+            as Map<String, List<QueryDocumentSnapshot>>).putIfAbsent(
+              chapter, () => <QueryDocumentSnapshot>[],
             );
 
-            groupedResources[lesson]![chapter]!.add(
-              resource,
-            );
+            groupedResources[lesson]['chapters'][chapter].add(resource);
           }
 
           return ListView(
@@ -124,8 +129,9 @@ class ResourcesPage extends StatelessWidget {
 
             children: groupedResources.entries.map((entry) {
 
-              final chapter = entry.key;
-              final chapterResources = entry.value;
+              final lessonTitle = entry.key;
+              final courseCode = entry.value['courseCode'];
+              final chapterResources = entry.value['chapters'] as Map<String, List<QueryDocumentSnapshot>>;
               final totalMaterials = chapterResources.values.fold<int>(0, (total, list) => total + list.length,);
 
               return Container(
@@ -169,15 +175,33 @@ class ResourcesPage extends StatelessWidget {
                     title: Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            chapter,
-                            style: TextStyle(
-                              color: settings.darkTheme
-                                  ? Colors.white
-                                  : Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+
+                            children: [
+
+                              Text(
+                                lessonTitle,
+                                style: TextStyle(
+                                  color: settings.darkTheme
+                                      ? Colors.white
+                                      : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+
+                              const SizedBox(height: 4),
+
+                              Text(
+                                courseCode,
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
@@ -225,27 +249,83 @@ class ResourcesPage extends StatelessWidget {
 
                         children: resources.map((resource) {
 
-                          return ListTile(
-                            title: Text(
-                              resource['title'],
-                              style: TextStyle(
-                                color: AppColors.text(
-                                  settings.darkTheme,
+                          return Container(
+                            margin: const EdgeInsets.only(
+                              bottom: 10,
+                            ),
+
+                            decoration: BoxDecoration(
+                              color: settings.darkTheme
+                                  ? const Color(0xFF1F1F1F)
+                                  : const Color(0xFFF5F9EF),
+
+                              borderRadius: BorderRadius.circular(12),
+
+                              border: Border.all(
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.3,
                                 ),
                               ),
                             ),
 
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PdfViewerPage(
-                                    pdfUrl: resource['file_url'],
-                                    title: resource['title'],
+                            child: ListTile(
+
+                              leading: Container(
+                                width: 40,
+                                height: 40,
+
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.15,
+                                  ),
+
+                                  borderRadius: BorderRadius.circular(
+                                    10,
                                   ),
                                 ),
-                              );
-                            },
+
+                                child: const Icon(
+                                  Icons.picture_as_pdf,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+
+                              title: Text(
+                                resource['title'],
+                                style: TextStyle(
+                                  color: AppColors.text(
+                                    settings.darkTheme,
+                                  ),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+
+                              subtitle: Text(
+                                'Open the Material',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 12,
+                                ),
+                              ),
+
+                              trailing: const Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
+
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => PdfViewerPage(
+                                      pdfUrl: resource['file_url'],
+                                      title: resource['title'],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           );
                         }).toList(),
                       );

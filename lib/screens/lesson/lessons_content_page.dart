@@ -10,14 +10,16 @@ import '../../themes/app_colors.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
 
-class MaterialsPage extends StatelessWidget {
+class LessonsContentPage extends StatelessWidget {
   final String lessonId;
   final String lessonTitle;
+  final String lessonCode;
 
-  const MaterialsPage({
+  const LessonsContentPage({
     super.key,
     required this.lessonId,
     required this.lessonTitle,
+    required this.lessonCode,
   });
 
   @override
@@ -57,6 +59,7 @@ class MaterialsPage extends StatelessWidget {
                   builder: (_) => CreateContentPage(
                     lessonId: lessonId,
                     lessonTitle: lessonTitle,
+                    lessonCode: lessonCode,
                   ),
                 ),
               );

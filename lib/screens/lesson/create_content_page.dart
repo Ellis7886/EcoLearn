@@ -9,11 +9,13 @@ class CreateContentPage extends StatefulWidget {
 
   final String lessonId;
   final String lessonTitle;
+  final String lessonCode;
 
   const CreateContentPage({
     super.key,
     required this.lessonId,
     required this.lessonTitle,
+    required this.lessonCode,
   });
 
   @override
@@ -104,6 +106,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
             'lesson_id': widget.lessonId,
             'lesson_title': widget.lessonTitle,
+            'course_code': widget.lessonCode,
             'type': 'material',
             'chapter': selectedChapter,
             'title': fileNames[i],
@@ -122,6 +125,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
 
           'lesson_id': widget.lessonId,
           'lesson_title': widget.lessonTitle,
+          'course_code': widget.lessonCode,
           'type': 'chapter',
           'chapter': '',
           'title': titleController.text.trim(),
