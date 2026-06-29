@@ -12,6 +12,7 @@ import '../../widgets/bottom_nav_bar.dart';
 
 import '../video_player_page.dart';
 import '../pdf_viewer_page.dart';
+import '../image_viewer_page.dart';
 
 import 'edit_lessons_content_page.dart';
 
@@ -498,7 +499,6 @@ class LessonsContentPage extends StatelessWidget {
                                       },
                                     ),
                                       onTap: () {
-
                                         final fileType =
                                         (material['file_type'] ?? '').toString().toLowerCase();
 
@@ -522,6 +522,22 @@ class LessonsContentPage extends StatelessWidget {
                                             MaterialPageRoute(
                                               builder: (_) => VideoPlayerPage(
                                                 videoUrl: material['file_url'],
+                                                title: material['title'],
+                                              ),
+                                            ),
+                                          );
+                                        }
+
+                                        else if (fileType.contains('jpg') ||
+                                            fileType.contains('jpeg') ||
+                                            fileType.contains('png') ||
+                                            fileType.contains('image')) {
+
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => ImageViewerPage(
+                                                imageUrl: material['file_url'],
                                                 title: material['title'],
                                               ),
                                             ),

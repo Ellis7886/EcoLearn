@@ -8,6 +8,7 @@ import '../../themes/app_colors.dart';
 
 import '../pdf_viewer_page.dart';
 import '../video_player_page.dart';
+import '../image_viewer_page.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
 
@@ -342,7 +343,20 @@ class ResourcesPage extends StatelessWidget {
                                     ),
                                   );
                                 }
-
+                                else if (fileType.contains('jpg') ||
+                                    fileType.contains('jpeg') ||
+                                    fileType.contains('png') ||
+                                    fileType.contains('image')) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ImageViewerPage(
+                                        imageUrl: resource['file_url'],
+                                        title: resource['title'],
+                                      ),
+                                    ),
+                                  );
+                                }
                                 else {
                                   openFile(resource['file_url']);
                                 }
