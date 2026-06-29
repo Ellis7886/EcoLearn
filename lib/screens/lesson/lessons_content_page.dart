@@ -13,6 +13,8 @@ import '../../widgets/bottom_nav_bar.dart';
 import '../video_player_page.dart';
 import '../pdf_viewer_page.dart';
 
+import 'edit_lessons_content_page.dart';
+
 class LessonsContentPage extends StatelessWidget {
   final String lessonId;
   final String lessonTitle;
@@ -203,9 +205,26 @@ class LessonsContentPage extends StatelessWidget {
                                 color: AppColors.text(settings.darkTheme,),
                               ),
 
-                              onSelected: (value) async {
-                                // existing edit/delete code
-                              },
+                                onSelected: (value) async {
+                                  if (value == 'edit') {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => EditLessonsContentPage(
+                                          documentId: chapter.id,
+                                          material: chapter.data() as Map<String, dynamic>,
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  else if (value == 'delete') {
+                                    await FirebaseFirestore.instance
+                                        .collection('content')
+                                        .doc(chapter.id)
+                                        .delete();
+                                  }
+                                },
 
                               itemBuilder: (context) => const [
                                 PopupMenuItem(
@@ -369,7 +388,17 @@ class LessonsContentPage extends StatelessWidget {
                                           onSelected: (value) async {
 
                                             if (value == 'edit') {
-                                              // Navigate to EditMaterialPage
+
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => EditLessonsContentPage(
+                                                    documentId: material.id,
+                                                    material: material.data() as Map<String, dynamic>,
+                                                  ),
+                                                ),
+                                              );
+
                                             }
 
                                             else if (value == 'delete') {

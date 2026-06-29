@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 
 class VideoPlayerPage extends StatefulWidget {
   final String videoUrl;
@@ -17,31 +18,35 @@ class VideoPlayerPage extends StatefulWidget {
 
 class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
-  late VideoPlayerController _controller;
+  late VideoPlayerController _videoController;
+  ChewieController? _chewieController;
 
-  @override
   @override
   void initState() {
     super.initState();
 
-    debugPrint('VIDEO URL: ${widget.videoUrl}');
-
-    _controller = VideoPlayerController.networkUrl(
+    _videoController = VideoPlayerController.networkUrl(
       Uri.parse(widget.videoUrl),
     );
 
-    _controller.initialize().then((_) {
-      debugPrint('VIDEO INITIALIZED SUCCESSFULLY');
+    _videoController.initialize().then((_) {
+
+      _chewieController = ChewieController(
+        videoPlayerController: _videoController,
+        autoPlay: false,
+        looping: false,
+        allowFullScreen: true,
+        allowPlaybackSpeedChanging: true,
+      );
 
       setState(() {});
-    }).catchError((error) {
-      debugPrint('VIDEO ERROR: $error');
     });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _chewieController?.dispose();
+    _videoController.dispose();
     super.dispose();
   }
 
@@ -54,40 +59,9 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       ),
 
       body: Center(
-        child: _controller.value.isInitialized
-            ? Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-
-            AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            ),
-
-            const SizedBox(height: 20),
-
-            IconButton(
-              iconSize: 50,
-              icon: Icon(
-                _controller.value.isPlaying
-                    ? Icons.pause
-                    : Icons.play_arrow,
-              ),
-
-              onPressed: () {
-
-                setState(() {
-
-                  if (_controller.value.isPlaying) {
-                    _controller.pause();
-                  }
-                  else {
-                    _controller.play();
-                  }
-                });
-              },
-            ),
-          ],
+        child: _chewieController != null
+            ? Chewie(
+          controller: _chewieController!,
         )
             : const CircularProgressIndicator(),
       ),

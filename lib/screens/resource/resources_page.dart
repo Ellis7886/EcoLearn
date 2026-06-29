@@ -85,11 +85,21 @@ class ResourcesPage extends StatelessWidget {
               .where((doc) => doc['type'] == 'material')
               .toList();
 
+          if (resources.isEmpty) {
+            return Center(
+              child: Text(
+                'No resources available',
+                style: TextStyle(
+                  color: AppColors.text(settings.darkTheme),
+                ),
+              ),
+            );
+          }
+
           Map<String, dynamic> groupedResources = {};
 
           for (var resource in resources) {
             final data = resource.data() as Map<String, dynamic>;
-
             final lesson = resource['lesson_title'] ?? 'Unknown Lesson';
             final courseCode = data['course_code'] ?? '';
             final chapter = resource['chapter'] ?? 'Additional Materials';
@@ -229,20 +239,24 @@ class ResourcesPage extends StatelessWidget {
                           String subtitle = 'Open Material';
 
                           if (fileType.contains('pdf')) {
+                            icon = Icons.picture_as_pdf;
                             subtitle = 'Open PDF';
                           }
                           else if (fileType.contains('video') ||
                               fileType.contains('mp4')) {
+                            icon = Icons.video_library;
                             subtitle = 'Watch Video';
                           }
                           else if (fileType.contains('jpg') ||
                               fileType.contains('jpeg') ||
                               fileType.contains('png') ||
                               fileType.contains('image')) {
+                            icon = Icons.image;
                             subtitle = 'View Image';
                           }
                           else if (fileType.contains('doc') ||
                               fileType.contains('docx')) {
+                            icon = Icons.article;
                             subtitle = 'Open Document';
                           }
 
