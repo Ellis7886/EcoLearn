@@ -11,7 +11,6 @@ import '../widgets/setting_switch.dart';
 import '../widgets/bottom_nav_bar.dart';
 
 import 'lesson/lessons_page.dart';
-import 'resource/resources_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -97,21 +96,6 @@ class _HomePageState
                       MaterialPageRoute(
                         builder: (context) =>
                         const LessonsPage(),
-                      ),
-                    );
-                  },
-                ),
-
-                HomeMenuCard(
-                  title: 'Resources',
-                  description: 'Explore learning resources',
-                  icon: Icons.folder_rounded,
-                  onTap: (){
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                        const ResourcesPage(),
                       ),
                     );
                   },

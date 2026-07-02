@@ -23,7 +23,7 @@ class QuizPage extends StatelessWidget {
       ),
 
       bottomNavigationBar: BottomNavBar(
-        currentIndex: 3,
+        currentIndex: 2,
         onTap: (index){},
       ),
 

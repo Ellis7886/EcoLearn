@@ -6,7 +6,6 @@ import '../themes/app_colors.dart';
 
 import '../screens/home_page.dart';
 import '../screens/lesson/lessons_page.dart';
-import '../screens/resource/resources_page.dart';
 import '../screens/quiz/quiz_page.dart';
 import '../screens/profile_page.dart';
 
@@ -88,22 +87,12 @@ class BottomNavBar extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (_) =>
-                const ResourcesPage(),
-              ),
-            );
-          }
-
-          else if (index == 3) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
                 const QuizPage(),
               ),
             );
           }
 
-          else if (index == 4) {
+          else if (index == 3) {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -146,11 +135,6 @@ class BottomNavBar extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.menu_book),
             label: 'Lessons',
-          ),
-
-          BottomNavigationBarItem(
-            icon: Icon(Icons.folder),
-            label: 'Resources',
           ),
 
           BottomNavigationBarItem(
