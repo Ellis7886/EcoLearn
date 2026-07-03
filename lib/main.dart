@@ -5,9 +5,14 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'screens/security/login_page.dart';
 import 'provider/app_settings.dart';
+import 'services/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await DatabaseHelper.instance.database;
+
+  print('SQLite database created');
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

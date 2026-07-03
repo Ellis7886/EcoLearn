@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'create_lesson_page.dart';
 import 'edit_lesson_page.dart';
 
+import '../../services/lesson_service.dart';
+
 import '../../themes/app_colors.dart';
 
 import '../../provider/app_settings.dart';
@@ -26,10 +28,25 @@ class _LessonsPageState extends State<LessonsPage> {
 
   String role = '';
 
+  List<Map<String, dynamic>> sqliteLessons = [];
+
   @override
   void initState() {
     super.initState();
+
     loadUserRole();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+      final settings =
+      Provider.of<AppSettings>(context, listen: false);
+
+      if (settings.ecoMode) {
+        loadSQLiteLessons();
+      } else {
+        syncLessonsToSQLite();
+      }
+    });
   }
 
   Future<void> loadUserRole() async {
@@ -44,6 +61,171 @@ class _LessonsPageState extends State<LessonsPage> {
     setState(() {
       role = doc['role'];
     });
+  }
+
+  Future<void> syncLessonsToSQLite() async {
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('lessons')
+        .get();
+
+    final lessonService = LessonService();
+
+    await lessonService.clearLessons();
+
+    for (var doc in snapshot.docs) {
+
+      final lesson = doc.data();
+
+      await lessonService.insertLesson({
+
+        'id': doc.id,
+        'title': lesson['title'],
+        'description': lesson['description'],
+        'course_code': lesson['course_code'],
+        'progress': lesson['progress'],
+      });
+    }
+
+    print('Lessons synced to SQLite');
+
+    final lessons = await lessonService.getLessons();
+
+    setState(() {
+      sqliteLessons = lessons;
+    });
+  }
+
+  Future<void> loadSQLiteLessons() async {
+
+    final lessonService = LessonService();
+
+    final lessons = await lessonService.getLessons();
+
+    setState(() {
+      sqliteLessons = lessons;
+    });
+  }
+
+  Widget buildSQLiteLessons(AppSettings settings) {
+
+    if (sqliteLessons.isEmpty) {
+      return Center(
+        child: Text(
+          'No lessons found',
+          style: TextStyle(
+            color: AppColors.text(settings.darkTheme),
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: sqliteLessons.length,
+
+      itemBuilder: (context, index) {
+
+        final lesson = sqliteLessons[index];
+
+        return LessonCard(
+          title: lesson['title'],
+          description: lesson['description'],
+          courseCode: lesson['course_code'],
+          progress: (lesson['progress'] ?? 0) / 100,
+
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => LessonsContentPage(
+                  lessonId: lesson['id'],
+                  lessonTitle: lesson['title'],
+                  lessonCode: lesson['course_code'],
+                ),
+              ),
+            );
+          },
+
+          onEdit: () {},
+          onDelete: () {},
+        );
+      },
+    );
+  }
+
+  Widget buildFirebaseLessons(AppSettings settings) {
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('lessons')
+          .orderBy(
+        'created_at',
+        descending: true,
+      )
+          .snapshots(),
+
+      builder: (context, snapshot) {
+
+        if (snapshot.connectionState ==
+            ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        if (!snapshot.hasData ||
+            snapshot.data!.docs.isEmpty) {
+
+          return Center(
+            child: Text(
+              'No lessons found',
+              style: TextStyle(
+                color: AppColors.text(
+                  settings.darkTheme,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final lessons = snapshot.data!.docs;
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(20),
+          itemCount: lessons.length,
+
+          itemBuilder: (context, index) {
+
+            final lesson = lessons[index].data()
+            as Map<String, dynamic>;
+
+            return LessonCard(
+              title: lesson['title'],
+              description: lesson['description'],
+              courseCode: lesson['course_code'],
+              progress: lesson['progress'] / 100,
+
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => LessonsContentPage(
+                      lessonId: lessons[index].id,
+                      lessonTitle: lesson['title'],
+                      lessonCode: lesson['course_code'],
+                    ),
+                  ),
+                );
+              },
+
+              onEdit: () {},
+              onDelete: () {},
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -102,149 +284,9 @@ class _LessonsPageState extends State<LessonsPage> {
         ),
       ),
 
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('lessons')
-            .orderBy(
-          'created_at',
-          descending: true,
-        ).snapshots(),
-
-        builder: (context, snapshot) {
-
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          if (!snapshot.hasData ||
-              snapshot.data!.docs.isEmpty) {
-
-            return Center(
-              child: Text(
-                'No lessons found',
-                style: TextStyle(
-                  color: AppColors.text(
-                    settings.darkTheme,
-                  ),
-                ),
-              ),
-            );
-          }
-
-          final lessons = snapshot.data!.docs;
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(20),
-
-            itemCount: lessons.length,
-
-            itemBuilder: (context, index) {
-
-              final lesson = lessons[index].data();
-
-              return LessonCard(
-                title: lesson['title'],
-                description: lesson['description'],
-                courseCode: lesson['course_code'],
-                progress: lesson['progress'] / 100,
-
-                onTap: () {
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LessonsContentPage(
-                        lessonId: lessons[index].id,
-                        lessonTitle: lesson['title'],
-                        lessonCode: lesson['course_code'],
-                      ),
-                    ),
-                  );
-                },
-
-                onEdit: () {
-
-                  Navigator.push(
-                    context,
-
-                    MaterialPageRoute(
-                      builder: (context) => EditLessonPage(
-                        lessonId: lessons[index].id,
-                        title: lesson['title'],
-                        description: lesson['description'],
-                        courseCode: lesson['course_code'],
-                      ),
-                    ),
-                  );
-                },
-
-                onDelete: () async {
-
-                  final messenger = ScaffoldMessenger.of(context);
-
-                  final confirm = await showDialog<bool>(
-                    context: context,
-
-                    builder: (dialogContext) => AlertDialog(
-                      title: const Text(
-                        'Delete Lesson',
-                      ),
-
-                      content: const Text(
-                        'Are you sure you want to delete this lesson?',
-                      ),
-
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(
-                              dialogContext,
-                              false,
-                            );
-                          },
-
-                          child: const Text(
-                            'Cancel',
-                          ),
-                        ),
-
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(
-                              dialogContext,
-                              true,
-                            );
-                          },
-
-                          child: const Text(
-                            'Delete',
-                            style: TextStyle(color: Colors.red,),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (confirm == true) {
-                    await FirebaseFirestore.instance
-                        .collection('lessons')
-                        .doc(lessons[index].id)
-                        .delete();
-
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Lesson deleted successfully',),
-                      ),
-                    );
-                  }
-                },
-              );
-            },
-          );
-        },
-      ),
+      body: settings.ecoMode
+          ? buildSQLiteLessons(settings)
+          : buildFirebaseLessons(settings),
     );
   }
 }

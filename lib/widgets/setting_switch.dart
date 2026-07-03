@@ -24,8 +24,7 @@ class SettingSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    final settings =
-    Provider.of<AppSettings>(context);
+    final settings = Provider.of<AppSettings>(context);
 
     return Container(
       width: double.infinity,
