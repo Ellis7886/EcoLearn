@@ -12,7 +12,7 @@ void main() async {
 
   await DatabaseHelper.instance.database;
 
-  print('SQLite database created');
+  // print('SQLite database created');
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

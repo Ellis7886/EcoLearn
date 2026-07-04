@@ -106,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
 
       bottomNavigationBar: BottomNavBar(
-        currentIndex: 4,
+        currentIndex: 3,
         onTap: (index){},
       ),
 
@@ -258,45 +258,69 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
 
+                  if (user.role == 'student')...[
+                    Text(
+                      'Learning Statistics',
+                      style: TextStyle(
+                        color: AppColors.text(
+                          settings.darkTheme,
+                        ),
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    Row(
+                      children: [
+
+                        Expanded(
+                          child: FutureBuilder<QuerySnapshot>(
+                            future: FirebaseFirestore.instance
+                                .collection('lessons')
+                                .get(),
+                            builder: (context, snapshot) {
+
+                              if (!snapshot.hasData) {
+                                return buildStatCard(
+                                  'Lessons',
+                                  '0',
+                                  Icons.menu_book,
+                                  settings.darkTheme,
+                                );
+                              }
+
+                              final lessonCount =
+                                  snapshot.data!.docs.length;
+
+                              return buildStatCard(
+                                'Lessons',
+                                lessonCount.toString(),
+                                Icons.menu_book,
+                                settings.darkTheme,
+                              );
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(width: 15),
+
+                        Expanded(
+                          child: buildStatCard(
+                            'Quiz',
+                            '85%',
+                            Icons.quiz,
+                            settings.darkTheme,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+
                   const SizedBox(height: 30),
 
-                  Text(
-                    'Learning Statistics',
-                    style: TextStyle(
-                      color: AppColors.text(
-                        settings.darkTheme,
-                      ),
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
 
-                  const SizedBox(height: 15),
-
-                  Row(
-                    children: [
-
-                      Expanded(
-                        child: buildStatCard(
-                          'Lessons',
-                          '12',
-                          Icons.menu_book,
-                          settings.darkTheme,
-                        ),
-                      ),
-
-                      const SizedBox(width: 15),
-
-                      Expanded(
-                        child: buildStatCard(
-                          'Quiz',
-                          '85%',
-                          Icons.quiz,
-                          settings.darkTheme,
-                        ),
-                      ),
-                    ],
-                  ),
 
                   const SizedBox(height: 30),
 

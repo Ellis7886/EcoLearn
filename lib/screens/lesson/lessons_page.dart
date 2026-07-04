@@ -2,20 +2,20 @@ import 'lessons_content_page.dart';
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
-import 'create_lesson_page.dart';
-import 'edit_lesson_page.dart';
-
-import '../../services/lesson_service.dart';
+import '../../controllers/lesson_controller.dart';
 
 import '../../themes/app_colors.dart';
 
 import '../../provider/app_settings.dart';
 
 import '../../widgets/lesson_card.dart';
+
 import '../../widgets/bottom_nav_bar.dart';
+
+import 'create_lesson_page.dart';
+// import 'edit_lesson_page.dart';
 
 class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});
@@ -25,17 +25,15 @@ class LessonsPage extends StatefulWidget {
 }
 
 class _LessonsPageState extends State<LessonsPage> {
+  final LessonController _controller = LessonController();
 
   String role = '';
 
   List<Map<String, dynamic>> sqliteLessons = [];
 
-  @override
-  void initState() {
+  @override void initState() {
     super.initState();
-
     loadUserRole();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
 
       final settings =
@@ -50,46 +48,15 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> loadUserRole() async {
-
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
+    final userRole = await _controller.getUserRole();
 
     setState(() {
-      role = doc['role'];
+      role = userRole;
     });
   }
 
   Future<void> syncLessonsToSQLite() async {
-
-    final snapshot = await FirebaseFirestore.instance
-        .collection('lessons')
-        .get();
-
-    final lessonService = LessonService();
-
-    await lessonService.clearLessons();
-
-    for (var doc in snapshot.docs) {
-
-      final lesson = doc.data();
-
-      await lessonService.insertLesson({
-
-        'id': doc.id,
-        'title': lesson['title'],
-        'description': lesson['description'],
-        'course_code': lesson['course_code'],
-        'progress': lesson['progress'],
-      });
-    }
-
-    print('Lessons synced to SQLite');
-
-    final lessons = await lessonService.getLessons();
+    final lessons = await _controller.syncLessons();
 
     setState(() {
       sqliteLessons = lessons;
@@ -97,10 +64,7 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> loadSQLiteLessons() async {
-
-    final lessonService = LessonService();
-
-    final lessons = await lessonService.getLessons();
+    final lessons = await _controller.getSQLiteLessons();
 
     setState(() {
       sqliteLessons = lessons;
