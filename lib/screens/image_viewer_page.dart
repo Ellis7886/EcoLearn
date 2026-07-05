@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class ImageViewerPage extends StatelessWidget {
@@ -21,33 +23,15 @@ class ImageViewerPage extends StatelessWidget {
 
       body: Center(
         child: InteractiveViewer(
-          child: Image.network(
+          child: imageUrl.startsWith('http')
+              ? Image.network(
             imageUrl,
             fit: BoxFit.contain,
-            loadingBuilder: (
-                context,
-                child,
-                loadingProgress,
-                ) {
-
-              if (loadingProgress == null) {
-                return child;
-              }
-
-              return const CircularProgressIndicator();
-            },
-
-            errorBuilder: (
-                context,
-                error,
-                stackTrace,
-                ) {
-
-              return const Text(
-                'Unable to load image',
-              );
-            },
-          ),
+          )
+              : Image.file(
+            File(imageUrl),
+            fit: BoxFit.contain,
+          )
         ),
       ),
     );
