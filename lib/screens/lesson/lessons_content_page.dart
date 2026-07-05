@@ -4,15 +4,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../../services/material_service.dart';
+import '../../services/file_service.dart';
+
+import '../pdf_viewer_page.dart';
+import '../video_player_page.dart';
+import '../image_viewer_page.dart';
+
 import '../../provider/app_settings.dart';
 
 import '../../themes/app_colors.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
-
-import '../video_player_page.dart';
-import '../pdf_viewer_page.dart';
-import '../image_viewer_page.dart';
 
 import 'edit_lessons_content_page.dart';
 
@@ -27,6 +30,57 @@ class LessonsContentPage extends StatelessWidget {
     required this.lessonTitle,
     required this.lessonCode,
   });
+
+  void openMaterial(
+      BuildContext context,
+      String fileType,
+      String path,
+      String title,
+      ) {
+
+    if (fileType.contains('pdf')) {
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PdfViewerPage(
+            pdfUrl: path,
+            title: title,
+          ),
+        ),
+      );
+    }
+
+    else if (fileType.contains('video') ||
+        fileType.contains('mp4')) {
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VideoPlayerPage(
+            videoUrl: path,
+            title: title,
+          ),
+        ),
+      );
+    }
+
+    else if (fileType.contains('jpg') ||
+        fileType.contains('jpeg') ||
+        fileType.contains('png') ||
+        fileType.contains('image')) {
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ImageViewerPage(
+            imageUrl: path,
+            title: title,
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -498,47 +552,83 @@ class LessonsContentPage extends StatelessWidget {
                                         );
                                       },
                                     ),
-                                      onTap: () {
+                                      onTap: () async {
+
+                                        final materialService = MaterialService();
+                                        final fileService = FileService();
+
+                                        final localMaterial =
+                                        await materialService.getMaterialById(
+                                          material.id,
+                                        );
+
                                         final fileType =
-                                        (material['file_type'] ?? '').toString().toLowerCase();
+                                        (material['file_type'] ?? '')
+                                            .toString()
+                                            .toLowerCase();
 
-                                        if (fileType.contains('pdf')) {
-                                          Navigator.push(
+                                        String? localPath =
+                                        localMaterial?['local_path'];
+
+                                        // Already downloaded
+                                        if (localPath != null &&
+                                            localPath.isNotEmpty) {
+
+                                          print('OPEN LOCAL FILE');
+
+                                          openMaterial(
                                             context,
-                                            MaterialPageRoute(
-                                              builder: (_) => PdfViewerPage(
-                                                pdfUrl: material['file_url'],
-                                                title: material['title'],
+                                            fileType,
+                                            localPath,
+                                            material['title'],
+                                          );
+
+                                          return;
+                                        }
+
+                                        // Show downloading message
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              'Downloading ${material['title']}...',
+                                            ),
+                                          ),
+                                        );
+
+                                        try {
+
+                                          final filePath =
+                                          await fileService.downloadFile(
+                                            material['file_url'],
+                                            material['file_name'],
+                                          );
+
+                                          await materialService.updateLocalPath(
+                                            material.id,
+                                            filePath,
+                                          );
+
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Download completed',
                                               ),
                                             ),
                                           );
-                                        }
 
-                                        else if (fileType.contains('video') ||
-                                            fileType.contains('mp4')) {
-
-                                          Navigator.push(
+                                          openMaterial(
                                             context,
-                                            MaterialPageRoute(
-                                              builder: (_) => VideoPlayerPage(
-                                                videoUrl: material['file_url'],
-                                                title: material['title'],
-                                              ),
-                                            ),
+                                            fileType,
+                                            filePath,
+                                            material['title'],
                                           );
-                                        }
 
-                                        else if (fileType.contains('jpg') ||
-                                            fileType.contains('jpeg') ||
-                                            fileType.contains('png') ||
-                                            fileType.contains('image')) {
+                                        } catch (e) {
 
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => ImageViewerPage(
-                                                imageUrl: material['file_url'],
-                                                title: material['title'],
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Download failed: $e',
                                               ),
                                             ),
                                           );

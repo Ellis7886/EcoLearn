@@ -1,13 +1,14 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-class DatabaseHelper {
+class DatabaseService {
 
-  static final DatabaseHelper instance = DatabaseHelper._init();
+  static final DatabaseService instance =
+  DatabaseService._init();
 
   static Database? _database;
 
-  DatabaseHelper._init();
+  DatabaseService._init();
 
   Future<Database> get database async {
 
@@ -24,7 +25,10 @@ class DatabaseHelper {
 
     final dbPath = await getDatabasesPath();
 
-    final path = join(dbPath, 'ecolearn.db');
+    final path = join(
+      dbPath,
+      'ecolearn.db',
+    );
 
     return await openDatabase(
       path,
@@ -44,6 +48,19 @@ class DatabaseHelper {
         description TEXT,
         course_code TEXT,
         progress REAL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE materials(
+        id TEXT PRIMARY KEY,
+        lesson_id TEXT,
+        title TEXT,
+        file_name TEXT,
+        chapter TEXT,
+        file_type TEXT,
+        firebase_url TEXT,
+        local_path TEXT
       )
     ''');
   }

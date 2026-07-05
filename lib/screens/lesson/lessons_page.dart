@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
 import '../../controllers/lesson_controller.dart';
+import '../../controllers/material_controller.dart';
 
 import '../../themes/app_colors.dart';
 
@@ -25,7 +26,8 @@ class LessonsPage extends StatefulWidget {
 }
 
 class _LessonsPageState extends State<LessonsPage> {
-  final LessonController _controller = LessonController();
+  final LessonController _lessonController = LessonController();
+  final MaterialController _materialController = MaterialController();
 
   String role = '';
 
@@ -43,12 +45,13 @@ class _LessonsPageState extends State<LessonsPage> {
         loadSQLiteLessons();
       } else {
         syncLessonsToSQLite();
+        syncMaterialsToSQLite();
       }
     });
   }
 
   Future<void> loadUserRole() async {
-    final userRole = await _controller.getUserRole();
+    final userRole = await _lessonController.getUserRole();
 
     setState(() {
       role = userRole;
@@ -56,7 +59,7 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> syncLessonsToSQLite() async {
-    final lessons = await _controller.syncLessons();
+    final lessons = await _lessonController.syncLessons();
 
     setState(() {
       sqliteLessons = lessons;
@@ -64,11 +67,18 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<void> loadSQLiteLessons() async {
-    final lessons = await _controller.getSQLiteLessons();
+    final lessons = await _lessonController.getSQLiteLessons();
 
     setState(() {
       sqliteLessons = lessons;
     });
+  }
+
+  Future<void> syncMaterialsToSQLite() async {
+
+    await _materialController.syncMaterials();
+
+    print('Materials synced');
   }
 
   Widget buildSQLiteLessons(AppSettings settings) {

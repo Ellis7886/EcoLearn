@@ -102,7 +102,7 @@ class _CreateContentPageState extends State<CreateContentPage> {
             'course_code': widget.lessonCode,
             'type': 'material',
             'chapter': selectedChapter,
-            'title': fileNames[i],
+            'title': titleController.text.trim(),
             'description': descriptionController.text.trim(),
             'file_name': fileNames[i],
             'file_type': fileType,

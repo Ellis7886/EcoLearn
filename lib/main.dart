@@ -10,7 +10,7 @@ import 'services/database_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await DatabaseHelper.instance.database;
+  await DatabaseService.instance.database;
 
   // print('SQLite database created');
 
