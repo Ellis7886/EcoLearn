@@ -1,9 +1,9 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:media_store_plus/media_store_plus.dart';
+
+import 'notification_service.dart';
 
 class FileService {
 
@@ -33,9 +33,33 @@ class FileService {
       print(tempPath);
 
       print('6 - Start Dio download');
+      int lastProgress = 0;
+
       await Dio().download(
         url,
         tempPath,
+        onReceiveProgress: (
+            received,
+            total,
+            ) {
+
+          if (total > 0) {
+
+            final progress =
+            ((received / total) * 100).toInt();
+
+            if (progress >= lastProgress + 5) {
+
+              lastProgress = progress;
+
+              print('PROGRESS = $progress');
+
+              NotificationService.showProgress(
+                progress,
+              );
+            }
+          }
+        },
       );
 
       print('7 - TEMP DOWNLOAD COMPLETE');
@@ -65,8 +89,7 @@ class FileService {
 
       print('11 - Get file path from URI');
 
-      final savedPath =
-      await mediaStore.getFilePathFromUri(
+      final savedPath = await mediaStore.getFilePathFromUri(
         uriString: result.uri.toString(),
       );
 

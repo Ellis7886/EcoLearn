@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'screens/security/login_page.dart';
 import 'provider/app_settings.dart';
 import 'services/database_service.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await NotificationService.initialize();
 
   runApp(
     ChangeNotifierProvider(
