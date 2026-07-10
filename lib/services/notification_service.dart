@@ -72,4 +72,8 @@ class NotificationService {
       ),
     );
   }
+
+  static Future<void> cancelNotification() async {
+    await notifications.cancel(1);
+  }
 }

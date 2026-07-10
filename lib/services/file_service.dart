@@ -104,6 +104,8 @@ class FileService {
 
       print('13 - COMPLETE');
 
+      NotificationService.cancelNotification();
+
       return savedPath;
 
     } catch (e, stackTrace) {
