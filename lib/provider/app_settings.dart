@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppSettings extends ChangeNotifier {
 
   bool darkTheme = true;
-  bool ecoMode = true;
+  bool ecoMode = false;
 
   void toggleDarkTheme(bool value){
     darkTheme = value;

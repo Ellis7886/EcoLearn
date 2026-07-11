@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
+import '../services/auth_service.dart';
+
 import '../themes/app_colors.dart';
 
 import '../provider/app_settings.dart';
@@ -361,18 +363,17 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: ElevatedButton(
                       onPressed: () async {
 
-                        await FirebaseAuth.instance
-                            .signOut();
+                        final authService = AuthService();
 
-                        if(!context.mounted) return;
+                        await authService.logout();
+
+                        if (!context.mounted) return;
 
                         Navigator.pushAndRemoveUntil(
                           context,
-
                           MaterialPageRoute(
-                            builder: (context) => const LoginPage(),
+                            builder: (_) => const LoginPage(),
                           ),
-
                               (route) => false,
                         );
                       },
