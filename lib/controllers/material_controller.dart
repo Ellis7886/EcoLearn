@@ -6,8 +6,7 @@ class MaterialController {
 
   Future<void> syncMaterials() async {
 
-    final snapshot =
-    await FirebaseFirestore.instance
+    final snapshot = await FirebaseFirestore.instance
         .collection('content')
         .where('type', isEqualTo: 'material')
         .get();

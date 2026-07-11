@@ -4,8 +4,7 @@ import 'database_service.dart';
 
 class LessonService {
 
-  Future<void> insertLesson(
-      Map<String, dynamic> lesson) async {
+  Future<void> insertLesson(Map<String, dynamic> lesson) async {
 
     final db = await DatabaseService.instance.database;
 
@@ -17,9 +16,7 @@ class LessonService {
     );
   }
 
-  Future<List<Map<String, dynamic>>>
-  getLessons() async {
-
+  Future<List<Map<String, dynamic>>> getLessons() async {
     final db = await DatabaseService.instance.database;
 
     return await db.query('lessons');
