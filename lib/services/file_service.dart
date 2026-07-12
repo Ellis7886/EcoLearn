@@ -12,7 +12,6 @@ class FileService {
       String fileName) async {
 
     try {
-
       print('1 - START DOWNLOAD');
       print('URL: $url');
 
@@ -23,12 +22,10 @@ class FileService {
       MediaStore.appFolder = "EcoLearn";
 
       print('4 - Get temp directory');
-      final tempDir =
-      await getTemporaryDirectory();
+      final tempDir = await getTemporaryDirectory();
 
       print('5 - Build temp path');
-      final tempPath =
-          '${tempDir.path}/$fileName';
+      final tempPath = '${tempDir.path}/$fileName';
 
       print(tempPath);
 

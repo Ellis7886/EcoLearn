@@ -1,4 +1,3 @@
-import 'package:ecolearn/screens/quiz/quiz_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -11,6 +10,7 @@ import '../widgets/setting_switch.dart';
 import '../widgets/bottom_nav_bar.dart';
 
 import 'lesson/lessons_page.dart';
+import 'quiz/quiz_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -105,12 +105,11 @@ class _HomePageState
                   title: 'Quiz',
                   description: 'Test your knowledge',
                   icon: Icons.quiz_rounded,
-                  onTap: (){
+                  onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                        const QuizPage(),
+                        builder: (_) => const QuizPage(),
                       ),
                     );
                   },

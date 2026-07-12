@@ -32,7 +32,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
     );
   }
@@ -61,6 +61,15 @@ class DatabaseService {
         file_type TEXT,
         firebase_url TEXT,
         local_path TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE quizzes(
+        id TEXT PRIMARY KEY,
+        lesson_id TEXT,
+        title TEXT,
+        description TEXT
       )
     ''');
   }

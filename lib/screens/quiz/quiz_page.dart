@@ -1,36 +1,172 @@
-import 'package:ecolearn/screens/quiz/create_quiz_page.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../provider/app_settings.dart';
-
 import '../../themes/app_colors.dart';
 
 import '../../widgets/bottom_nav_bar.dart';
 
-class QuizPage extends StatelessWidget {
-  const QuizPage({super.key,});
+import '../../controllers/quiz_controller.dart';
+
+import 'create_quiz_page.dart';
+
+class QuizPage extends StatefulWidget {
+  const QuizPage({super.key});
+
+  @override
+  State<QuizPage> createState() =>
+      _QuizPageState();
+}
+
+class _QuizPageState
+    extends State<QuizPage> {
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) {
+
+      final settings = Provider.of<AppSettings>(
+        context,
+        listen: false,
+      );
+
+      if (!settings.ecoMode) {
+        syncQuizzesToSQLite();
+      }
+    });
+  }
+
+  Future<void> syncQuizzesToSQLite() async {
+
+    try {
+
+      final quizController =
+      QuizController();
+
+      await quizController.syncQuizzes();
+
+      print('Quizzes synced');
+
+    } catch (e) {
+
+      print(
+        'Quiz Sync Error: $e',
+      );
+    }
+  }
+
+  Future<void> deleteQuiz(
+      String quizId) async {
+
+    try {
+
+      await FirebaseFirestore.instance
+          .collection('quizzes')
+          .doc(quizId)
+          .delete();
+
+      await syncQuizzesToSQLite();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Quiz deleted successfully',
+          ),
+        ),
+      );
+
+    } catch (e) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error: $e',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> confirmDeleteQuiz(
+      String quizId) async {
+
+    final confirm =
+    await showDialog<bool>(
+      context: context,
+
+      builder: (_) => AlertDialog(
+        title: const Text(
+          'Delete Quiz',
+        ),
+
+        content: const Text(
+          'Are you sure you want to delete this quiz?',
+        ),
+
+        actions: [
+
+          TextButton(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                false,
+              );
+            },
+            child: const Text(
+              'Cancel',
+            ),
+          ),
+
+          TextButton(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                true,
+              );
+            },
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.red,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await deleteQuiz(quizId);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final settings = Provider.of<AppSettings>(context);
+
+    final settings =
+    Provider.of<AppSettings>(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background(
+      backgroundColor:
+      AppColors.background(
         settings.darkTheme,
       ),
 
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: 2,
-        onTap: (index){},
-      ),
-
       appBar: AppBar(
-        backgroundColor: AppColors.background(
+        backgroundColor:
+        AppColors.background(
           settings.darkTheme,
         ),
+
+        elevation: 0,
 
         title: Text(
           'Quiz',
@@ -48,18 +184,61 @@ class QuizPage extends StatelessWidget {
         ),
       ),
 
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-          .collection('quizzes')
-          .snapshots(),
+      floatingActionButton:
+      FloatingActionButton(
+        backgroundColor:
+        AppColors.primary,
 
-        builder: (context, snapshot) {
+        onPressed: () async {
+
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+              const CreateQuizPage(
+                lessonId: '',
+              ),
+            ),
+          );
+
+          if (result == true) {
+            await syncQuizzesToSQLite();
+          }
+        },
+
+        child: const Icon(
+          Icons.add,
+          color: Colors.black,
+        ),
+      ),
+
+      bottomNavigationBar:
+      BottomNavBar(
+        currentIndex: 2,
+        onTap: (index) {},
+      ),
+
+      body: StreamBuilder<QuerySnapshot>(
+        stream:
+        FirebaseFirestore.instance
+            .collection('quizzes')
+            .orderBy(
+          'created_at',
+          descending: true,
+        )
+            .snapshots(),
+
+        builder: (
+            context,
+            snapshot,
+            ) {
 
           if (snapshot.connectionState ==
               ConnectionState.waiting) {
 
             return const Center(
-              child: CircularProgressIndicator(),
+              child:
+              CircularProgressIndicator(),
             );
           }
 
@@ -70,7 +249,8 @@ class QuizPage extends StatelessWidget {
               child: Text(
                 'No quizzes available',
                 style: TextStyle(
-                  color: AppColors.text(
+                  color:
+                  AppColors.text(
                     settings.darkTheme,
                   ),
                 ),
@@ -78,208 +258,222 @@ class QuizPage extends StatelessWidget {
             );
           }
 
-          final quizzes = snapshot.data!.docs;
+          final quizzes =
+              snapshot.data!.docs;
 
           return ListView.builder(
-            padding: const EdgeInsets.all(20),
+            padding:
+            const EdgeInsets.all(20),
 
-            itemCount: quizzes.length,
+            itemCount:
+            quizzes.length,
 
-            itemBuilder: (context, index) {
+            itemBuilder:
+                (context, index) {
 
-              final quiz = quizzes[index];
-
-              final title =
-                  quiz['title'] ?? '';
-
-              final totalQuestions =
-                  quiz['total_questions'] ?? 0;
-
-              final passingMarks =
-                  quiz['passing_marks'] ?? 0;
+              final quiz =
+              quizzes[index].data()
+              as Map<String, dynamic>;
 
               return Container(
-                margin: const EdgeInsets.only(
+                margin:
+                const EdgeInsets.only(
                   bottom: 15,
                 ),
 
-                decoration: BoxDecoration(
-                  color: AppColors.card(settings.darkTheme,),
-
-                  borderRadius: BorderRadius.circular(20,),
+                padding:
+                const EdgeInsets.all(
+                  20,
                 ),
 
-                child: Padding(
-                  padding:
-                  const EdgeInsets.all(16),
+                decoration:
+                BoxDecoration(
+                  color:
+                  AppColors.card(
+                    settings.darkTheme,
+                  ),
 
-                  child: Column(
-                    crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                  borderRadius:
+                  BorderRadius.circular(
+                    20,
+                  ),
 
-                    children: [
+                  boxShadow:
+                  settings.darkTheme
+                      ? []
+                      : [
+                    BoxShadow(
+                      color:
+                      Colors.black12,
+                      blurRadius:
+                      10,
+                      offset:
+                      const Offset(
+                        0,
+                        4,
+                      ),
+                    ),
+                  ],
+                ),
 
-                      Row(
-                        children: [
+                child: Column(
+                  crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
 
-                          Container(
-                            padding:
-                            const EdgeInsets.all(
+                  children: [
+
+                    Row(
+                      children: [
+
+                        Container(
+                          width: 50,
+                          height: 50,
+
+                          decoration:
+                          BoxDecoration(
+                            color:
+                            AppColors.primaryLight(
+                              settings.darkTheme,
+                            ),
+
+                            borderRadius:
+                            BorderRadius.circular(
                               12,
                             ),
-
-                            decoration:
-                            BoxDecoration(
-                              color:
-                              const Color(
-                                0xFF9BD028,
-                              ).withValues(
-                                alpha: 0.15,
-                              ),
-
-                              borderRadius:
-                              BorderRadius.circular(
-                                12,
-                              ),
-                            ),
-
-                            child: const Icon(
-                              Icons.quiz,
-                              color: Color(
-                                0xFF9BD028,
-                              ),
-                            ),
                           ),
 
-                          const SizedBox(
-                            width: 12,
+                          child:
+                          const Icon(
+                            Icons.quiz,
+                            color:
+                            AppColors.primary,
                           ),
+                        ),
 
-                          Expanded(
-                            child: Text(
-                              title,
+                        const SizedBox(
+                          width: 15,
+                        ),
 
-                              style: TextStyle(
-                                color: AppColors.text(
-                                  settings.darkTheme,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+
+                            children: [
+
+                              Text(
+                                quiz['title'] ?? '',
+                                style: TextStyle(
+                                  color: AppColors.text(
+                                    settings.darkTheme,
+                                  ),
+                                  fontWeight:
+                                  FontWeight.bold,
+                                  fontSize: 18,
                                 ),
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
 
-                      const SizedBox(
-                        height: 15,
-                      ),
+                              const SizedBox(height: 5),
 
-                      Text(
-                        '$totalQuestions Questions',
-
-                        style:
-                        TextStyle(
-                          color: AppColors.subText(
-                            settings.darkTheme,
+                              Text(
+                                quiz['description'] ?? '',
+                                style: TextStyle(
+                                  color: AppColors.subText(
+                                    settings.darkTheme,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
 
-                      const SizedBox(
-                        height: 5,
-                      ),
+                        PopupMenuButton<String>(
+                          onSelected: (value) {
 
-                      Text(
-                        'Passing Marks: $passingMarks',
+                            if (value == 'edit') {
 
-                        style:
-                        TextStyle(
-                          color: AppColors.subText(
-                            settings.darkTheme,
-                          ),
-                        ),
-                      ),
+                              // Open Edit Quiz Page
 
-                      const SizedBox(
-                        height: 15,
-                      ),
+                            } else if (value == 'delete') {
 
-                      SizedBox(
-                        width:
-                        double.infinity,
-
-                        child:
-                        ElevatedButton(
-
-                          onPressed: () {
-
-                            // Navigate to
-                            // TakeQuizPage
-
+                              confirmDeleteQuiz(
+                                quizzes[index].id,
+                              );
+                            }
                           },
 
+                          itemBuilder: (context) => [
+
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit),
+                                  SizedBox(width: 10),
+                                  Text('Edit'),
+                                ],
+                              ),
+                            ),
+
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text('Delete'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(
+                      height: 15,
+                    ),
+
+                    SizedBox(
+                      width:
+                      double.infinity,
+
+                      child:
+                      ElevatedButton(
+                        onPressed: () {
+
+                          print(
+                            quizzes[index]
+                                .id,
+                          );
+
+                          // Open Quiz Attempt Page later
+                        },
+
+                        style:
+                        ElevatedButton
+                            .styleFrom(
+                          backgroundColor:
+                          AppColors.primary,
+                        ),
+
+                        child:
+                        const Text(
+                          'START QUIZ',
+
                           style:
-                          ElevatedButton
-                              .styleFrom(
-                            backgroundColor:
-                            const Color(
-                              0xFF9BD028,
-                            ),
-                          ),
-
-                          child: const Text(
-                            'START QUIZ',
-
-                            style: TextStyle(
-                              color:
-                              Colors.black,
-
-                              fontWeight:
-                              FontWeight.bold,
-                            ),
+                          TextStyle(
+                            color:
+                            Colors.black,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-      floatingActionButton: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('users')
-            .doc(FirebaseAuth.instance.currentUser!.uid)
-            .get(),
-
-        builder: (context, snapshot) {
-
-          if (!snapshot.hasData) {
-            return const SizedBox();
-          }
-
-          final role = snapshot.data!['role'] ?? 'student';
-
-          if (role != 'lecturer') {
-            return const SizedBox();
-          }
-
-          return FloatingActionButton(
-            backgroundColor: AppColors.primary,
-
-            child: const Icon(
-              Icons.add,
-              color: Colors.black,
-            ),
-
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const CreateQuizPage(),
+                    ),
+                  ],
                 ),
               );
             },

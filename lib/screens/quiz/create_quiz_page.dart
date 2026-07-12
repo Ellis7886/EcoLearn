@@ -1,64 +1,129 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:provider/provider.dart';
+
+import '../../provider/app_settings.dart';
+import '../../themes/app_colors.dart';
 
 class CreateQuizPage extends StatefulWidget {
-  const CreateQuizPage({super.key});
+  final String lessonId;
+
+  const CreateQuizPage({
+    super.key,
+    required this.lessonId,
+  });
 
   @override
-  State<CreateQuizPage> createState() => _CreateQuizPageState();
+  State<CreateQuizPage> createState() =>
+      _CreateQuizPageState();
 }
 
-class _CreateQuizPageState extends State<CreateQuizPage> {
+class _CreateQuizPageState
+    extends State<CreateQuizPage> {
 
   final titleController = TextEditingController();
-  final totalQuestionsController = TextEditingController();
-  final passingMarksController = TextEditingController();
+
+  final descriptionController = TextEditingController();
 
   bool isSaving = false;
 
+  List<Map<String, dynamic>> questions = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    addQuestion();
+  }
+
+  void addQuestion() {
+
+    setState(() {
+
+      questions.add({
+        'questionController': TextEditingController(),
+        'optionAController': TextEditingController(),
+        'optionBController': TextEditingController(),
+        'optionCController': TextEditingController(),
+        'optionDController': TextEditingController(),
+        'correctAnswer': 'A',
+      });
+    });
+  }
+
   Future<void> createQuiz() async {
 
-    if (titleController.text.trim().isEmpty ||
-        totalQuestionsController.text.trim().isEmpty ||
-        passingMarksController.text.trim().isEmpty) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
+    if (titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         const SnackBar(
           content: Text(
-            'Please complete all fields',
+            'Please enter quiz title',
           ),
         ),
       );
-
       return;
     }
 
     try {
-
       setState(() {
         isSaving = true;
       });
+
+      List<Map<String, dynamic>>
+      quizQuestions = [];
+
+      for (var question in questions) {
+
+        quizQuestions.add({
+          'question': question['questionController']
+              .text
+              .trim(),
+
+          'option_a': question['optionAController']
+              .text
+              .trim(),
+
+          'option_b': question['optionBController']
+              .text
+              .trim(),
+
+          'option_c': question['optionCController']
+              .text
+              .trim(),
+
+          'option_d': question['optionDController']
+              .text
+              .trim(),
+
+          'correct_answer': question['correctAnswer'],
+        });
+      }
 
       await FirebaseFirestore.instance
           .collection('quizzes')
           .add({
 
-        'title': titleController.text.trim(),
+        'lesson_id':
+        widget.lessonId,
 
-        'total_questions': int.parse(
-          totalQuestionsController.text.trim(),
-        ),
+        'title':
+        titleController.text.trim(),
 
-        'passing_marks': int.parse(
-          passingMarksController.text.trim(),
-        ),
+        'description':
+        descriptionController.text.trim(),
 
-        'created_at': Timestamp.now(),
+        'questions':
+        quizQuestions,
+
+        'created_at':
+        Timestamp.now(),
       });
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         const SnackBar(
           content: Text(
             'Quiz created successfully',
@@ -66,24 +131,25 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
         ),
       );
 
-      Navigator.pop(context);
+      Navigator.pop(
+        context,
+        true,
+      );
 
     } catch (e) {
 
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
         SnackBar(
           content: Text(
             'Error: $e',
           ),
         ),
       );
+    }
 
-    } finally {
-
+    finally {
       if (mounted) {
-
         setState(() {
           isSaving = false;
         });
@@ -94,49 +160,94 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
   @override
   Widget build(BuildContext context) {
 
+    final settings =
+    Provider.of<AppSettings>(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor:
+      AppColors.background(
+        settings.darkTheme,
+      ),
 
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor:
+        AppColors.background(
+          settings.darkTheme,
+        ),
 
-        title: const Text(
+        title: Text(
           'Create Quiz',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.text(
+              settings.darkTheme,
+            ),
           ),
         ),
 
-        iconTheme: const IconThemeData(
-          color: Colors.white,
+        iconTheme: IconThemeData(
+          color: AppColors.text(
+            settings.darkTheme,
+          ),
         ),
       ),
 
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        padding:
+        const EdgeInsets.all(20),
 
         child: Column(
           children: [
 
-            TextField(
-              controller: titleController,
-
-              style: const TextStyle(
-                color: Colors.white,
+            Container(
+              padding:
+              const EdgeInsets.all(
+                20,
               ),
 
-              decoration: InputDecoration(
-                labelText: 'Quiz Title',
-
-                labelStyle: const TextStyle(
-                  color: Colors.white70,
+              decoration:
+              BoxDecoration(
+                color:
+                AppColors.card(
+                  settings.darkTheme,
                 ),
 
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    15,
+                borderRadius:
+                BorderRadius.circular(
+                  20,
+                ),
+              ),
+
+              child: Column(
+                children: [
+
+                  TextField(
+                    controller:
+                    titleController,
+
+                    decoration:
+                    const InputDecoration(
+                      labelText:
+                      'Quiz Title',
+                    ),
                   ),
-                ),
+
+                  const SizedBox(
+                    height: 20,
+                  ),
+
+                  TextField(
+                    controller:
+                    descriptionController,
+
+                    maxLines: 3,
+
+                    decoration:
+                    const InputDecoration(
+                      labelText:
+                      'Description',
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -144,90 +255,235 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
               height: 20,
             ),
 
-            TextField(
-              controller: totalQuestionsController,
-              keyboardType: TextInputType.number,
+            ...questions
+                .asMap()
+                .entries
+                .map((entry) {
 
-              style: const TextStyle(
-                color: Colors.white,
-              ),
+              int index = entry.key;
 
-              decoration: InputDecoration(
-                labelText: 'Total Questions',
+              var question = entry.value;
 
-                labelStyle: const TextStyle(
-                  color: Colors.white70,
+              return Container(
+                margin:
+                const EdgeInsets.only(
+                  bottom: 20,
                 ),
 
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    15,
+                padding:
+                const EdgeInsets.all(
+                  20,
+                ),
+
+                decoration:
+                BoxDecoration(
+                  color:
+                  AppColors.card(
+                    settings.darkTheme,
                   ),
+
+                  borderRadius:
+                  BorderRadius.circular(
+                    20,
+                  ),
+                ),
+
+                child: Column(
+                  crossAxisAlignment:
+                  CrossAxisAlignment
+                      .start,
+
+                  children: [
+
+                    Row(
+                      children: [
+
+                        Expanded(
+                          child: Text(
+                            'Question ${index + 1}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ),
+
+                          onPressed: () {
+
+                            setState(() {
+
+                              questions.removeAt(index);
+
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(
+                      height: 15,
+                    ),
+
+                    TextField(
+                      controller:
+                      question[
+                      'questionController'],
+                      decoration:
+                      const InputDecoration(
+                        labelText:
+                        'Question',
+                      ),
+                    ),
+
+                    TextField(
+                      controller:
+                      question[
+                      'optionAController'],
+                      decoration:
+                      const InputDecoration(
+                        labelText:
+                        'Option A',
+                      ),
+                    ),
+
+                    TextField(
+                      controller:
+                      question[
+                      'optionBController'],
+                      decoration:
+                      const InputDecoration(
+                        labelText:
+                        'Option B',
+                      ),
+                    ),
+
+                    TextField(
+                      controller:
+                      question[
+                      'optionCController'],
+                      decoration:
+                      const InputDecoration(
+                        labelText:
+                        'Option C',
+                      ),
+                    ),
+
+                    TextField(
+                      controller:
+                      question[
+                      'optionDController'],
+                      decoration:
+                      const InputDecoration(
+                        labelText:
+                        'Option D',
+                      ),
+                    ),
+
+                    const SizedBox(
+                      height: 10,
+                    ),
+
+                    DropdownButtonFormField<
+                        String>(
+                      value:
+                      question[
+                      'correctAnswer'],
+
+                      decoration:
+                      const InputDecoration(
+                        labelText:
+                        'Correct Answer',
+                      ),
+
+                      items:
+                      ['A','B','C','D']
+                          .map(
+                            (e) =>
+                            DropdownMenuItem(
+                              value:
+                              e,
+                              child:
+                              Text(
+                                e,
+                              ),
+                            ),
+                      )
+                          .toList(),
+
+                      onChanged:
+                          (value) {
+
+                        setState(() {
+
+                          question[
+                          'correctAnswer'] =
+                              value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+
+            SizedBox(
+              width:
+              double.infinity,
+
+              child:
+              ElevatedButton.icon(
+                onPressed:
+                addQuestion,
+
+                icon: const Icon(
+                  Icons.add,
+                ),
+
+                label: const Text(
+                  'Add Question',
                 ),
               ),
             ),
 
             const SizedBox(
               height: 20,
-            ),
-
-            TextField(
-              controller: passingMarksController,
-              keyboardType: TextInputType.number,
-
-              style: const TextStyle(
-                color: Colors.white,
-              ),
-
-              decoration: InputDecoration(
-                labelText: 'Passing Marks',
-
-                labelStyle: const TextStyle(
-                  color: Colors.white70,
-                ),
-
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    15,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(
-              height: 30,
             ),
 
             SizedBox(
-              width: double.infinity,
+              width:
+              double.infinity,
 
-              child: ElevatedButton(
-
-                onPressed: isSaving
+              child:
+              ElevatedButton(
+                onPressed:
+                isSaving
                     ? null
                     : createQuiz,
 
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(
-                    0xFF9BD028,
-                  ),
-
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 15,
-                  ),
+                style:
+                ElevatedButton
+                    .styleFrom(
+                  backgroundColor:
+                  AppColors.primary,
                 ),
 
-                child: isSaving
-
+                child:
+                isSaving
                     ? const CircularProgressIndicator(
-                  color: Colors.black,
+                  color:
+                  Colors.black,
                 )
-
                     : const Text(
                   'CREATE QUIZ',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                  style:
+                  TextStyle(
+                    color:
+                    Colors.black,
                   ),
                 ),
               ),

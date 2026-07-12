@@ -65,7 +65,10 @@ class _CreateLessonPageState extends State<CreateLessonPage> {
         ),
       );
 
-      Navigator.pop(context);
+      Navigator.pop(
+        context,
+        true,
+      );
 
     } catch (e) {
 

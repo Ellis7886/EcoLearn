@@ -81,6 +81,103 @@ class _LessonsPageState extends State<LessonsPage> {
     print('Materials synced');
   }
 
+  Future<void> deleteLesson(
+      String lessonId) async {
+
+    try {
+
+      await FirebaseFirestore.instance
+          .collection('lessons')
+          .doc(lessonId)
+          .delete();
+
+      await syncLessonsToSQLite();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Lesson deleted successfully',
+          ),
+        ),
+      );
+
+    } catch (e) {
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            'Error: $e',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> confirmDeleteLesson(
+      String lessonId) async {
+
+    final confirm =
+    await showDialog<bool>(
+      context: context,
+
+      builder: (_) =>
+          AlertDialog(
+            title: const Text(
+              'Delete Lesson',
+            ),
+
+            content: const Text(
+              'Are you sure you want to delete this lesson?',
+            ),
+
+            actions: [
+
+              TextButton(
+                onPressed: () {
+
+                  Navigator.pop(
+                    context,
+                    false,
+                  );
+                },
+
+                child: const Text(
+                  'Cancel',
+                ),
+              ),
+
+              TextButton(
+                onPressed: () {
+
+                  Navigator.pop(
+                    context,
+                    true,
+                  );
+                },
+
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(
+                    color: Colors.red,
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm == true) {
+
+      await deleteLesson(
+        lessonId,
+      );
+    }
+  }
+
   Widget buildSQLiteLessons(AppSettings settings) {
 
     if (sqliteLessons.isEmpty) {
@@ -194,7 +291,11 @@ class _LessonsPageState extends State<LessonsPage> {
               },
 
               onEdit: () {},
-              onDelete: () {},
+              onDelete: () {
+                confirmDeleteLesson(
+                  lessons[index].id,
+                );
+              },
             );
           },
         );
@@ -214,15 +315,19 @@ class _LessonsPageState extends State<LessonsPage> {
       role == 'lecturer' ? FloatingActionButton(
         backgroundColor: AppColors.primary,
 
-        onPressed: () {
+        onPressed: () async {
 
-          Navigator.push(
+          final result =
+          await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-              const CreateLessonPage(),
+              builder: (context) => const CreateLessonPage(),
             ),
           );
+
+          if (result == true) {
+            await syncLessonsToSQLite();
+          }
         },
 
         child: const Icon(

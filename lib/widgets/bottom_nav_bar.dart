@@ -6,8 +6,8 @@ import '../themes/app_colors.dart';
 
 import '../screens/home_page.dart';
 import '../screens/lesson/lessons_page.dart';
-import '../screens/quiz/quiz_page.dart';
 import '../screens/profile_page.dart';
+import '../screens/quiz/quiz_page.dart';
 
 class BottomNavBar extends StatelessWidget {
 
