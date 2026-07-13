@@ -10,6 +10,7 @@ import '../../widgets/bottom_nav_bar.dart';
 import '../../controllers/quiz_controller.dart';
 
 import 'create_quiz_page.dart';
+import 'take_quiz_page.dart';
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
@@ -44,8 +45,7 @@ class _QuizPageState
 
     try {
 
-      final quizController =
-      QuizController();
+      final quizController = QuizController();
 
       await quizController.syncQuizzes();
 
@@ -445,13 +445,16 @@ class _QuizPageState
                       child:
                       ElevatedButton(
                         onPressed: () {
-
-                          print(
-                            quizzes[index]
-                                .id,
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  TakeQuizPage(
+                                    quizId:
+                                    quizzes[index].id,
+                                  ),
+                            ),
                           );
-
-                          // Open Quiz Attempt Page later
                         },
 
                         style:

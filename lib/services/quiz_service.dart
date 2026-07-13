@@ -7,8 +7,7 @@ class QuizService {
   Future<void> insertQuiz(
       Map<String, dynamic> quiz) async {
 
-    final db =
-    await DatabaseService.instance.database;
+    final db = await DatabaseService.instance.database;
 
     await db.insert(
       'quizzes',
@@ -33,5 +32,47 @@ class QuizService {
     await DatabaseService.instance.database;
 
     await db.delete('quizzes');
+  }
+
+  // ==========================
+  // Quiz Questions
+  // ==========================
+
+  Future<void> insertQuestion(
+      Map<String, dynamic> question) async {
+
+    final db =
+    await DatabaseService.instance.database;
+
+    await db.insert(
+      'quiz_questions',
+      question,
+      conflictAlgorithm:
+      ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>>
+  getQuestionsByQuiz(
+      String quizId) async {
+
+    final db =
+    await DatabaseService.instance.database;
+
+    return await db.query(
+      'quiz_questions',
+      where: 'quiz_id = ?',
+      whereArgs: [quizId],
+    );
+  }
+
+  Future<void> clearQuestions() async {
+
+    final db =
+    await DatabaseService.instance.database;
+
+    await db.delete(
+      'quiz_questions',
+    );
   }
 }

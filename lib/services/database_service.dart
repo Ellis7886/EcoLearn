@@ -32,7 +32,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 4,
       onCreate: _createDB,
     );
   }
@@ -70,6 +70,19 @@ class DatabaseService {
         lesson_id TEXT,
         title TEXT,
         description TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE quiz_questions(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        quiz_id TEXT,
+        question TEXT,
+        option_a TEXT,
+        option_b TEXT,
+        option_c TEXT,
+        option_d TEXT,
+        correct_answer TEXT
       )
     ''');
   }
