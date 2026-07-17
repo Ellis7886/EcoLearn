@@ -3,8 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class DatabaseService {
 
-  static final DatabaseService instance =
-  DatabaseService._init();
+  static final DatabaseService instance = DatabaseService._init();
 
   static Database? _database;
 
