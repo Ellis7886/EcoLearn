@@ -13,11 +13,10 @@ class MaterialController {
 
     final materialService = MaterialService();
 
-    await materialService.clearMaterials();
-
     for (var doc in snapshot.docs) {
 
       final material = doc.data();
+      final existingMaterial = await materialService.getMaterialById(doc.id,);
 
       await materialService.insertMaterial({
         'id': doc.id,
@@ -27,7 +26,7 @@ class MaterialController {
         'chapter': material['chapter'],
         'file_type': material['file_type'],
         'firebase_url': material['file_url'],
-        'local_path': '',
+        'local_path': existingMaterial?['local_path'] ?? '',
       });
     }
   }

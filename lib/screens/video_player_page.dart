@@ -28,17 +28,15 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
     if (widget.videoUrl.startsWith('http')) {
 
-      _videoController =
-          VideoPlayerController.networkUrl(
-            Uri.parse(widget.videoUrl),
-          );
+      _videoController = VideoPlayerController.networkUrl(
+        Uri.parse(widget.videoUrl),
+      );
 
     } else {
 
-      _videoController =
-          VideoPlayerController.file(
-            File(widget.videoUrl),
-          );
+      _videoController = VideoPlayerController.file(
+        File(widget.videoUrl),
+      );
     }
 
     _videoController.initialize().then((_) {

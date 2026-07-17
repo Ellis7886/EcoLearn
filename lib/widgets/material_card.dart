@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -28,8 +29,7 @@ class MaterialCard extends StatelessWidget {
 
     IconData icon = Icons.description;
 
-    final fileType =
-    (material['file_type'] ?? '').toString().toLowerCase();
+    final fileType = (material['file_type'] ?? '').toString().toLowerCase();
 
     if (fileType.contains('pdf')) {
       icon = Icons.picture_as_pdf;
@@ -72,15 +72,13 @@ class MaterialCard extends StatelessWidget {
         ],
       ),
 
-      child:
-      ListTile(leading:
+      child: ListTile(leading:
       Icon(
         icon,
         color: AppColors.primary,
       ),
 
-          title:
-          Text(
+          title: Text(
             material['title'],
             style: TextStyle(
               color: AppColors.text(darkTheme,),
@@ -228,22 +226,20 @@ class MaterialCard extends StatelessWidget {
             final materialService = MaterialService();
             final fileService = FileService();
 
-            final localMaterial =
-            await materialService.getMaterialById(
+            final localMaterial = await materialService.getMaterialById(
               material.id,
             );
 
-            final fileType =
-            (material['file_type'] ?? '')
+            final fileType = (material['file_type'] ?? '')
                 .toString()
                 .toLowerCase();
 
-            String? localPath =
-            localMaterial?['local_path'];
+            String? localPath = localMaterial?['local_path'];
 
             // Already downloaded
             if (localPath != null &&
-                localPath.isNotEmpty) {
+                localPath.isNotEmpty &&
+                File(localPath).existsSync()) {
 
               print('OPEN LOCAL FILE');
 
@@ -268,8 +264,7 @@ class MaterialCard extends StatelessWidget {
 
             try {
 
-              final filePath =
-              await fileService.downloadFile(
+              final filePath = await fileService.downloadFile(
                 material['file_url'],
                 material['file_name'],
               );
