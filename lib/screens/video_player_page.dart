@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
+import 'package:provider/provider.dart';
+
+import '../provider/app_settings.dart';
 
 class VideoPlayerPage extends StatefulWidget {
   final String videoUrl;
@@ -40,10 +43,14 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     }
 
     _videoController.initialize().then((_) {
+      final ecoMode = Provider.of<AppSettings>(
+        context,
+        listen: false,
+      ).ecoMode;
 
       _chewieController = ChewieController(
         videoPlayerController: _videoController,
-        autoPlay: true,
+        autoPlay: !ecoMode,
         looping: false,
         allowFullScreen: true,
         allowPlaybackSpeedChanging: true,
