@@ -7,8 +7,7 @@ class MaterialController {
   Future<void> syncMaterials() async {
 
     final snapshot = await FirebaseFirestore.instance
-        .collection('content')
-        .where('type', isEqualTo: 'material')
+        .collection('materials')
         .get();
 
     final materialService = MaterialService();
@@ -16,16 +15,18 @@ class MaterialController {
     for (var doc in snapshot.docs) {
 
       final material = doc.data();
-      final existingMaterial = await materialService.getMaterialById(doc.id,);
+
+      final existingMaterial =
+      await materialService.getMaterialById(doc.id);
 
       await materialService.insertMaterial({
         'id': doc.id,
-        'lesson_id': material['lesson_id'],
+        'chapter_id': material['chapter_id'],
         'title': material['title'],
+        'description': material['description'],
+        'type': material['type'],
         'file_name': material['file_name'],
-        'chapter': material['chapter'],
-        'file_type': material['file_type'],
-        'firebase_url': material['file_url'],
+        'file_url': material['file_url'],
         'local_path': existingMaterial?['local_path'] ?? '',
       });
     }

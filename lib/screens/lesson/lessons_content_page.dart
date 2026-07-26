@@ -1,13 +1,9 @@
-import 'package:ecolearn/screens/lesson/create_content_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../provider/app_settings.dart';
-
 import '../../themes/app_colors.dart';
-
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/chapter_card.dart';
 
@@ -28,77 +24,45 @@ class LessonsContentPage extends StatelessWidget {
     final settings = Provider.of<AppSettings>(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background(settings.darkTheme,),
+      backgroundColor: AppColors.background(settings.darkTheme),
 
-      floatingActionButton: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('users')
-            .doc(FirebaseAuth.instance.currentUser!.uid)
-            .get(),
-
-        builder: (context, snapshot) {
-
-          if (!snapshot.hasData) {
-            return const SizedBox();
-          }
-
-          final role = snapshot.data!['role'];
-
-          if (role != 'lecturer') {
-            return const SizedBox();
-          }
-
-          return FloatingActionButton(
-            backgroundColor: AppColors.primary,
-
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => CreateContentPage(
-                    lessonId: lessonId,
-                    lessonTitle: lessonTitle,
-                    lessonCode: lessonCode,
-                  ),
-                ),
-              );
-            },
-
-            child: const Icon(
-              Icons.upload_file,
-              color: Colors.black,
+      appBar: AppBar(
+        backgroundColor: AppColors.background(settings.darkTheme),
+        iconTheme: IconThemeData(
+          color: AppColors.text(settings.darkTheme),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              lessonTitle,
+              style: TextStyle(
+                color: AppColors.text(settings.darkTheme),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          );
-        },
+            Text(
+              lessonCode,
+              style: TextStyle(
+                color: AppColors.text(settings.darkTheme),
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
       ),
 
       bottomNavigationBar: BottomNavBar(
         currentIndex: 1,
-        onTap: (index){},
-      ),
-
-      appBar: AppBar(
-        backgroundColor: AppColors.background(settings.darkTheme,),
-
-        title: Text(
-          lessonTitle,
-          style: TextStyle(
-            color: AppColors.text(settings.darkTheme,),
-          ),
-        ),
-
-        iconTheme: IconThemeData(
-          color: AppColors.text(settings.darkTheme,),
-        ),
+        onTap: (index) {},
       ),
 
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('content')
-            .where('type', isEqualTo: 'chapter',)
-            .where('lesson_id', isEqualTo: lessonId,)
+            .collection('chapters')
+            .where('lesson_id', isEqualTo: lessonId)
             .snapshots(),
-
         builder: (context, snapshot) {
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -107,14 +71,20 @@ class LessonsContentPage extends StatelessWidget {
             );
           }
 
+          if (snapshot.hasError) {
+            debugPrint(snapshot.error.toString());
+
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          }
+
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Text(
-                'No chapters available',
+                "No chapters available.",
                 style: TextStyle(
-                  color: AppColors.text(
-                    settings.darkTheme,
-                  ),
+                  color: AppColors.text(settings.darkTheme),
                 ),
               ),
             );
@@ -125,15 +95,14 @@ class LessonsContentPage extends StatelessWidget {
           return ListView.builder(
             padding: const EdgeInsets.all(20),
             itemCount: chapters.length,
-
             itemBuilder: (context, index) {
 
               final chapter = chapters[index];
 
               return ChapterCard(
                 chapter: chapter,
-                darkTheme: settings.darkTheme,
                 lessonId: lessonId,
+                darkTheme: settings.darkTheme,
               );
             },
           );

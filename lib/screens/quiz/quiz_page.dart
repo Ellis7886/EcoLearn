@@ -9,7 +9,6 @@ import '../../widgets/bottom_nav_bar.dart';
 
 import '../../controllers/quiz_controller.dart';
 
-import 'create_quiz_page.dart';
 import 'take_quiz_page.dart';
 
 class QuizPage extends StatefulWidget {
@@ -181,34 +180,6 @@ class _QuizPageState
           color: AppColors.text(
             settings.darkTheme,
           ),
-        ),
-      ),
-
-      floatingActionButton:
-      FloatingActionButton(
-        backgroundColor:
-        AppColors.primary,
-
-        onPressed: () async {
-
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-              const CreateQuizPage(
-                lessonId: '',
-              ),
-            ),
-          );
-
-          if (result == true) {
-            await syncQuizzesToSQLite();
-          }
-        },
-
-        child: const Icon(
-          Icons.add,
-          color: Colors.black,
         ),
       ),
 
@@ -386,50 +357,6 @@ class _QuizPageState
                               ),
                             ],
                           ),
-                        ),
-
-                        PopupMenuButton<String>(
-                          onSelected: (value) {
-
-                            if (value == 'edit') {
-
-                              // Open Edit Quiz Page
-
-                            } else if (value == 'delete') {
-
-                              confirmDeleteQuiz(
-                                quizzes[index].id,
-                              );
-                            }
-                          },
-
-                          itemBuilder: (context) => [
-
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit),
-                                  SizedBox(width: 10),
-                                  Text('Edit'),
-                                ],
-                              ),
-                            ),
-
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text('Delete'),
-                                ],
-                              ),
-                            ),
-                          ],
                         ),
                       ],
                     ),

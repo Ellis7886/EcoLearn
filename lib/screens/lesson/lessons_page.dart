@@ -1,5 +1,3 @@
-import 'lessons_content_page.dart';
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
@@ -12,10 +10,11 @@ import '../../themes/app_colors.dart';
 import '../../provider/app_settings.dart';
 
 import '../../widgets/lesson_card.dart';
-
 import '../../widgets/bottom_nav_bar.dart';
 
-import 'create_lesson_page.dart';
+import '../../services/performance_logger.dart';
+
+import 'lessons_content_page.dart';
 // import 'edit_lesson_page.dart';
 
 class LessonsPage extends StatefulWidget {
@@ -29,49 +28,73 @@ class _LessonsPageState extends State<LessonsPage> {
   final LessonController _lessonController = LessonController();
   final MaterialController _materialController = MaterialController();
 
-  String role = '';
-
   List<Map<String, dynamic>> sqliteLessons = [];
 
   @override void initState() {
     super.initState();
-    loadUserRole();
     WidgetsBinding.instance.addPostFrameCallback((_) {
 
       final settings =
       Provider.of<AppSettings>(context, listen: false);
 
       if (settings.ecoMode) {
+
         loadSQLiteLessons();
+
       } else {
+
         syncLessonsToSQLite();
         syncMaterialsToSQLite();
+
+        FirebaseFirestore.instance
+            .collection('lessons')
+            .snapshots()
+            .listen((_) {
+
+          syncLessonsToSQLite();
+
+        });
       }
     });
   }
 
-  Future<void> loadUserRole() async {
-    final userRole = await _lessonController.getUserRole();
-
-    setState(() {
-      role = userRole;
-    });
-  }
-
   Future<void> syncLessonsToSQLite() async {
+    final stopwatch = Stopwatch()..start();
+
     final lessons = await _lessonController.syncLessons();
 
     setState(() {
       sqliteLessons = lessons;
     });
+
+    stopwatch.stop();
+
+    await PerformanceLogger.log(
+      mode: 'Normal',
+      operation: 'Firebase Sync',
+      recordCount: lessons.length,
+      loadTime: stopwatch.elapsedMilliseconds,
+    );
   }
 
   Future<void> loadSQLiteLessons() async {
+
+    final stopwatch = Stopwatch()..start();
+
     final lessons = await _lessonController.getSQLiteLessons();
 
     setState(() {
       sqliteLessons = lessons;
     });
+
+    stopwatch.stop();
+
+    await PerformanceLogger.log(
+      mode: 'Eco',
+      operation: 'SQLite Read',
+      recordCount: lessons.length,
+      loadTime: stopwatch.elapsedMilliseconds,
+    );
   }
 
   Future<void> syncMaterialsToSQLite() async {
@@ -81,101 +104,22 @@ class _LessonsPageState extends State<LessonsPage> {
     print('Materials synced');
   }
 
-  Future<void> deleteLesson(
-      String lessonId) async {
+  Future<void> refreshLessons() async {
 
-    try {
+    await syncLessonsToSQLite();
 
-      await FirebaseFirestore.instance
-          .collection('lessons')
-          .doc(lessonId)
-          .delete();
+    await syncMaterialsToSQLite();
 
-      await syncLessonsToSQLite();
+    if (!mounted) return;
 
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Lesson deleted successfully',
-          ),
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Content updated',
         ),
-      );
-
-    } catch (e) {
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
-        SnackBar(
-          content: Text(
-            'Error: $e',
-          ),
-        ),
-      );
-    }
-  }
-
-  Future<void> confirmDeleteLesson(
-      String lessonId) async {
-
-    final confirm =
-    await showDialog<bool>(
-      context: context,
-
-      builder: (_) =>
-          AlertDialog(
-            title: const Text(
-              'Delete Lesson',
-            ),
-
-            content: const Text(
-              'Are you sure you want to delete this lesson?',
-            ),
-
-            actions: [
-
-              TextButton(
-                onPressed: () {
-
-                  Navigator.pop(
-                    context,
-                    false,
-                  );
-                },
-
-                child: const Text(
-                  'Cancel',
-                ),
-              ),
-
-              TextButton(
-                onPressed: () {
-
-                  Navigator.pop(
-                    context,
-                    true,
-                  );
-                },
-
-                child: const Text(
-                  'Delete',
-                  style: TextStyle(
-                    color: Colors.red,
-                  ),
-                ),
-              ),
-            ],
-          ),
+      ),
     );
-
-    if (confirm == true) {
-
-      await deleteLesson(
-        lessonId,
-      );
-    }
   }
 
   Widget buildSQLiteLessons(AppSettings settings) {
@@ -191,37 +135,43 @@ class _LessonsPageState extends State<LessonsPage> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: sqliteLessons.length,
+    return RefreshIndicator(
+      onRefresh: refreshLessons,
 
-      itemBuilder: (context, index) {
+      child: ListView.builder(
+        padding: const EdgeInsets.all(20),
+        itemCount: sqliteLessons.length,
 
-        final lesson = sqliteLessons[index];
+        itemBuilder: (context, index) {
 
-        return LessonCard(
-          title: lesson['title'],
-          description: lesson['description'],
-          courseCode: lesson['course_code'],
-          progress: (lesson['progress'] ?? 0) / 100,
+          final lesson = sqliteLessons[index];
 
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => LessonsContentPage(
-                  lessonId: lesson['id'],
-                  lessonTitle: lesson['title'],
-                  lessonCode: lesson['course_code'],
+          return LessonCard(
+            title: lesson['title'],
+            description: lesson['description'],
+            courseCode: lesson['course_code'],
+            progress:
+            (lesson['progress'] ?? 0) / 100,
+
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      LessonsContentPage(
+                        lessonId:
+                        lesson['id'],
+                        lessonTitle:
+                        lesson['title'],
+                        lessonCode:
+                        lesson['course_code'],
+                      ),
                 ),
-              ),
-            );
-          },
-
-          onEdit: () {},
-          onDelete: () {},
-        );
-      },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -289,13 +239,6 @@ class _LessonsPageState extends State<LessonsPage> {
                   ),
                 );
               },
-
-              onEdit: () {},
-              onDelete: () {
-                confirmDeleteLesson(
-                  lessons[index].id,
-                );
-              },
             );
           },
         );
@@ -310,31 +253,6 @@ class _LessonsPageState extends State<LessonsPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background(settings.darkTheme,),
-
-      floatingActionButton:
-      role == 'lecturer' ? FloatingActionButton(
-        backgroundColor: AppColors.primary,
-
-        onPressed: () async {
-
-          final result =
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CreateLessonPage(),
-            ),
-          );
-
-          if (result == true) {
-            await syncLessonsToSQLite();
-          }
-        },
-
-        child: const Icon(
-          Icons.add,
-          color: Colors.black,
-        ),
-      ) : null,
 
       bottomNavigationBar: BottomNavBar(
         currentIndex: 1,

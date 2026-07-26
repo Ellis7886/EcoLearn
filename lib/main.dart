@@ -14,8 +14,6 @@ void main() async {
 
   await DatabaseService.instance.database;
 
-  // print('SQLite database created');
-
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

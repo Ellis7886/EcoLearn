@@ -11,8 +11,6 @@ import '../services/file_service.dart';
 
 import '../helpers/material_handler.dart';
 
-import '../screens/lesson/edit_lessons_content_page.dart';
-
 class MaterialCard extends StatelessWidget {
 
   final QueryDocumentSnapshot material;
@@ -29,7 +27,9 @@ class MaterialCard extends StatelessWidget {
 
     IconData icon = Icons.description;
 
-    final fileType = (material['file_type'] ?? '').toString().toLowerCase();
+    final fileType = (material['type'] ?? '')
+        .toString()
+        .toLowerCase();
 
     if (fileType.contains('pdf')) {
       icon = Icons.picture_as_pdf;
@@ -85,142 +85,6 @@ class MaterialCard extends StatelessWidget {
             ),
           ),
 
-          trailing: FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('users')
-                .doc(FirebaseAuth.instance.currentUser!.uid)
-                .get(),
-
-            builder: (context, snapshot) {
-
-              if (!snapshot.hasData) {
-                return const SizedBox();
-              }
-
-              final role = snapshot.data!['role'];
-
-              if (role != 'lecturer') {
-                return const SizedBox();
-              }
-
-              return PopupMenuButton<String>(
-                icon: Icon(
-                  Icons.more_vert,
-                  color: AppColors.text(darkTheme,),
-                ),
-
-                onSelected: (value) async {
-
-                  if (value == 'edit') {
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => EditLessonsContentPage(
-                          documentId: material.id,
-                          material: material.data() as Map<String, dynamic>,
-                        ),
-                      ),
-                    );
-
-                  }
-
-                  else if (value == 'delete') {
-
-                    final messenger = ScaffoldMessenger.of(context);
-
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text(
-                          'Delete Material',
-                        ),
-                        content: const Text(
-                          'Delete this material?',
-                        ),
-                        actions: [
-
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pop(
-                                  context,
-                                  false,
-                                ),
-                            child: const Text(
-                              'Cancel',
-                            ),
-                          ),
-
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pop(
-                                  context,
-                                  true,
-                                ),
-                            child: const Text(
-                              'Delete',
-                              style: TextStyle(
-                                color: Colors.red,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-
-                    if (confirm == true) {
-
-                      await FirebaseFirestore.instance
-                          .collection('content')
-                          .doc(material.id)
-                          .delete();
-
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Material deleted',
-                          ),
-                        ),
-                      );
-                    }
-                  }
-                },
-
-                itemBuilder: (context) => const [
-
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit),
-                        SizedBox(width: 10),
-                        Text('Edit'),
-                      ],
-                    ),
-                  ),
-
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.delete,
-                          color: Colors.red,
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          'Delete',
-                          style: TextStyle(
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
           onTap: () async {
 
             final materialService = MaterialService();
@@ -230,9 +94,7 @@ class MaterialCard extends StatelessWidget {
               material.id,
             );
 
-            final fileType = (material['file_type'] ?? '')
-                .toString()
-                .toLowerCase();
+            final fileType = (material['type'] ?? '').toString().toLowerCase();
 
             String? localPath = localMaterial?['local_path'];
 

@@ -11,8 +11,6 @@ class LessonCard extends StatelessWidget {
   final String courseCode;
   final double progress;
   final VoidCallback? onTap;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
 
   const LessonCard({
     super.key,
@@ -21,8 +19,6 @@ class LessonCard extends StatelessWidget {
     required this.courseCode,
     required this.progress,
     this.onTap,
-    this.onEdit,
-    this.onDelete,
   });
 
   @override
@@ -122,60 +118,6 @@ class LessonCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-
-                PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.more_vert,
-                    color: AppColors.subText(
-                      settings.darkTheme,
-                    ),
-                  ),
-
-                  onSelected: (value) {
-
-                    if (value == 'edit') {
-                      onEdit?.call();
-                    }
-
-                    if (value == 'delete') {
-                      onDelete?.call();
-                    }
-                  },
-
-                  itemBuilder: (context) => [
-
-                    const PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit),
-                          SizedBox(width: 10),
-                          Text('Edit'),
-                        ],
-                      ),
-                    ),
-
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-
-                          Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                          ),
-
-                          SizedBox(width: 10),
-
-                          Text(
-                            'Delete',
-                            style: TextStyle(color: Colors.red,),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),

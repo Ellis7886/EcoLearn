@@ -31,7 +31,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
     );
   }
@@ -53,23 +53,23 @@ class DatabaseService {
     await db.execute('''
       CREATE TABLE materials(
         id TEXT PRIMARY KEY,
-        lesson_id TEXT,
+        chapter_id TEXT,
         title TEXT,
+        description TEXT,
+        type TEXT,
         file_name TEXT,
-        chapter TEXT,
-        file_type TEXT,
-        firebase_url TEXT,
+        file_url TEXT,
         local_path TEXT
-      )
+    )
     ''');
 
     await db.execute('''
       CREATE TABLE quizzes(
         id TEXT PRIMARY KEY,
-        lesson_id TEXT,
+        chapter_id TEXT,
         title TEXT,
         description TEXT
-      )
+    )
     ''');
 
     await db.execute('''

@@ -5,8 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../themes/app_colors.dart';
 
-import '../screens/lesson/edit_lessons_content_page.dart';
-
 import 'material_card.dart';
 
 class ChapterCard extends StatelessWidget {
@@ -73,68 +71,6 @@ class ChapterCard extends StatelessWidget {
                   ),
                 ),
               ),
-
-              FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(FirebaseAuth.instance.currentUser!.uid)
-                    .get(),
-
-                builder: (context, snapshot) {
-
-                  if (!snapshot.hasData) {
-                    return const SizedBox();
-                  }
-
-                  final role = snapshot.data!['role'];
-
-                  if (role != 'lecturer') {
-                    return const SizedBox();
-                  }
-
-                  return PopupMenuButton<String>(
-                    icon: Icon(
-                      Icons.more_vert,
-                      color: AppColors.text(darkTheme,),
-                    ),
-
-                    onSelected: (value) async {
-                      if (value == 'edit') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => EditLessonsContentPage(
-                              documentId: chapter.id,
-                              material: chapter.data() as Map<String, dynamic>,
-                            ),
-                          ),
-                        );
-                      }
-
-                      else if (value == 'delete') {
-                        await FirebaseFirestore.instance
-                            .collection('content')
-                            .doc(chapter.id)
-                            .delete();
-                      }
-                    },
-
-                    itemBuilder: (context) => const [
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Text('Edit'),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Text(
-                          'Delete',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
             ],
           ),
 
@@ -165,9 +101,8 @@ class ChapterCard extends StatelessWidget {
 
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection('content')
-                  .where('type', isEqualTo: 'material',)
-                  .where('chapter', isEqualTo: chapter['title'],)
+                  .collection('materials')
+                  .where('chapter_id', isEqualTo: chapter.id)
                   .snapshots(),
 
               builder: (context, materialSnapshot) {
@@ -178,13 +113,13 @@ class ChapterCard extends StatelessWidget {
                         .docs
                         .isEmpty) {
 
-                  return const Align(
+                  return Align(
                     alignment: Alignment.centerLeft,
-
                     child: Text(
                       'No materials uploaded',
-                      style:
-                      TextStyle(color: Colors.white54,),
+                      style: TextStyle(
+                        color: AppColors.subText(darkTheme),
+                      ),
                     ),
                   );
                 }
