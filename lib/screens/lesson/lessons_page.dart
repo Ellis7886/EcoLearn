@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
 import '../../controllers/lesson_controller.dart';
-import '../../controllers/material_controller.dart';
 
 import '../../themes/app_colors.dart';
 
@@ -27,7 +26,6 @@ class LessonsPage extends StatefulWidget {
 
 class _LessonsPageState extends State<LessonsPage> {
   final LessonController _lessonController = LessonController();
-  final MaterialController _materialController = MaterialController();
 
   List<Map<String, dynamic>> sqliteLessons = [];
   String? _lastSnapshotHash;
@@ -43,7 +41,6 @@ class _LessonsPageState extends State<LessonsPage> {
         measureSQLiteRead();
       } else {
         syncLessonsToSQLite();
-        syncMaterialsToSQLite();
       }
     });
   }
@@ -67,11 +64,6 @@ class _LessonsPageState extends State<LessonsPage> {
     );
   }
 
-  Future<void> syncLessonsToSQLiteBackground() async {
-    await _lessonController.syncLessons();
-    await _materialController.syncMaterials();
-  }
-
   Future<void> loadSQLiteLessons() async {
 
     final lessons = await _lessonController.getSQLiteLessons();
@@ -83,16 +75,8 @@ class _LessonsPageState extends State<LessonsPage> {
     });
   }
 
-  Future<void> syncMaterialsToSQLite() async {
-
-    await _materialController.syncMaterials();
-
-    print('Materials synced');
-  }
-
   Future<void> syncLatestContent() async {
     await syncLessonsToSQLite();
-    await syncMaterialsToSQLite();
     await measureSQLiteRead();
 
     if (!mounted) return;
@@ -219,7 +203,7 @@ class _LessonsPageState extends State<LessonsPage> {
 
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              syncLessonsToSQLiteBackground();
+              _lessonController.syncLessons();
             }
           });
         }

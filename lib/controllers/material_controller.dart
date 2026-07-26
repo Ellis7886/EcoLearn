@@ -4,22 +4,26 @@ import '../services/material_service.dart';
 
 class MaterialController {
 
-  Future<void> syncMaterials() async {
+  final MaterialService _materialService = MaterialService();
+
+  /// Sync materials from Firestore to SQLite
+  Future<List<Map<String, dynamic>>> syncMaterials(
+      String chapterId) async {
 
     final snapshot = await FirebaseFirestore.instance
         .collection('materials')
+        .where('chapter_id', isEqualTo: chapterId)
         .get();
 
-    final materialService = MaterialService();
+    // Delete existing materials for this chapter
+    await _materialService.deleteMaterialsByChapter(chapterId);
 
+    // Insert latest materials
     for (var doc in snapshot.docs) {
 
       final material = doc.data();
 
-      final existingMaterial =
-      await materialService.getMaterialById(doc.id);
-
-      await materialService.insertMaterial({
+      await _materialService.insertMaterial({
         'id': doc.id,
         'chapter_id': material['chapter_id'],
         'title': material['title'],
@@ -27,8 +31,18 @@ class MaterialController {
         'type': material['type'],
         'file_name': material['file_name'],
         'file_url': material['file_url'],
-        'local_path': existingMaterial?['local_path'] ?? '',
+        'local_path': '',
       });
     }
+
+    // Return SQLite data
+    return await _materialService.getMaterialsByChapter(chapterId);
+  }
+
+  /// Load materials from SQLite only
+  Future<List<Map<String, dynamic>>> getSQLiteMaterials(
+      String chapterId) async {
+
+    return await _materialService.getMaterialsByChapter(chapterId);
   }
 }

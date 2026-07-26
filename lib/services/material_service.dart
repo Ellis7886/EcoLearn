@@ -57,14 +57,15 @@ class MaterialService {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getMaterialsByLesson(String lessonId) async {
+  Future<List<Map<String, dynamic>>> getMaterialsByChapter(
+      String chapterId) async {
 
     final db = await DatabaseService.instance.database;
 
     return await db.query(
       'materials',
-      where: 'lesson_id = ?',
-      whereArgs: [lessonId],
+      where: 'chapter_id = ?',
+      whereArgs: [chapterId],
     );
   }
 
@@ -75,6 +76,18 @@ class MaterialService {
       'materials',
       where: 'id = ?',
       whereArgs: [id],
+    );
+  }
+
+  Future<void> deleteMaterialsByChapter(
+      String chapterId) async {
+
+    final db = await DatabaseService.instance.database;
+
+    await db.delete(
+      'materials',
+      where: 'chapter_id = ?',
+      whereArgs: [chapterId],
     );
   }
 
