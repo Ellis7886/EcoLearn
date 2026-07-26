@@ -15,7 +15,8 @@ import '../../widgets/bottom_nav_bar.dart';
 import '../../services/performance_logger.dart';
 
 import 'lessons_content_page.dart';
-// import 'edit_lesson_page.dart';
+
+import 'dart:developer' as developer;
 
 class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});
@@ -29,31 +30,20 @@ class _LessonsPageState extends State<LessonsPage> {
   final MaterialController _materialController = MaterialController();
 
   List<Map<String, dynamic>> sqliteLessons = [];
+  String? _lastSnapshotHash;
 
-  @override void initState() {
+  @override
+  void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
 
-      final settings =
-      Provider.of<AppSettings>(context, listen: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final settings = Provider.of<AppSettings>(context, listen: false);
 
       if (settings.ecoMode) {
-
-        loadSQLiteLessons();
-
+        measureSQLiteRead();
       } else {
-
         syncLessonsToSQLite();
         syncMaterialsToSQLite();
-
-        FirebaseFirestore.instance
-            .collection('lessons')
-            .snapshots()
-            .listen((_) {
-
-          syncLessonsToSQLite();
-
-        });
       }
     });
   }
@@ -77,24 +67,20 @@ class _LessonsPageState extends State<LessonsPage> {
     );
   }
 
+  Future<void> syncLessonsToSQLiteBackground() async {
+    await _lessonController.syncLessons();
+    await _materialController.syncMaterials();
+  }
+
   Future<void> loadSQLiteLessons() async {
 
-    final stopwatch = Stopwatch()..start();
-
     final lessons = await _lessonController.getSQLiteLessons();
+
+    if (!mounted) return;
 
     setState(() {
       sqliteLessons = lessons;
     });
-
-    stopwatch.stop();
-
-    await PerformanceLogger.log(
-      mode: 'Eco',
-      operation: 'SQLite Read',
-      recordCount: lessons.length,
-      loadTime: stopwatch.elapsedMilliseconds,
-    );
   }
 
   Future<void> syncMaterialsToSQLite() async {
@@ -104,21 +90,33 @@ class _LessonsPageState extends State<LessonsPage> {
     print('Materials synced');
   }
 
-  Future<void> refreshLessons() async {
-
+  Future<void> syncLatestContent() async {
     await syncLessonsToSQLite();
-
     await syncMaterialsToSQLite();
+    await measureSQLiteRead();
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
-          'Content updated',
-        ),
+        content: Text('Content updated'),
       ),
+    );
+  }
+
+  Future<void> measureSQLiteRead() async {
+
+    final stopwatch = Stopwatch()..start();
+
+    await loadSQLiteLessons();
+
+    stopwatch.stop();
+
+    await PerformanceLogger.log(
+      mode: 'Eco',
+      operation: 'SQLite Read',
+      recordCount: sqliteLessons.length,
+      loadTime: stopwatch.elapsedMilliseconds,
     );
   }
 
@@ -136,7 +134,7 @@ class _LessonsPageState extends State<LessonsPage> {
     }
 
     return RefreshIndicator(
-      onRefresh: refreshLessons,
+      onRefresh: syncLatestContent,
 
       child: ListView.builder(
         padding: const EdgeInsets.all(20),
@@ -211,6 +209,20 @@ class _LessonsPageState extends State<LessonsPage> {
         }
 
         final lessons = snapshot.data!.docs;
+
+        final currentHash = lessons
+            .map((e) => e.id)
+            .join(',');
+
+        if (_lastSnapshotHash != currentHash) {
+          _lastSnapshotHash = currentHash;
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              syncLessonsToSQLiteBackground();
+            }
+          });
+        }
 
         return ListView.builder(
           padding: const EdgeInsets.all(20),

@@ -31,7 +31,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
     );
   }
@@ -47,6 +47,15 @@ class DatabaseService {
         description TEXT,
         course_code TEXT,
         progress REAL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE chapters(
+        id TEXT PRIMARY KEY,
+        lesson_id TEXT,
+        title TEXT,
+        description TEXT
       )
     ''');
 

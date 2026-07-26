@@ -4,7 +4,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
-import 'screens/security/login_page.dart';
 import 'provider/app_settings.dart';
 import 'services/database_service.dart';
 import 'services/notification_service.dart';
