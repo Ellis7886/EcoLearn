@@ -2,8 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
-
 import '../themes/app_colors.dart';
 
 import '../services/material_service.dart';
@@ -131,10 +129,13 @@ class MaterialCard extends StatelessWidget {
                 material['file_name'],
               );
 
+              debugPrint("Downloaded path = $filePath");
+
               await materialService.updateLocalPath(
                 material.id,
                 filePath,
               );
+
 
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

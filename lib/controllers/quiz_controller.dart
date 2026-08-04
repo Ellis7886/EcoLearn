@@ -34,9 +34,6 @@ class QuizController {
 
       final questions = quiz['questions'] ?? [];
 
-      print('Questions found:');
-      print(questions);
-
       for (var question
       in questions) {
 

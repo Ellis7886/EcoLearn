@@ -41,21 +41,9 @@ class _QuizPageState
   }
 
   Future<void> syncQuizzesToSQLite() async {
+    final quizController = QuizController();
+    await quizController.syncQuizzes();
 
-    try {
-
-      final quizController = QuizController();
-
-      await quizController.syncQuizzes();
-
-      print('Quizzes synced');
-
-    } catch (e) {
-
-      print(
-        'Quiz Sync Error: $e',
-      );
-    }
   }
 
   Future<void> deleteQuiz(

@@ -15,8 +15,6 @@ import '../../services/performance_logger.dart';
 
 import 'lessons_content_page.dart';
 
-import 'dart:developer' as developer;
-
 class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});
 
@@ -58,7 +56,8 @@ class _LessonsPageState extends State<LessonsPage> {
 
     await PerformanceLogger.log(
       mode: 'Normal',
-      operation: 'Firebase Sync',
+      operation: 'Load Lessons',
+      dataSource: 'Firestore',
       recordCount: lessons.length,
       loadTime: stopwatch.elapsedMilliseconds,
     );
@@ -98,7 +97,8 @@ class _LessonsPageState extends State<LessonsPage> {
 
     await PerformanceLogger.log(
       mode: 'Eco',
-      operation: 'SQLite Read',
+      operation: 'Load Lessons',
+      dataSource: 'SQLite',
       recordCount: sqliteLessons.length,
       loadTime: stopwatch.elapsedMilliseconds,
     );

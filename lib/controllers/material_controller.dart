@@ -15,10 +15,19 @@ class MaterialController {
         .where('chapter_id', isEqualTo: chapterId)
         .get();
 
-    // Delete existing materials for this chapter
+    // Keep existing local_path
+    final existingMaterials = await _materialService.getMaterialsByChapter(chapterId);
+
+    Map<String, String> localPaths = {};
+
+    for (final item in existingMaterials) {
+      localPaths[item['id']] = item['local_path'] ?? '';
+    }
+
+    // Delete old records
     await _materialService.deleteMaterialsByChapter(chapterId);
 
-    // Insert latest materials
+    // Insert latest records while preserving local_path
     for (var doc in snapshot.docs) {
 
       final material = doc.data();
@@ -31,11 +40,10 @@ class MaterialController {
         'type': material['type'],
         'file_name': material['file_name'],
         'file_url': material['file_url'],
-        'local_path': '',
+        'local_path': localPaths[doc.id] ?? '',
       });
     }
 
-    // Return SQLite data
     return await _materialService.getMaterialsByChapter(chapterId);
   }
 

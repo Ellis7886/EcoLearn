@@ -6,6 +6,7 @@ class PerformanceLogger {
   static Future<void> log({
     required String mode,
     required String operation,
+    required String dataSource,
     required int recordCount,
     required int loadTime,
   }) async {
@@ -17,7 +18,7 @@ class PerformanceLogger {
     if (!await file.exists()) {
 
       await file.writeAsString(
-        'timestamp,mode,operation,records,load_time_ms\n',
+        'timestamp,mode,operation,data_source,records,load_time_ms\n',
       );
     }
 
@@ -25,6 +26,7 @@ class PerformanceLogger {
         '${DateTime.now()},'
         '$mode,'
         '$operation,'
+        '$dataSource,'
         '$recordCount,'
         '$loadTime\n';
 
