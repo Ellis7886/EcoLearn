@@ -31,7 +31,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 9,
       onCreate: _createDB,
     );
   }
@@ -69,16 +69,16 @@ class DatabaseService {
         file_name TEXT,
         file_url TEXT,
         local_path TEXT
-    )
+      )
     ''');
 
     await db.execute('''
       CREATE TABLE quizzes(
         id TEXT PRIMARY KEY,
-        chapter_id TEXT,
+        lesson_id TEXT,
         title TEXT,
         description TEXT
-    )
+      )
     ''');
 
     await db.execute('''
@@ -91,6 +91,19 @@ class DatabaseService {
         option_c TEXT,
         option_d TEXT,
         correct_answer TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE quiz_results(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        quiz_id TEXT,
+        user_id TEXT,
+        score INTEGER,
+        total_questions INTEGER,
+        percentage REAL,
+        completed_at TEXT,
+        synced INTEGER DEFAULT 0
       )
     ''');
   }

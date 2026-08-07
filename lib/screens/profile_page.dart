@@ -16,6 +16,8 @@ import '../widgets/setting_switch.dart';
 
 import 'security/login_page.dart';
 
+import '../controllers/quiz_controller.dart';
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -24,6 +26,8 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+
+  final QuizController _quizController = QuizController();
 
   late Future<DocumentSnapshot> userFuture;
 
@@ -309,11 +313,66 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(width: 15),
 
                         Expanded(
-                          child: buildStatCard(
-                            'Quiz',
-                            '85%',
-                            Icons.quiz,
-                            settings.darkTheme,
+                          child: settings.ecoMode
+
+                              ? FutureBuilder<double>(
+                            future: _quizController.getAverageQuizPercentage(
+                              FirebaseAuth.instance.currentUser!.uid,
+                            ),
+                            builder: (context, snapshot) {
+
+                              if (!snapshot.hasData) {
+                                return buildStatCard(
+                                  'Quiz',
+                                  '0%',
+                                  Icons.quiz,
+                                  settings.darkTheme,
+                                );
+                              }
+
+                              return buildStatCard(
+                                'Quiz',
+                                '${snapshot.data!.toStringAsFixed(1)}%',
+                                Icons.quiz,
+                                settings.darkTheme,
+                              );
+                            },
+                          )
+
+                              : StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('quiz_results')
+                                .where(
+                              'user_id',
+                              isEqualTo: FirebaseAuth.instance.currentUser!.uid,
+                            )
+                                .snapshots(),
+                            builder: (context, snapshot) {
+
+                              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                                return buildStatCard(
+                                  'Quiz',
+                                  '0%',
+                                  Icons.quiz,
+                                  settings.darkTheme,
+                                );
+                              }
+
+                              double total = 0;
+
+                              for (final doc in snapshot.data!.docs) {
+                                total += (doc['percentage'] as num).toDouble();
+                              }
+
+                              final average = total / snapshot.data!.docs.length;
+
+                              return buildStatCard(
+                                'Quiz',
+                                '${average.toStringAsFixed(1)}%',
+                                Icons.quiz,
+                                settings.darkTheme,
+                              );
+                            },
                           ),
                         ),
                       ],

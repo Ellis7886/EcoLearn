@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+
+import '../../provider/app_settings.dart';
+
+import '../../controllers/quiz_controller.dart';
+
+import '../../services/quiz_service.dart';
 
 class TakeQuizPage extends StatefulWidget {
 
@@ -11,35 +19,67 @@ class TakeQuizPage extends StatefulWidget {
   });
 
   @override
-  State<TakeQuizPage> createState() =>
-      _TakeQuizPageState();
+  State<TakeQuizPage> createState() => _TakeQuizPageState();
 }
 
-class _TakeQuizPageState
-    extends State<TakeQuizPage> {
+class _TakeQuizPageState extends State<TakeQuizPage> {
+  final QuizService _quizService = QuizService();
 
   Map<int, String> selectedAnswers = {};
 
   int score = 0;
 
-  Future<void> submitQuiz(
-      List questions) async {
+  Future<void> submitQuiz(List questions) async {
 
     score = 0;
 
-    for (int i = 0;
-    i < questions.length;
-    i++) {
+    for (int i = 0; i < questions.length; i++) {
 
-      final correctAnswer =
-      questions[i]['correct_answer'];
+      final correctAnswer = questions[i]['correct_answer'];
 
-      if (selectedAnswers[i] ==
-          correctAnswer) {
-
+      if (selectedAnswers[i] == correctAnswer) {
         score++;
       }
     }
+
+    // Save quiz result into SQLite
+    await _quizService.insertQuizResult({
+
+      'quiz_id': widget.quizId,
+
+      'user_id':
+      FirebaseAuth.instance.currentUser?.uid ?? '',
+
+      'score': score,
+
+      'total_questions': questions.length,
+
+      'percentage':
+      (score / questions.length) * 100,
+
+      'completed_at':
+      DateTime.now().toIso8601String(),
+
+      'synced': 0,
+
+    });
+
+    final settings = Provider.of<AppSettings>(
+      context,
+      listen: false,
+    );
+
+    if (!settings.ecoMode) {
+
+      final quizController =
+      QuizController();
+
+      await quizController
+          .syncQuizResultsToFirestore();
+
+    }
+
+
 
     if (!mounted) return;
 
@@ -47,6 +87,7 @@ class _TakeQuizPageState
       context: context,
 
       builder: (_) => AlertDialog(
+
         title: const Text(
           'Quiz Result',
         ),
@@ -62,13 +103,11 @@ class _TakeQuizPageState
             onPressed: () {
 
               Navigator.pop(context);
-
               Navigator.pop(context);
+
             },
 
-            child: const Text(
-              'OK',
-            ),
+            child: const Text('OK'),
           ),
         ],
       ),
