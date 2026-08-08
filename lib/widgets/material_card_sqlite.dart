@@ -1,5 +1,10 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:provider/provider.dart';
+
+import '../provider/app_settings.dart';
 
 import '../themes/app_colors.dart';
 
@@ -82,83 +87,230 @@ class MaterialCardSqlite extends StatelessWidget {
             ),
           ),
 
-          onTap: () async {
+        onTap: () async {
 
-            final materialService = MaterialService();
-            final fileService = FileService();
+          final settings = Provider.of<AppSettings>(
+            context,
+            listen: false,
+          );
 
-            final localMaterial = await materialService.getMaterialById(
-              material['id'],
+          final materialService = MaterialService();
+          final fileService = FileService();
+
+          final localMaterial =
+          await materialService.getMaterialById(
+            material['id'],
+          );
+
+          final fileType =
+          (material['type'] ?? '')
+              .toString()
+              .toLowerCase();
+
+          // ========================================
+          // Determine current mode
+          // ========================================
+
+          final String currentMode =
+          settings.ecoMode ? 'eco' : 'normal';
+
+          // ========================================
+          // Get local information
+          // ========================================
+
+          String? localPath =
+          localMaterial?['local_path'];
+
+          String? localMode =
+          localMaterial?['local_mode'];
+
+          // ========================================
+          // Check whether the correct version
+          // is already stored locally
+          // ========================================
+
+          if (localPath != null &&
+              localPath.isNotEmpty &&
+              File(localPath).existsSync() &&
+              localMode == currentMode) {
+
+            debugPrint(
+              'OPEN LOCAL FILE',
             );
 
-            final fileType = (material['type'] ?? '').toString().toLowerCase();
+            debugPrint(
+              'Mode: $currentMode',
+            );
 
-            String? localPath = localMaterial?['local_path'];
+            debugPrint(
+              'Path: $localPath',
+            );
 
-            // Already downloaded
-            if (localPath != null &&
-                localPath.isNotEmpty &&
-                File(localPath).existsSync()) {
+            MaterialHandler.openMaterial(
+              context,
+              fileType,
+              localPath,
+              material['title'],
+            );
 
-              print('OPEN LOCAL FILE');
+            return;
+          }
 
-              MaterialHandler.openMaterial(
-                context,
-                fileType,
-                localPath,
-                material['title'],
+          // ========================================
+          // Show downloading message
+          // ========================================
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                settings.ecoMode
+                    ? 'Downloading Eco Mode version...'
+                    : 'Downloading Normal Mode version...',
+              ),
+            ),
+          );
+
+          try {
+
+            // ========================================
+            // Variables for selected file
+            // ========================================
+
+            String downloadUrl =
+            material['file_url'];
+
+            String downloadFileName =
+            material['file_name'];
+
+            // ========================================
+            // ECO MODE
+            // ========================================
+
+            if (settings.ecoMode) {
+
+              final ecoPath =
+              material['eco_file_path'];
+
+              if (ecoPath == null ||
+                  ecoPath.toString().isEmpty) {
+
+                throw Exception(
+                  'Optimized file is not available yet.',
+                );
+              }
+
+              debugPrint(
+                'ECO MODE',
               );
 
-              return;
+              debugPrint(
+                'Optimized path: $ecoPath',
+              );
+
+              // Firebase Storage path
+              final storageRef =
+              FirebaseStorage.instance
+                  .ref()
+                  .child(
+                ecoPath.toString(),
+              );
+
+              // Get download URL
+              downloadUrl =
+              await storageRef.getDownloadURL();
+
+              // Get optimized filename
+              downloadFileName =
+                  ecoPath.toString()
+                      .split('/')
+                      .last;
             }
 
-            // Show downloading message
+            // ========================================
+            // NORMAL MODE
+            // ========================================
+
+            else {
+
+              debugPrint(
+                'NORMAL MODE',
+              );
+
+              debugPrint(
+                'Original URL: ${material['file_url']}',
+              );
+            }
+
+            // ========================================
+            // Download selected version
+            // ========================================
+
+            final filePath =
+            await fileService.downloadFile(
+              downloadUrl,
+              downloadFileName,
+            );
+
+            // ========================================
+            // Save local path + mode
+            // ========================================
+
+            await materialService.updateLocalMaterial(
+              material['id'],
+              filePath,
+              currentMode,
+            );
+
+            debugPrint(
+              'Downloaded file: $filePath',
+            );
+
+            debugPrint(
+              'Saved mode: $currentMode',
+            );
+
+            // ========================================
+            // Download completed
+            // ========================================
+
+            if (!context.mounted) return;
+
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
+              const SnackBar(
                 content: Text(
-                  'Downloading ${material['title']}...',
+                  'Download completed',
                 ),
               ),
             );
 
-            try {
+            // ========================================
+            // Open selected file
+            // ========================================
 
-              final filePath = await fileService.downloadFile(
-                material['file_url'],
-                material['file_name'],
-              );
+            MaterialHandler.openMaterial(
+              context,
+              fileType,
+              filePath,
+              material['title'],
+            );
 
-              await materialService.updateLocalPath(
-                material['id'],
-                filePath,
-              );
+          } catch (e) {
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Download completed',
-                  ),
+            if (!context.mounted) return;
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Download failed: $e',
                 ),
-              );
+              ),
+            );
 
-              MaterialHandler.openMaterial(
-                context,
-                fileType,
-                filePath,
-                material['title'],
-              );
-
-            } catch (e) {
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Download failed: $e',
-                  ),
-                ),
-              );
-            }
+            debugPrint(
+              'Material download error: $e',
+            );
           }
+        },
       ),
     );
   }

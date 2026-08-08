@@ -31,8 +31,9 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 9,
+      version: 12,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -68,7 +69,9 @@ class DatabaseService {
         type TEXT,
         file_name TEXT,
         file_url TEXT,
-        local_path TEXT
+        eco_file_path TEXT,
+        local_path TEXT,
+        local_mode TEXT
       )
     ''');
 
@@ -106,5 +109,24 @@ class DatabaseService {
         synced INTEGER DEFAULT 0
       )
     ''');
+  }
+
+  Future<void> _upgradeDB(
+      Database db,
+      int oldVersion,
+      int newVersion,
+      ) async {
+
+    if (oldVersion < 10) {
+      await db.execute(
+        'ALTER TABLE materials ADD COLUMN local_mode TEXT',
+      );
+    }
+
+    if (oldVersion < 11) {
+      await db.execute(
+        'ALTER TABLE materials ADD COLUMN eco_file_path TEXT',
+      );
+    }
   }
 }

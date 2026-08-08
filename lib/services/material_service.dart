@@ -4,10 +4,11 @@ import 'database_service.dart';
 
 class MaterialService {
 
-  Future<void> insertMaterial(
+  Future insertMaterial(
       Map<String, dynamic> material) async {
 
-    final db = await DatabaseService.instance.database;
+    final db =
+    await DatabaseService.instance.database;
 
     await db.insert(
       'materials',
@@ -19,14 +20,19 @@ class MaterialService {
 
   Future<List<Map<String, dynamic>>> getMaterials() async {
 
-    final db = await DatabaseService.instance.database;
+    final db =
+    await DatabaseService.instance.database;
 
-    return await db.query('materials');
+    return await db.query(
+      'materials',
+    );
   }
 
-  Future<Map<String, dynamic>?> getMaterialById(String id) async {
+  Future<Map<String, dynamic>?> getMaterialById(
+      String id) async {
 
-    final db = await DatabaseService.instance.database;
+    final db =
+    await DatabaseService.instance.database;
 
     final result = await db.query(
       'materials',
@@ -41,11 +47,16 @@ class MaterialService {
     return null;
   }
 
-  Future<void> updateLocalPath(
+  // ========================================
+  // Existing method
+  // ========================================
+
+  Future updateLocalPath(
       String id,
       String localPath) async {
 
-    final db = await DatabaseService.instance.database;
+    final db =
+    await DatabaseService.instance.database;
 
     await db.update(
       'materials',
@@ -57,10 +68,35 @@ class MaterialService {
     );
   }
 
+  // ========================================
+  // NEW:
+  // Update local file + mode
+  // ========================================
+
+  Future updateLocalMaterial(
+      String id,
+      String localPath,
+      String localMode) async {
+
+    final db =
+    await DatabaseService.instance.database;
+
+    await db.update(
+      'materials',
+      {
+        'local_path': localPath,
+        'local_mode': localMode,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<List<Map<String, dynamic>>> getMaterialsByChapter(
       String chapterId) async {
 
-    final db = await DatabaseService.instance.database;
+    final db =
+    await DatabaseService.instance.database;
 
     return await db.query(
       'materials',
@@ -69,8 +105,11 @@ class MaterialService {
     );
   }
 
-  Future<void> deleteMaterial(String id) async {
-    final db = await DatabaseService.instance.database;
+  Future deleteMaterial(
+      String id) async {
+
+    final db =
+    await DatabaseService.instance.database;
 
     await db.delete(
       'materials',
@@ -79,10 +118,11 @@ class MaterialService {
     );
   }
 
-  Future<void> deleteMaterialsByChapter(
+  Future deleteMaterialsByChapter(
       String chapterId) async {
 
-    final db = await DatabaseService.instance.database;
+    final db =
+    await DatabaseService.instance.database;
 
     await db.delete(
       'materials',
@@ -91,9 +131,10 @@ class MaterialService {
     );
   }
 
-  Future<void> clearMaterials() async {
+  Future clearMaterials() async {
 
-    final db = await DatabaseService.instance.database;
+    final db =
+    await DatabaseService.instance.database;
 
     await db.delete(
       'materials',

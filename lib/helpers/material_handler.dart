@@ -24,9 +24,8 @@ class MaterialHandler {
           ),
         ),
       );
-    }
 
-    else if (fileType.contains('video') ||
+    } else if (fileType.contains('video') ||
         fileType.contains('mp4')) {
 
       Navigator.push(
@@ -38,9 +37,8 @@ class MaterialHandler {
           ),
         ),
       );
-    }
 
-    else if (fileType.contains('jpg') ||
+    } else if (fileType.contains('jpg') ||
         fileType.contains('jpeg') ||
         fileType.contains('png') ||
         fileType.contains('image')) {

@@ -313,9 +313,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(width: 15),
 
                         Expanded(
-                          child: settings.ecoMode
-
-                              ? FutureBuilder<double>(
+                          child: settings.ecoMode ? FutureBuilder<double>(
                             future: _quizController.getAverageQuizPercentage(
                               FirebaseAuth.instance.currentUser!.uid,
                             ),
@@ -338,7 +336,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               );
                             },
                           )
-
                               : StreamBuilder<QuerySnapshot>(
                             stream: FirebaseFirestore.instance
                                 .collection('quiz_results')

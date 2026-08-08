@@ -1,6 +1,9 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:provider/provider.dart';
 
 import '../themes/app_colors.dart';
 
@@ -8,6 +11,8 @@ import '../services/material_service.dart';
 import '../services/file_service.dart';
 
 import '../helpers/material_handler.dart';
+
+import '../provider/app_settings.dart';
 
 class MaterialCard extends StatelessWidget {
 
@@ -85,23 +90,54 @@ class MaterialCard extends StatelessWidget {
 
           onTap: () async {
 
+            final settings = Provider.of<AppSettings>(
+              context,
+              listen: false,
+            );
+
             final materialService = MaterialService();
             final fileService = FileService();
 
-            final localMaterial = await materialService.getMaterialById(
+            final localMaterial =
+            await materialService.getMaterialById(
               material.id,
             );
 
-            final fileType = (material['type'] ?? '').toString().toLowerCase();
+            final fileType =
+            (material['type'] ?? '')
+                .toString()
+                .toLowerCase();
 
-            String? localPath = localMaterial?['local_path'];
+            // ========================================
+            // Determine current mode
+            // ========================================
 
-            // Already downloaded
+            final String currentMode =
+            settings.ecoMode ? 'eco' : 'normal';
+
+            // ========================================
+            // Get local information
+            // ========================================
+
+            String? localPath =
+            localMaterial?['local_path'];
+
+            String? localMode =
+            localMaterial?['local_mode'];
+
+            // ========================================
+            // Check whether correct version
+            // is already downloaded
+            // ========================================
+
             if (localPath != null &&
                 localPath.isNotEmpty &&
-                File(localPath).existsSync()) {
+                File(localPath).existsSync() &&
+                localMode == currentMode) {
 
-              print('OPEN LOCAL FILE');
+              debugPrint('OPEN LOCAL FILE');
+              debugPrint('Mode: $currentMode');
+              debugPrint('Path: $localPath');
 
               MaterialHandler.openMaterial(
                 context,
@@ -113,29 +149,113 @@ class MaterialCard extends StatelessWidget {
               return;
             }
 
+            // ========================================
             // Show downloading message
+            // ========================================
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'Downloading ${material['title']}...',
+                  settings.ecoMode
+                      ? 'Downloading Eco Mode version...'
+                      : 'Downloading Normal Mode version...',
                 ),
               ),
             );
 
             try {
 
-              final filePath = await fileService.downloadFile(
-                material['file_url'],
-                material['file_name'],
+              // ========================================
+              // Select file
+              // ========================================
+
+              String downloadUrl =
+              material['file_url'];
+
+              String downloadFileName =
+              material['file_name'];
+
+              // ========================================
+              // ECO MODE
+              // ========================================
+
+              if (settings.ecoMode) {
+
+                final ecoPath =
+                material['eco_file_path'];
+
+                if (ecoPath == null ||
+                    ecoPath.toString().isEmpty) {
+
+                  throw Exception(
+                    'Optimized file is not available yet.',
+                  );
+                }
+
+                debugPrint('ECO MODE');
+                debugPrint(
+                  'Optimized path: $ecoPath',
+                );
+
+                final storageRef =
+                FirebaseStorage.instance
+                    .ref()
+                    .child(
+                  ecoPath.toString(),
+                );
+
+                downloadUrl =
+                await storageRef.getDownloadURL();
+
+                downloadFileName =
+                    ecoPath
+                        .toString()
+                        .split('/')
+                        .last;
+              }
+
+              // ========================================
+              // NORMAL MODE
+              // ========================================
+
+              else {
+
+                debugPrint('NORMAL MODE');
+
+                debugPrint(
+                  'Original URL: ${material['file_url']}',
+                );
+              }
+
+              // ========================================
+              // Download selected version
+              // ========================================
+
+              final filePath =
+              await fileService.downloadFile(
+                downloadUrl,
+                downloadFileName,
               );
 
-              debugPrint("Downloaded path = $filePath");
+              debugPrint(
+                'Downloaded path = $filePath',
+              );
 
-              await materialService.updateLocalPath(
+              // ========================================
+              // Save local path + mode
+              // ========================================
+
+              await materialService.updateLocalMaterial(
                 material.id,
                 filePath,
+                currentMode,
               );
 
+              // ========================================
+              // Download completed
+              // ========================================
+
+              if (!context.mounted) return;
 
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
@@ -144,6 +264,10 @@ class MaterialCard extends StatelessWidget {
                   ),
                 ),
               );
+
+              // ========================================
+              // Open file
+              // ========================================
 
               MaterialHandler.openMaterial(
                 context,
@@ -154,12 +278,18 @@ class MaterialCard extends StatelessWidget {
 
             } catch (e) {
 
+              if (!context.mounted) return;
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
                     'Download failed: $e',
                   ),
                 ),
+              );
+
+              debugPrint(
+                'Material download error: $e',
               );
             }
           }
