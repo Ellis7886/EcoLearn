@@ -27,16 +27,29 @@ class _LessonsPageState extends State<LessonsPage> {
 
   List<Map<String, dynamic>> sqliteLessons = [];
   String? _lastSnapshotHash;
+  bool? _lastEcoMode;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final settings =
+    Provider.of<AppSettings>(
+      context,
+      listen: false,
+    );
+
+    if (_lastEcoMode == settings.ecoMode) {
+      return;
+    }
+
+    _lastEcoMode = settings.ecoMode;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final settings = Provider.of<AppSettings>(context, listen: false);
+      if (!mounted) return;
 
       if (settings.ecoMode) {
-        measureSQLiteRead();
+        loadSQLiteLessons();
       } else {
         syncLessonsToSQLite();
       }
@@ -63,15 +76,19 @@ class _LessonsPageState extends State<LessonsPage> {
     );
   }
 
-  Future<void> loadSQLiteLessons() async {
+  Future<List<Map<String, dynamic>>> loadSQLiteLessons() async {
+    final lessons =
+    await _lessonController.getSQLiteLessons();
 
-    final lessons = await _lessonController.getSQLiteLessons();
-
-    if (!mounted) return;
+    if (!mounted) {
+      return lessons;
+    }
 
     setState(() {
       sqliteLessons = lessons;
     });
+
+    return lessons;
   }
 
   Future<void> syncLatestContent() async {
@@ -87,11 +104,10 @@ class _LessonsPageState extends State<LessonsPage> {
     );
   }
 
-  Future<void> measureSQLiteRead() async {
-
+  Future measureSQLiteRead() async {
     final stopwatch = Stopwatch()..start();
 
-    await loadSQLiteLessons();
+    final lessons = await loadSQLiteLessons();
 
     stopwatch.stop();
 
@@ -99,39 +115,49 @@ class _LessonsPageState extends State<LessonsPage> {
       mode: 'Eco',
       operation: 'Load Lessons',
       dataSource: 'SQLite',
-      recordCount: sqliteLessons.length,
+      recordCount: lessons.length,
       loadTime: stopwatch.elapsedMilliseconds,
     );
   }
 
   Widget buildSQLiteLessons(AppSettings settings) {
-
-    if (sqliteLessons.isEmpty) {
-      return Center(
-        child: Text(
-          'No lessons found',
-          style: TextStyle(
-            color: AppColors.text(settings.darkTheme),
-          ),
-        ),
-      );
-    }
-
     return RefreshIndicator(
       onRefresh: syncLatestContent,
 
-      child: ListView.builder(
+      child: sqliteLessons.isEmpty
+          ? ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.35,
+          ),
+
+          Center(
+            child: Text(
+              'No lessons found',
+              style: TextStyle(
+                color: AppColors.text(
+                  settings.darkTheme,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ) : ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+
         padding: const EdgeInsets.all(20),
+
         itemCount: sqliteLessons.length,
 
         itemBuilder: (context, index) {
-
           final lesson = sqliteLessons[index];
 
           return LessonCard(
             title: lesson['title'],
             description: lesson['description'],
             courseCode: lesson['course_code'],
+
             progress:
             (lesson['progress'] ?? 0) / 100,
 
@@ -143,8 +169,10 @@ class _LessonsPageState extends State<LessonsPage> {
                       LessonsContentPage(
                         lessonId:
                         lesson['id'],
+
                         lessonTitle:
                         lesson['title'],
+
                         lessonCode:
                         lesson['course_code'],
                       ),
@@ -193,20 +221,6 @@ class _LessonsPageState extends State<LessonsPage> {
         }
 
         final lessons = snapshot.data!.docs;
-
-        final currentHash = lessons
-            .map((e) => e.id)
-            .join(',');
-
-        if (_lastSnapshotHash != currentHash) {
-          _lastSnapshotHash = currentHash;
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              _lessonController.syncLessons();
-            }
-          });
-        }
 
         return ListView.builder(
           padding: const EdgeInsets.all(20),

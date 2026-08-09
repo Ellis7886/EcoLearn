@@ -11,6 +11,7 @@ class MaterialHandler {
       String fileType,
       String path,
       String title,
+      String mode,
       ) {
 
     if (fileType.contains('pdf')) {
@@ -49,6 +50,7 @@ class MaterialHandler {
           builder: (_) => ImageViewerPage(
             imageUrl: path,
             title: title,
+            mode:  mode,
           ),
         ),
       );

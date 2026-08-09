@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:provider/provider.dart';
@@ -7,9 +5,6 @@ import 'package:provider/provider.dart';
 import '../provider/app_settings.dart';
 
 import '../themes/app_colors.dart';
-
-import '../services/material_service.dart';
-import '../services/file_service.dart';
 
 import '../helpers/material_handler.dart';
 
@@ -94,99 +89,40 @@ class MaterialCardSqlite extends StatelessWidget {
             listen: false,
           );
 
-          final materialService = MaterialService();
-          final fileService = FileService();
-
-          final localMaterial =
-          await materialService.getMaterialById(
-            material['id'],
-          );
-
           final fileType =
           (material['type'] ?? '')
               .toString()
               .toLowerCase();
 
-          // ========================================
-          // Determine current mode
-          // ========================================
-
-          final String currentMode =
-          settings.ecoMode ? 'eco' : 'normal';
-
-          // ========================================
-          // Get local information
-          // ========================================
-
-          String? localPath =
-          localMaterial?['local_path'];
-
-          String? localMode =
-          localMaterial?['local_mode'];
-
-          // ========================================
-          // Check whether the correct version
-          // is already stored locally
-          // ========================================
-
-          if (localPath != null &&
-              localPath.isNotEmpty &&
-              File(localPath).existsSync() &&
-              localMode == currentMode) {
-
-            debugPrint(
-              'OPEN LOCAL FILE',
-            );
-
-            debugPrint(
-              'Mode: $currentMode',
-            );
-
-            debugPrint(
-              'Path: $localPath',
-            );
-
-            MaterialHandler.openMaterial(
-              context,
-              fileType,
-              localPath,
-              material['title'],
-            );
-
-            return;
-          }
-
-          // ========================================
-          // Show downloading message
-          // ========================================
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                settings.ecoMode
-                    ? 'Downloading Eco Mode version...'
-                    : 'Downloading Normal Mode version...',
-              ),
-            ),
-          );
-
           try {
 
+            String materialUrl;
+
             // ========================================
-            // Variables for selected file
+            // NORMAL MODE
             // ========================================
 
-            String downloadUrl =
-            material['file_url'];
+            if (!settings.ecoMode) {
 
-            String downloadFileName =
-            material['file_name'];
+              debugPrint('========================');
+              debugPrint('NORMAL MODE');
+              debugPrint('Using ORIGINAL file');
+
+              materialUrl =
+              material['file_url'];
+
+              debugPrint(
+                'Original URL: $materialUrl',
+              );
+
+              debugPrint('========================');
+            }
 
             // ========================================
             // ECO MODE
             // ========================================
 
-            if (settings.ecoMode) {
+            else {
 
               final ecoPath =
               material['eco_file_path'];
@@ -199,15 +135,17 @@ class MaterialCardSqlite extends StatelessWidget {
                 );
               }
 
+              debugPrint('========================');
+              debugPrint('ECO MODE');
               debugPrint(
-                'ECO MODE',
+                'Using OPTIMIZED file',
               );
 
               debugPrint(
                 'Optimized path: $ecoPath',
               );
 
-              // Firebase Storage path
+              // Firebase Storage reference
               final storageRef =
               FirebaseStorage.instance
                   .ref()
@@ -215,83 +153,29 @@ class MaterialCardSqlite extends StatelessWidget {
                 ecoPath.toString(),
               );
 
-              // Get download URL
-              downloadUrl =
+              // Get optimized file URL
+              materialUrl =
               await storageRef.getDownloadURL();
 
-              // Get optimized filename
-              downloadFileName =
-                  ecoPath.toString()
-                      .split('/')
-                      .last;
+              debugPrint(
+                'Optimized URL: $materialUrl',
+              );
+
+              debugPrint('========================');
             }
 
             // ========================================
-            // NORMAL MODE
-            // ========================================
-
-            else {
-
-              debugPrint(
-                'NORMAL MODE',
-              );
-
-              debugPrint(
-                'Original URL: ${material['file_url']}',
-              );
-            }
-
-            // ========================================
-            // Download selected version
-            // ========================================
-
-            final filePath =
-            await fileService.downloadFile(
-              downloadUrl,
-              downloadFileName,
-            );
-
-            // ========================================
-            // Save local path + mode
-            // ========================================
-
-            await materialService.updateLocalMaterial(
-              material['id'],
-              filePath,
-              currentMode,
-            );
-
-            debugPrint(
-              'Downloaded file: $filePath',
-            );
-
-            debugPrint(
-              'Saved mode: $currentMode',
-            );
-
-            // ========================================
-            // Download completed
+            // OPEN MATERIAL DIRECTLY
             // ========================================
 
             if (!context.mounted) return;
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Download completed',
-                ),
-              ),
-            );
-
-            // ========================================
-            // Open selected file
-            // ========================================
-
             MaterialHandler.openMaterial(
               context,
               fileType,
-              filePath,
+              materialUrl,
               material['title'],
+              settings.ecoMode ? 'Eco' : 'Normal',
             );
 
           } catch (e) {
@@ -301,13 +185,13 @@ class MaterialCardSqlite extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'Download failed: $e',
+                  'Unable to open material: $e',
                 ),
               ),
             );
 
             debugPrint(
-              'Material download error: $e',
+              'Material error: $e',
             );
           }
         },

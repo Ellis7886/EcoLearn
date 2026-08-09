@@ -31,7 +31,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 12,
+      version: 13,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -47,7 +47,8 @@ class DatabaseService {
         title TEXT,
         description TEXT,
         course_code TEXT,
-        progress REAL
+        progress REAL,
+        created_at TEXT
       )
     ''');
 
@@ -126,6 +127,12 @@ class DatabaseService {
     if (oldVersion < 11) {
       await db.execute(
         'ALTER TABLE materials ADD COLUMN eco_file_path TEXT',
+      );
+    }
+
+    if (oldVersion < 13) {
+      await db.execute(
+        'ALTER TABLE lessons ADD COLUMN created_at TEXT',
       );
     }
   }

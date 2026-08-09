@@ -31,22 +31,32 @@ class _LessonsContentPageState extends State<LessonsContentPage>{
   final MaterialController _materialController = MaterialController();
 
   int refreshCounter = 0;
-
   List<Map<String, dynamic>> sqliteChapters = [];
+  bool? _lastEcoMode;
 
-  @override void initState() {
-    super.initState();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final settings = Provider.of<AppSettings>(
+      context,
+      listen: false,
+    );
+
+    if (_lastEcoMode == settings.ecoMode) {
+      return;
+    }
+
+    _lastEcoMode = settings.ecoMode;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-
-      final settings = Provider.of<AppSettings>(context, listen: false);
+      if (!mounted) return;
 
       if (settings.ecoMode) {
         loadSQLiteChapters();
       } else {
         syncChaptersToSQLite();
       }
-
     });
   }
 
@@ -150,31 +160,41 @@ class _LessonsContentPageState extends State<LessonsContentPage>{
   }
 
   Widget buildSQLiteChapters(AppSettings settings) {
-
-    if (sqliteChapters.isEmpty) {
-      return Center(
-        child: Text(
-          "No chapters available.",
-          style: TextStyle(
-            color: AppColors.text(settings.darkTheme),
-          ),
-        ),
-      );
-    }
-
     return RefreshIndicator(
-
       onRefresh: syncLatestContent,
 
-      child: ListView.builder(
+      child: sqliteChapters.isEmpty
+          ? ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          SizedBox(
+            height:
+            MediaQuery.of(context).size.height * 0.35,
+          ),
+
+          Center(
+            child: Text(
+              "No chapters available.",
+              style: TextStyle(
+                color: AppColors.text(
+                  settings.darkTheme,
+                ),
+              ),
+            ),
+          ),
+        ],
+      )
+          : ListView.builder(
+        physics:
+        const AlwaysScrollableScrollPhysics(),
 
         padding: const EdgeInsets.all(20),
 
         itemCount: sqliteChapters.length,
 
         itemBuilder: (context, index) {
-
-          final chapter = sqliteChapters[index];
+          final chapter =
+          sqliteChapters[index];
 
           return ChapterCardSqlite(
             chapter: chapter,

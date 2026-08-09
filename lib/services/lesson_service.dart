@@ -19,7 +19,10 @@ class LessonService {
   Future<List<Map<String, dynamic>>> getLessons() async {
     final db = await DatabaseService.instance.database;
 
-    return await db.query('lessons');
+    return await db.query(
+      'lessons',
+      orderBy: 'created_at DESC',
+    );
   }
 
   Future<void> clearLessons() async {

@@ -42,6 +42,7 @@ class LessonController {
         'description': lesson['description'],
         'course_code': lesson['course_code'],
         'progress': lesson['progress'],
+        'created_at': lesson['created_at']?.toDate().toIso8601String(),
       });
     }
 

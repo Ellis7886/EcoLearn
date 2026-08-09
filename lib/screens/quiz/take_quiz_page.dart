@@ -47,8 +47,7 @@ class _TakeQuizPageState extends State<TakeQuizPage> {
 
       'quiz_id': widget.quizId,
 
-      'user_id':
-      FirebaseAuth.instance.currentUser?.uid ?? '',
+      'user_id': FirebaseAuth.instance.currentUser?.uid ?? '',
 
       'score': score,
 

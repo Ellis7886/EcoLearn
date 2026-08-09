@@ -3,109 +3,98 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
-import 'package:provider/provider.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
-import '../provider/app_settings.dart';
+import 'package:http/http.dart' as http;
 
 class VideoPlayerPage extends StatefulWidget {
   final String videoUrl;
   final String title;
 
-  // Firebase Storage path of the optimized Eco Mode video
-  final String? ecoFilePath;
-
   const VideoPlayerPage({
     super.key,
     required this.videoUrl,
     required this.title,
-    this.ecoFilePath,
   });
 
   @override
-  State<VideoPlayerPage> createState() => _VideoPlayerPageState();
+  State<VideoPlayerPage> createState() =>
+      _VideoPlayerPageState();
 }
 
-class _VideoPlayerPageState extends State<VideoPlayerPage> {
+class _VideoPlayerPageState
+    extends State<VideoPlayerPage> {
+
   late VideoPlayerController _videoController;
   ChewieController? _chewieController;
+
+  // ========================================
+  // File size information
+  // ========================================
+
+  String _fileSize = 'Checking...';
 
   @override
   void initState() {
     super.initState();
 
     _initializeVideo();
+
+    // Get file size
+    _getFileSize();
   }
 
+  // ========================================
+  // Initialize Video
+  // ========================================
+
   Future<void> _initializeVideo() async {
-    final settings = Provider.of<AppSettings>(
-      context,
-      listen: false,
-    );
 
-    String videoUrl = widget.videoUrl;
-
-    // ========================================
-    // ECO MODE
-    // ========================================
-
-    if (settings.ecoMode &&
-        widget.ecoFilePath != null &&
-        widget.ecoFilePath!.isNotEmpty) {
-      try {
-        final storageRef = FirebaseStorage.instance
-            .ref()
-            .child(widget.ecoFilePath!);
-
-        videoUrl = await storageRef.getDownloadURL();
-
-        debugPrint(
-          'Eco Mode: Using optimized video',
-        );
-
-        debugPrint(
-          'Eco video path: ${widget.ecoFilePath}',
-        );
-      } catch (e) {
-        debugPrint(
-          'Failed to load optimized video: $e',
-        );
-
-        // Fall back to original video
-        videoUrl = widget.videoUrl;
-      }
-    }
+    debugPrint('============================');
+    debugPrint('VIDEO PLAYER');
+    debugPrint('Video URL: ${widget.videoUrl}');
+    debugPrint('============================');
 
     // ========================================
-    // CREATE VIDEO CONTROLLER
+    // Network video
     // ========================================
 
-    if (videoUrl.startsWith('http')) {
+    if (widget.videoUrl.startsWith('http')) {
+
       _videoController =
           VideoPlayerController.networkUrl(
-            Uri.parse(videoUrl),
+            Uri.parse(widget.videoUrl),
           );
-    } else {
+
+    }
+
+    // ========================================
+    // Local video
+    // ========================================
+
+    else {
+
       _videoController =
           VideoPlayerController.file(
-            File(videoUrl),
+            File(widget.videoUrl),
           );
     }
+
+    // ========================================
+    // Initialize video
+    // ========================================
 
     await _videoController.initialize();
 
     if (!mounted) return;
 
     // ========================================
-    // CHEWIE
+    // Chewie
     // ========================================
 
     _chewieController = ChewieController(
       videoPlayerController: _videoController,
 
-      // Normal Mode = auto play
-      // Eco Mode = don't auto play
-      autoPlay: !settings.ecoMode,
+      // Both modes use the same behaviour
+      autoPlay: false,
 
       looping: false,
 
@@ -117,27 +106,194 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     setState(() {});
   }
 
+  // ========================================
+  // Get file size
+  // ========================================
+
+  Future<void> _getFileSize() async {
+
+    try {
+
+      // ======================================
+      // Network file
+      // ======================================
+
+      if (widget.videoUrl.startsWith('http')) {
+
+        final response = await http.head(
+          Uri.parse(widget.videoUrl),
+        );
+
+        final contentLength =
+        response.headers['content-length'];
+
+        if (contentLength != null) {
+
+          final bytes =
+          int.parse(contentLength);
+
+          if (!mounted) return;
+
+          setState(() {
+            _fileSize = _formatFileSize(bytes);
+          });
+
+          debugPrint(
+            'Video file size: $_fileSize',
+          );
+
+        } else {
+
+          if (!mounted) return;
+
+          setState(() {
+            _fileSize = 'Unknown';
+          });
+        }
+      }
+
+      // ======================================
+      // Local file
+      // ======================================
+
+      else {
+
+        final file = File(widget.videoUrl);
+
+        if (await file.exists()) {
+
+          final bytes = await file.length();
+
+          if (!mounted) return;
+
+          setState(() {
+            _fileSize = _formatFileSize(bytes);
+          });
+
+        } else {
+
+          if (!mounted) return;
+
+          setState(() {
+            _fileSize = 'File not found';
+          });
+        }
+      }
+
+    } catch (e) {
+
+      debugPrint(
+        'Unable to get video file size: $e',
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _fileSize = 'Unknown';
+      });
+    }
+  }
+
+  // ========================================
+  // Format file size
+  // ========================================
+
+  String _formatFileSize(int bytes) {
+
+    if (bytes < 1024) {
+      return '$bytes B';
+    }
+
+    if (bytes < 1024 * 1024) {
+
+      return '${(bytes / 1024).toStringAsFixed(2)} KB';
+    }
+
+    if (bytes < 1024 * 1024 * 1024) {
+
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+    }
+
+    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
+  }
+
+  // ========================================
+  // Dispose
+  // ========================================
+
   @override
   void dispose() {
+
     _chewieController?.dispose();
+
     _videoController.dispose();
 
     super.dispose();
   }
 
+  // ========================================
+  // Build
+  // ========================================
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
+
       appBar: AppBar(
         title: Text(widget.title),
       ),
 
-      body: Center(
-        child: _chewieController != null
-            ? Chewie(
-          controller: _chewieController!,
-        )
-            : const CircularProgressIndicator(),
+      body: Column(
+        children: [
+
+          // ==================================
+          // Video
+          // ==================================
+
+          Expanded(
+            child: Center(
+              child: _chewieController != null
+
+                  ? Chewie(
+                controller: _chewieController!,
+              )
+
+                  : const CircularProgressIndicator(),
+            ),
+          ),
+
+          // ==================================
+          // File information
+          // ==================================
+
+          Padding(
+            padding: const EdgeInsets.all(16),
+
+            child: Column(
+              children: [
+
+                Text(
+                  'Video File Size',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 5),
+
+                Text(
+                  _fileSize,
+                  style: TextStyle(
+                    fontSize: 18,
+                  ),
+                ),
+
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
