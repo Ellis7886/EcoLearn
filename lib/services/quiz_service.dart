@@ -81,14 +81,16 @@ class QuizService {
   // ==========================
 
   Future<void> insertQuizResult(
-      Map<String, dynamic> result) async {
-
-    final db = await DatabaseService.instance.database;
+      Map<String, dynamic> result,
+      ) async {
+    final db =
+    await DatabaseService.instance.database;
 
     await db.insert(
       'quiz_results',
       result,
-      conflictAlgorithm: ConflictAlgorithm.replace,
+      conflictAlgorithm:
+      ConflictAlgorithm.replace,
     );
   }
 
@@ -139,7 +141,6 @@ class QuizService {
   }
 
   Future<List<Map<String, dynamic>>> getUnsyncedResults() async {
-
     final db =
     await DatabaseService.instance.database;
 
@@ -147,12 +148,11 @@ class QuizService {
       'quiz_results',
       where: 'synced = ?',
       whereArgs: [0],
+      orderBy: 'completed_at ASC',
     );
   }
 
-  Future<void> markAsSynced(
-      int id) async {
-
+  Future<void> markAsSynced(int id) async {
     final db =
     await DatabaseService.instance.database;
 

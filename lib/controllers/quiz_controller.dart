@@ -65,30 +65,32 @@ class QuizController {
   }
 
   Future<void> syncQuizResultsToFirestore() async {
-
     final results =
     await _quizService.getUnsyncedResults();
 
     for (final result in results) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('quiz_results')
+            .doc(result['id'].toString())
+            .set({
+          'quiz_id': result['quiz_id'],
+          'user_id': result['user_id'],
+          'score': result['score'],
+          'total_questions': result['total_questions'],
+          'percentage': result['percentage'],
+          'completed_at': result['completed_at'],
+        });
 
-      await FirebaseFirestore.instance
-          .collection('quiz_results')
-          .add({
+        await _quizService.markAsSynced(
+          result['id'] as int,
+        );
 
-        'quiz_id': result['quiz_id'],
-        'user_id': result['user_id'],
-        'score': result['score'],
-        'total_questions':
-        result['total_questions'],
-        'percentage': result['percentage'],
-        'completed_at':
-        result['completed_at'],
-
-      });
-
-      await _quizService.markAsSynced(
-        result['id'],
-      );
+      } catch (e) {
+        print(
+          'Quiz result sync failed: $e',
+        );
+      }
     }
   }
 }
