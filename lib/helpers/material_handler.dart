@@ -14,8 +14,11 @@ class MaterialHandler {
       String mode,
       ) {
 
-    if (fileType.contains('pdf')) {
+    // ==========================
+    // PDF
+    // ==========================
 
+    if (fileType.contains('pdf')) {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -25,8 +28,13 @@ class MaterialHandler {
           ),
         ),
       );
+    }
 
-    } else if (fileType.contains('video') ||
+    // ==========================
+    // VIDEO
+    // ==========================
+
+    else if (fileType.contains('video') ||
         fileType.contains('mp4')) {
 
       Navigator.push(
@@ -35,11 +43,18 @@ class MaterialHandler {
           builder: (_) => VideoPlayerPage(
             videoUrl: path,
             title: title,
+            mode: mode,
           ),
         ),
       );
 
-    } else if (fileType.contains('jpg') ||
+    }
+
+    // ==========================
+    // IMAGE
+    // ==========================
+
+    else if (fileType.contains('jpg') ||
         fileType.contains('jpeg') ||
         fileType.contains('png') ||
         fileType.contains('image')) {
@@ -50,7 +65,7 @@ class MaterialHandler {
           builder: (_) => ImageViewerPage(
             imageUrl: path,
             title: title,
-            mode:  mode,
+            mode: mode,
           ),
         ),
       );

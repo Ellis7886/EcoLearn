@@ -54,6 +54,7 @@ dependencies:
   background_downloader: ^9.2.1
   shared_preferences: ^2.2.3
   http: ^1.2.2
+  connectivity_plus: ^6.1.5
 
 dev_dependencies:
   flutter_test:

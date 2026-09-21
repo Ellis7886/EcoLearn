@@ -44,41 +44,14 @@ class _TakeQuizPageState extends State<TakeQuizPage> {
 
     // Save quiz result into SQLite
     await _quizService.insertQuizResult({
-
       'quiz_id': widget.quizId,
-
       'user_id': FirebaseAuth.instance.currentUser?.uid ?? '',
-
       'score': score,
-
       'total_questions': questions.length,
-
-      'percentage':
-      (score / questions.length) * 100,
-
-      'completed_at':
-      DateTime.now().toIso8601String(),
-
+      'percentage': (score / questions.length) * 100,
+      'completed_at': DateTime.now().toIso8601String(),
       'synced': 0,
-
     });
-
-    final settings = Provider.of<AppSettings>(
-      context,
-      listen: false,
-    );
-
-    if (!settings.ecoMode) {
-
-      final quizController =
-      QuizController();
-
-      await quizController
-          .syncQuizResultsToFirestore();
-
-    }
-
-
 
     if (!mounted) return;
 

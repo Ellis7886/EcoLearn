@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,11 +10,15 @@ class ImageViewerPage extends StatefulWidget {
   final String title;
   final String mode;
 
+  // Used only for automated research testing
+  final bool testMode;
+
   const ImageViewerPage({
     super.key,
     required this.imageUrl,
     required this.title,
     required this.mode,
+    this.testMode = false,
   });
 
   @override
@@ -25,116 +31,249 @@ class _ImageViewerPageState
 
   String _fileSize = 'Checking...';
 
+  Uint8List? _imageBytes;
+
+  Timer? _testTimer;
+
+  bool _testStarted = false;
+  bool _testFinished = false;
+
   @override
   void initState() {
     super.initState();
 
-    _getFileSize();
+    _loadImage();
   }
 
   // ========================================
-  // Get image file size
+  // LOAD IMAGE
   // ========================================
 
-  Future<void> _getFileSize() async {
+  Future<void> _loadImage() async {
 
     try {
 
+      debugPrint('================================');
+      debugPrint('IMAGE RESOURCE TEST');
+      debugPrint('================================');
+
+      debugPrint('Mode: ${widget.mode}');
+      debugPrint('Image URL: ${widget.imageUrl}');
+
       // ======================================
-      // Network image
+      // NETWORK IMAGE
       // ======================================
 
       if (widget.imageUrl.startsWith('http')) {
 
-        final response = await http.head(
+        debugPrint('IMAGE SOURCE: NETWORK');
+        debugPrint('Downloading image with HTTP GET...');
+
+        final response = await http.get(
           Uri.parse(widget.imageUrl),
         );
 
-        final contentLength =
-        response.headers['content-length'];
+        debugPrint(
+          'HTTP STATUS: ${response.statusCode}',
+        );
 
-        if (contentLength != null) {
+        if (response.statusCode != 200) {
 
-          final bytes = int.parse(contentLength);
+          throw Exception(
+            'Image download failed: '
+                '${response.statusCode}',
+          );
+        }
 
-          if (!mounted) return;
+        final bytes = response.bodyBytes;
 
-          setState(() {
-            _fileSize = _formatFileSize(bytes);
-          });
+        debugPrint(
+          'IMAGE NETWORK BYTES: ${bytes.length}',
+        );
 
-        } else {
+        debugPrint(
+          'IMAGE NETWORK SIZE: '
+              '${_formatFileSize(bytes.length)}',
+        );
 
-          if (!mounted) return;
+        if (!mounted) return;
 
-          setState(() {
-            _fileSize = 'Unknown';
-          });
+        setState(() {
+
+          _imageBytes = bytes;
+
+          _fileSize =
+              _formatFileSize(bytes.length);
+
+        });
+
+        // ====================================
+        // Start automated test AFTER download
+        // ====================================
+
+        if (widget.testMode) {
+
+          _startAutomaticTest();
         }
       }
 
       // ======================================
-      // Local image
+      // LOCAL IMAGE
       // ======================================
 
       else {
 
-        final file = File(widget.imageUrl);
+        debugPrint('IMAGE SOURCE: LOCAL FILE');
 
-        if (await file.exists()) {
+        final file =
+        File(widget.imageUrl);
 
-          final bytes = await file.length();
+        if (!await file.exists()) {
 
-          if (!mounted) return;
+          throw Exception(
+            'Local image file not found.',
+          );
+        }
 
-          setState(() {
-            _fileSize = _formatFileSize(bytes);
-          });
+        final bytes =
+        await file.readAsBytes();
 
-        } else {
+        debugPrint(
+          'LOCAL IMAGE BYTES: ${bytes.length}',
+        );
 
-          if (!mounted) return;
+        debugPrint(
+          'LOCAL IMAGE SIZE: '
+              '${_formatFileSize(bytes.length)}',
+        );
 
-          setState(() {
-            _fileSize = 'File not found';
-          });
+        if (!mounted) return;
+
+        setState(() {
+
+          _imageBytes = bytes;
+
+          _fileSize =
+              _formatFileSize(bytes.length);
+
+        });
+
+        if (widget.testMode) {
+
+          _startAutomaticTest();
         }
       }
 
     } catch (e) {
 
       debugPrint(
-        'Unable to get image file size: $e',
+        'IMAGE DOWNLOAD ERROR: $e',
       );
 
       if (!mounted) return;
 
       setState(() {
-        _fileSize = 'Unknown';
+
+        _fileSize =
+        'Download failed';
+
       });
     }
   }
 
   // ========================================
-  // Format file size
+  // START AUTOMATIC TEST
+  // ========================================
+
+  void _startAutomaticTest() {
+
+    if (_testStarted ||
+        _testFinished ||
+        !widget.testMode ||
+        !mounted) {
+      return;
+    }
+
+    _testStarted = true;
+
+    debugPrint('================================');
+    debugPrint('IMAGE TEST STARTED');
+    debugPrint('Mode: ${widget.mode}');
+    debugPrint('Image loaded successfully.');
+    debugPrint('Waiting 3 seconds...');
+    debugPrint('================================');
+
+    _testTimer = Timer(
+      const Duration(seconds: 3),
+      _finishTest,
+    );
+  }
+
+  // ========================================
+  // FINISH AUTOMATIC TEST
+  // ========================================
+
+  void _finishTest() {
+
+    if (_testFinished ||
+        !mounted) {
+      return;
+    }
+
+    _testFinished = true;
+
+    debugPrint('================================');
+    debugPrint('IMAGE TEST COMPLETED');
+    debugPrint('Mode: ${widget.mode}');
+    debugPrint(
+      'Downloaded size: $_fileSize',
+    );
+    debugPrint('================================');
+
+    Navigator.pop(context);
+  }
+
+  // ========================================
+  // FORMAT FILE SIZE
   // ========================================
 
   String _formatFileSize(int bytes) {
 
     if (bytes < 1024) {
+
       return '$bytes B';
     }
 
     if (bytes < 1024 * 1024) {
+
       return '${(bytes / 1024).toStringAsFixed(2)} KB';
     }
 
     if (bytes < 1024 * 1024 * 1024) {
+
       return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
     }
 
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
   }
+
+  // ========================================
+  // DISPOSE
+  // ========================================
+
+  @override
+  void dispose() {
+
+    _testTimer?.cancel();
+
+    _testFinished = true;
+
+    super.dispose();
+  }
+
+  // ========================================
+  // BUILD
+  // ========================================
 
   @override
   Widget build(BuildContext context) {
@@ -149,31 +288,32 @@ class _ImageViewerPageState
         children: [
 
           // ==================================
-          // Image
+          // IMAGE
           // ==================================
 
           Expanded(
             child: Center(
-              child: InteractiveViewer(
-                child: widget.imageUrl.startsWith('http')
-                    ? Image.network(
-                  widget.imageUrl,
-                  fit: BoxFit.contain,
-                )
-                    : Image.file(
-                  File(widget.imageUrl),
+
+              child: _imageBytes != null
+
+                  ? InteractiveViewer(
+                child: Image.memory(
+                  _imageBytes!,
                   fit: BoxFit.contain,
                 ),
-              ),
+              )
+
+                  : const CircularProgressIndicator(),
             ),
           ),
 
           // ==================================
-          // File information
+          // FILE INFORMATION
           // ==================================
 
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding:
+            const EdgeInsets.all(16),
 
             child: Column(
               children: [
@@ -182,18 +322,22 @@ class _ImageViewerPageState
                   '${widget.mode} Mode',
                   style: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight:
+                    FontWeight.bold,
                   ),
                 ),
 
-                const SizedBox(height: 5),
+                const SizedBox(
+                  height: 5,
+                ),
 
                 Text(
-                  'File size: $_fileSize',
+                  'Downloaded size: $_fileSize',
                   style: const TextStyle(
                     fontSize: 14,
                   ),
                 ),
+
               ],
             ),
           ),

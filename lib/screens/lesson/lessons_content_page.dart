@@ -237,6 +237,18 @@ class _LessonsContentPageState extends State<LessonsContentPage>{
                 fontSize: 12,
               ),
             ),
+            Text(
+              settings.ecoMode
+                  ? 'ECO MODE'
+                  : 'NORMAL MODE',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: settings.ecoMode
+                    ? Colors.green
+                    : Colors.orange,
+              ),
+            ),
           ],
         ),
       ),

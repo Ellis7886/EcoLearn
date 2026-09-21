@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
+import '../services/local_user_service.dart';
 
 import '../themes/app_colors.dart';
 
@@ -17,6 +18,7 @@ import '../widgets/setting_switch.dart';
 import 'security/login_page.dart';
 
 import '../controllers/quiz_controller.dart';
+import '../controllers/lesson_controller.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -28,20 +30,59 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
 
   final QuizController _quizController = QuizController();
+  final LessonController _lessonController = LessonController();
+  Future<Map<String, dynamic>?>? userFuture;
+  bool? _lastEcoMode;
 
-  late Future<DocumentSnapshot> userFuture;
-
-  @override
-  void initState() {
-    super.initState();
+  Future<Map<String, dynamic>?> loadUser(
+      bool ecoMode) async {
 
     final currentUser = FirebaseAuth.instance.currentUser;
 
-    userFuture = FirebaseFirestore.instance
+    if (currentUser == null) {
+      return null;
+    }
+
+    // ==========================
+    // ECO MODE
+    // ==========================
+
+    if (ecoMode) {
+
+      final local =
+      await LocalUserService().getUser();
+
+      debugPrint('LOCAL USER: $local');
+
+      if (local['name'] == null ||
+          local['name']!.isEmpty) {
+        return null;
+      }
+
+      return {
+        'name': local['name'] ?? '',
+        'email': local['email'] ?? '',
+        'role': local['role'] ?? '',
+      };
+    }
+
+    // ==========================
+    // NORMAL MODE
+    // ==========================
+
+    final snapshot =
+    await FirebaseFirestore.instance
         .collection('users')
-        .doc(currentUser!.uid)
+        .doc(currentUser.uid)
         .get();
+
+    if (!snapshot.exists) {
+      return null;
+    }
+
+    return snapshot.data();
   }
+
 
   Widget buildStatCard(
       String title,
@@ -102,6 +143,24 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    final settings = Provider.of<AppSettings>(
+      context,
+      listen: false,
+    );
+
+    if (_lastEcoMode == settings.ecoMode) {
+      return;
+    }
+
+    _lastEcoMode = settings.ecoMode;
+
+    userFuture = loadUser(settings.ecoMode);
+  }
+
+  @override
   Widget build(BuildContext context) {
 
     final settings = Provider.of<AppSettings>(context);
@@ -138,7 +197,7 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
 
-      body: FutureBuilder<DocumentSnapshot>(
+      body: FutureBuilder<Map<String, dynamic>?>(
         future: userFuture,
 
         builder: (context, snapshot) {
@@ -151,22 +210,18 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           }
 
-          if(!snapshot.hasData ||
-              !snapshot.data!.exists){
+          if (!snapshot.hasData ||
+              snapshot.data == null) {
 
             return const Center(
               child: Text(
                 'User data not found',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
               ),
             );
           }
 
           final user = UserModel.fromFirestore(
-            snapshot.data!.data()
-            as Map<String, dynamic>,
+            snapshot.data!,
           );
 
           return SingleChildScrollView(
@@ -282,7 +337,32 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
 
                         Expanded(
-                          child: FutureBuilder<QuerySnapshot>(
+                          child: settings.ecoMode
+                              ? FutureBuilder<List<Map<String, dynamic>>>(
+                            future: _lessonController.getSQLiteLessons(),
+                            builder: (context, snapshot) {
+
+                              if (!snapshot.hasData) {
+                                return buildStatCard(
+                                  'Lessons',
+                                  '0',
+                                  Icons.menu_book,
+                                  settings.darkTheme,
+                                );
+                              }
+
+                              final lessonCount =
+                                  snapshot.data!.length;
+
+                              return buildStatCard(
+                                'Lessons',
+                                lessonCount.toString(),
+                                Icons.menu_book,
+                                settings.darkTheme,
+                              );
+                            },
+                          )
+                              : FutureBuilder<QuerySnapshot>(
                             future: FirebaseFirestore.instance
                                 .collection('lessons')
                                 .get(),

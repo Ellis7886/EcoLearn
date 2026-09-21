@@ -15,6 +15,7 @@ import '../../services/performance_logger.dart';
 
 import 'lessons_content_page.dart';
 
+
 class LessonsPage extends StatefulWidget {
   const LessonsPage({super.key});
 
@@ -26,7 +27,6 @@ class _LessonsPageState extends State<LessonsPage> {
   final LessonController _lessonController = LessonController();
 
   List<Map<String, dynamic>> sqliteLessons = [];
-  String? _lastSnapshotHash;
   bool? _lastEcoMode;
 
   @override
@@ -49,7 +49,7 @@ class _LessonsPageState extends State<LessonsPage> {
       if (!mounted) return;
 
       if (settings.ecoMode) {
-        loadSQLiteLessons();
+        initializeEcoMode();
       } else {
         syncLessonsToSQLite();
       }
@@ -77,8 +77,13 @@ class _LessonsPageState extends State<LessonsPage> {
   }
 
   Future<List<Map<String, dynamic>>> loadSQLiteLessons() async {
+
+    final stopwatch = Stopwatch()..start();
+
     final lessons =
     await _lessonController.getSQLiteLessons();
+
+    stopwatch.stop();
 
     if (!mounted) {
       return lessons;
@@ -88,29 +93,6 @@ class _LessonsPageState extends State<LessonsPage> {
       sqliteLessons = lessons;
     });
 
-    return lessons;
-  }
-
-  Future<void> syncLatestContent() async {
-    await syncLessonsToSQLite();
-    await measureSQLiteRead();
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Content updated'),
-      ),
-    );
-  }
-
-  Future measureSQLiteRead() async {
-    final stopwatch = Stopwatch()..start();
-
-    final lessons = await loadSQLiteLessons();
-
-    stopwatch.stop();
-
     await PerformanceLogger.log(
       mode: 'Eco',
       operation: 'Load Lessons',
@@ -118,6 +100,86 @@ class _LessonsPageState extends State<LessonsPage> {
       recordCount: lessons.length,
       loadTime: stopwatch.elapsedMilliseconds,
     );
+
+    return lessons;
+  }
+
+  Future<void> syncLatestContent() async {
+
+    try {
+
+      debugPrint('==============================');
+      debugPrint('REFRESHING LESSON CONTENT');
+      debugPrint('==============================');
+
+      // Check Firestore and synchronize
+      // the latest lessons into SQLite.
+      final lessons =
+      await _lessonController.syncLessons();
+
+      if (!mounted) return;
+
+      // Update the screen using the
+      // newly synchronized SQLite data.
+      setState(() {
+        sqliteLessons = lessons;
+      });
+
+      debugPrint(
+        'Lessons updated: ${lessons.length}',
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Lessons updated',
+          ),
+        ),
+      );
+
+    } catch (e) {
+
+      debugPrint(
+        'Failed to refresh lessons: $e',
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Failed to update lessons: $e',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> initializeEcoMode() async {
+
+    final lessons =
+    await _lessonController.getSQLiteLessons();
+
+    if (!mounted) return;
+
+    if (lessons.isEmpty) {
+
+      debugPrint(
+        'ECO MODE: SQLite is empty. Performing initial sync...',
+      );
+
+      await syncLessonsToSQLite();
+
+    } else {
+
+      debugPrint(
+        'ECO MODE: SQLite already contains ${lessons.length} lessons.',
+      );
+
+      setState(() {
+        sqliteLessons = lessons;
+      });
+    }
   }
 
   Widget buildSQLiteLessons(AppSettings settings) {
@@ -281,13 +343,31 @@ class _LessonsPageState extends State<LessonsPage> {
           ),
         ),
 
-        title: Text(
-          'Lessons',
-          style: TextStyle(
-            color: AppColors.text(
-              settings.darkTheme,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Lessons',
+              style: TextStyle(
+                color: AppColors.text(
+                  settings.darkTheme,
+                ),
+              ),
             ),
-          ),
+
+            Text(
+              settings.ecoMode
+                  ? 'ECO MODE'
+                  : 'NORMAL MODE',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: settings.ecoMode
+                    ? Colors.green
+                    : Colors.orange,
+              ),
+            ),
+          ],
         ),
       ),
 

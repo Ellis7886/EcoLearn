@@ -8,6 +8,8 @@ import 'register_page.dart';
 import '../loading_page.dart';
 import '../home_page.dart';
 
+import '/services/local_user_service.dart';
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -68,6 +70,20 @@ class _LoginPageState extends State<LoginPage> {
           'User document not found in Firestore',
         );
       }
+
+      final userData = userDoc.data();
+
+      if (userData == null) {
+        throw Exception(
+          'User data is empty',
+        );
+      }
+
+      await LocalUserService().saveUser(
+        name: userData['name'] ?? '',
+        email: userData['email'] ?? '',
+        role: userData['role'] ?? '',
+      );
 
       if (!mounted) return;
 
