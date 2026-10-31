@@ -85,6 +85,10 @@ class _LoginPageState extends State<LoginPage> {
         role: userData['role'] ?? '',
       );
 
+      final savedUser = await LocalUserService().getUser();
+      debugPrint('FIRESTORE USER DATA: $userData');
+      debugPrint('SAVED LOCAL USER: $savedUser');
+
       if (!mounted) return;
 
       Navigator.pop(context);

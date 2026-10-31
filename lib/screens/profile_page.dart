@@ -187,13 +187,26 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
 
-        title: Text(
-          'Profile',
-          style: TextStyle(
-            color: AppColors.text(
-              settings.darkTheme,
-            ),
-          ),
+        title: Consumer<AppSettings>(
+          builder: (context, settings, child) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Profile'),
+                Text(
+                  settings.ecoMode ? 'ECO MODE' : 'NORMAL MODE',
+                  style: TextStyle(
+                    color: settings.ecoMode
+                        ? Colors.green
+                        : Colors.orange,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
 
@@ -531,19 +544,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  Center(
-                    child: Text(
-                      'EcoLearn v1.0.0',
-                      style: TextStyle(
-                        color: AppColors.subText(
-                          settings.darkTheme,
                         ),
                       ),
                     ),
