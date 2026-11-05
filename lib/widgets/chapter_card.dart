@@ -5,8 +5,7 @@ import '../themes/app_colors.dart';
 
 import 'material_card.dart';
 
-class ChapterCard extends StatelessWidget {
-
+class ChapterCard extends StatefulWidget {
   final QueryDocumentSnapshot chapter;
   final bool darkTheme;
   final String lessonId;
@@ -19,14 +18,29 @@ class ChapterCard extends StatelessWidget {
   });
 
   @override
+  State<ChapterCard> createState() => _ChapterCardState();
+}
+
+/// Normal Mode chapter card (live Firestore data).
+class _ChapterCardState extends State<ChapterCard> {
+
+  // CHANGED: the materials query is created once per card,
+  // not on every rebuild.
+  late final Stream<QuerySnapshot> _materialsStream =
+  FirebaseFirestore.instance
+      .collection('materials')
+      .where('chapter_id', isEqualTo: widget.chapter.id)
+      .snapshots();
+
+  @override
   Widget build(BuildContext context) {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 15,),
       decoration: BoxDecoration(
-        color: AppColors.card(darkTheme,),
+        color: AppColors.card(widget.darkTheme,),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: darkTheme ? [] : [
+        boxShadow: widget.darkTheme ? [] : [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 10,
@@ -45,7 +59,7 @@ class ChapterCard extends StatelessWidget {
             width: 45,
             height: 45,
             decoration: BoxDecoration(
-              color: AppColors.primaryLight(darkTheme,),
+              color: AppColors.primaryLight(widget.darkTheme,),
               borderRadius: BorderRadius.circular(12),
             ),
 
@@ -55,16 +69,16 @@ class ChapterCard extends StatelessWidget {
             ),
           ),
 
-          iconColor: AppColors.text(darkTheme,),
-          collapsedIconColor: AppColors.text(darkTheme,),
+          iconColor: AppColors.text(widget.darkTheme,),
+          collapsedIconColor: AppColors.text(widget.darkTheme,),
 
           title: Row(
             children: [
               Expanded(
                 child: Text(
-                  chapter['title'] ?? '',
+                  widget.chapter['title'] ?? '',
                   style: TextStyle(
-                    color: AppColors.text(darkTheme,),
+                    color: AppColors.text(widget.darkTheme,),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -85,9 +99,9 @@ class ChapterCard extends StatelessWidget {
               alignment: Alignment.centerLeft,
 
               child: Text(
-                chapter['description'] ?? '',
+                widget.chapter['description'] ?? '',
                 style: TextStyle(
-                  color: AppColors.subText(darkTheme,),
+                  color: AppColors.subText(widget.darkTheme,),
                   height: 1.5,
                 ),
               ),
@@ -98,10 +112,7 @@ class ChapterCard extends StatelessWidget {
             ),
 
             StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('materials')
-                  .where('chapter_id', isEqualTo: chapter.id)
-                  .snapshots(),
+              stream: _materialsStream,
 
               builder: (context, materialSnapshot) {
                 if (!materialSnapshot
@@ -116,7 +127,7 @@ class ChapterCard extends StatelessWidget {
                     child: Text(
                       'No materials uploaded',
                       style: TextStyle(
-                        color: AppColors.subText(darkTheme),
+                        color: AppColors.subText(widget.darkTheme),
                       ),
                     ),
                   );
@@ -128,7 +139,7 @@ class ChapterCard extends StatelessWidget {
                   children: materials.map((material) {
                     return MaterialCard(
                       material: material,
-                      darkTheme: darkTheme,
+                      darkTheme: widget.darkTheme,
                     );
                   },
                   ).toList(),

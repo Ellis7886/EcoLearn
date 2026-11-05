@@ -11,6 +11,7 @@ import '../../controllers/quiz_controller.dart';
 
 import '../../services/quiz_service.dart';
 
+import '../../services/performance_logger.dart';
 import 'take_quiz_page.dart';
 
 class QuizPage extends StatefulWidget {
@@ -32,6 +33,9 @@ class _QuizPageState extends State<QuizPage> {
 
   bool? _lastEcoMode;
 
+  // CHANGED: created once, not inside build()
+  Stream<QuerySnapshot>? _quizzesStream;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -49,46 +53,23 @@ class _QuizPageState extends State<QuizPage> {
 
     _lastEcoMode = settings.ecoMode;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (settings.ecoMode) {
+      _quizzesStream = null;
 
-      if (!mounted) return;
-
-      if (settings.ecoMode) {
-
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         loadSQLiteQuizzes();
-
-      } else {
-
-        syncQuizzesToSQLite();
-      }
-    });
-  }
-
-  // ==================================================
-  // NORMAL MODE
-  // Firestore → SQLite
-  // ==================================================
-
-  Future<void> syncQuizzesToSQLite() async {
-
-    try {
-
-      await _quizController.syncQuizzes();
-
-      final quizzes =
-      await _quizService.getQuizzes();
-
-      if (!mounted) return;
-
-      setState(() {
-        sqliteQuizzes = quizzes;
       });
-
-    } catch (e) {
-
-      debugPrint(
-        'Failed to sync quizzes: $e',
-      );
+    } else {
+      // CHANGED: Normal Mode only uses the live Firestore
+      // listener (it no longer also copies quizzes into SQLite).
+      _quizzesStream = FirebaseFirestore.instance
+          .collection('quizzes')
+          .orderBy(
+        'created_at',
+        descending: true,
+      )
+          .snapshots();
     }
   }
 
@@ -101,8 +82,31 @@ class _QuizPageState extends State<QuizPage> {
 
     try {
 
-      final quizzes =
+      final session = await PerformanceLogger.start();
+
+      var quizzes =
       await _quizService.getQuizzes();
+
+      var source = 'SQLite';
+
+      // NEW: first visit in Eco Mode -> download once
+      if (quizzes.isEmpty) {
+        try {
+          await _quizController.syncQuizzes();
+          quizzes = await _quizService.getQuizzes();
+          source = 'Firestore->SQLite (first sync)';
+        } catch (e) {
+          debugPrint('ECO MODE: quiz sync failed: $e');
+        }
+      }
+
+      await PerformanceLogger.finish(
+        session,
+        mode: 'Eco',
+        operation: 'Load Quizzes',
+        dataSource: source,
+        recordCount: quizzes.length,
+      );
 
       if (!mounted) return;
 
@@ -196,14 +200,7 @@ class _QuizPageState extends State<QuizPage> {
       AppSettings settings) {
 
     return StreamBuilder<QuerySnapshot>(
-      stream:
-      FirebaseFirestore.instance
-          .collection('quizzes')
-          .orderBy(
-        'created_at',
-        descending: true,
-      )
-          .snapshots(),
+      stream: _quizzesStream,
 
       builder: (
           context,

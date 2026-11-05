@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sqflite/sqflite.dart';
 
+import '../services/database_service.dart';
 import '../services/lesson_service.dart';
 
 class LessonController {
 
   Future<String> getUserRole() async {
-
     final uid = FirebaseAuth.instance.currentUser!.uid;
 
     final doc = await FirebaseFirestore.instance
@@ -17,35 +18,46 @@ class LessonController {
     return doc['role'];
   }
 
-  Future<List<Map<String, dynamic>>> getSQLiteLessons()
-  async {
-
+  Future<List<Map<String, dynamic>>> getSQLiteLessons() async {
     final lessonService = LessonService();
-
     return await lessonService.getLessons();
   }
 
+  /// Firestore -> SQLite (used by Eco Mode only).
+  /// CHANGED: one transaction + batch instead of one write per row.
   Future<List<Map<String, dynamic>>> syncLessons() async {
+
     final snapshot = await FirebaseFirestore.instance
         .collection('lessons')
         .get();
 
-    final lessonService = LessonService();
+    final db = await DatabaseService.instance.database;
 
-    await lessonService.clearLessons();
+    await db.transaction((txn) async {
+      final batch = txn.batch();
 
-    for (var doc in snapshot.docs) {
-      final lesson = doc.data();
-      await lessonService.insertLesson({
-        'id': doc.id,
-        'title': lesson['title'],
-        'description': lesson['description'],
-        'course_code': lesson['course_code'],
-        'progress': lesson['progress'],
-        'created_at': lesson['created_at']?.toDate().toIso8601String(),
-      });
-    }
+      batch.delete('lessons');
 
-    return await lessonService.getLessons();
+      for (final doc in snapshot.docs) {
+        final lesson = doc.data();
+
+        batch.insert(
+          'lessons',
+          {
+            'id': doc.id,
+            'title': lesson['title'],
+            'description': lesson['description'],
+            'course_code': lesson['course_code'],
+            'progress': lesson['progress'],
+            'created_at': lesson['created_at']?.toDate().toIso8601String(),
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+
+      await batch.commit(noResult: true);
+    });
+
+    return await LessonService().getLessons();
   }
 }

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
-import 'package:http/http.dart' as http;
+import '../services/performance_logger.dart';
 
 class VideoPlayerPage extends StatefulWidget {
 
@@ -31,6 +31,11 @@ class _VideoPlayerPageState
 
   String _fileSize = 'Checking...';
 
+  // NEW: measurements
+  PerfSession? _openSession;    // open -> ready to play
+  PerfSession? _watchSession;   // whole time on this page
+  bool _initFailed = false;
+
   @override
   void initState() {
     super.initState();
@@ -41,31 +46,59 @@ class _VideoPlayerPageState
 
   Future<void> _initializeVideo() async {
 
-    debugPrint('============================');
-    debugPrint('VIDEO PLAYER');
-    debugPrint('Mode: ${widget.mode}');
-    debugPrint('Video URL: ${widget.videoUrl}');
-    debugPrint('============================');
+    debugPrint('Video: mode=${widget.mode} url=${widget.videoUrl}');
+
+    // Controller is created first (synchronously) so dispose()
+    // can always use it.
 
     // Network video
     if (widget.videoUrl.startsWith('http')) {
-
       _videoController =
           VideoPlayerController.networkUrl(
             Uri.parse(widget.videoUrl),
           );
     }
 
-    // Local video
+    // Local video (Eco Mode offline copy)
     else {
-
       _videoController =
           VideoPlayerController.file(
             File(widget.videoUrl),
           );
     }
 
-    await _videoController.initialize();
+    _openSession = await PerformanceLogger.start();
+    _watchSession ??= await PerformanceLogger.start();
+
+    try {
+      await _videoController.initialize();
+    } catch (e) {
+      // NEW: show an error instead of crashing
+      debugPrint('Video error: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        _initFailed = true;
+      });
+
+      return;
+    }
+
+    final openSession = _openSession;
+    _openSession = null;
+
+    if (openSession != null) {
+      PerformanceLogger.finish(
+        openSession,
+        mode: widget.mode,
+        operation: 'Open Video',
+        dataSource: widget.videoUrl.startsWith('http')
+            ? 'Network stream'
+            : 'Local file',
+        recordCount: 1,
+      );
+    }
 
     if (!mounted) return;
 
@@ -104,35 +137,13 @@ class _VideoPlayerPageState
     try {
 
       // Network file
+      // CHANGED: no extra HEAD request just to show the size
+      // (one less network call in both modes).
       if (widget.videoUrl.startsWith('http')) {
-
-        final response = await http.head(
-          Uri.parse(widget.videoUrl),
-        );
-
-        final contentLength =
-        response.headers['content-length'];
-
-        if (contentLength != null) {
-
-          final bytes =
-          int.parse(contentLength);
-
-          if (!mounted) return;
-
-          setState(() {
-            _fileSize =
-                _formatFileSize(bytes);
-          });
-
-        } else {
-
-          if (!mounted) return;
-
-          setState(() {
-            _fileSize = 'Unknown';
-          });
-        }
+        if (!mounted) return;
+        setState(() {
+          _fileSize = 'Streaming from network';
+        });
       }
 
       // Local file
@@ -219,7 +230,9 @@ class _VideoPlayerPageState
 
           Expanded(
             child: Center(
-              child: _chewieController != null
+              child: _initFailed
+                  ? const Text('Video could not be loaded.')
+                  : _chewieController != null
 
                   ? Chewie(
                 controller:

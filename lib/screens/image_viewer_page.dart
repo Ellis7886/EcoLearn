@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../services/performance_logger.dart';
+
 class ImageViewerPage extends StatefulWidget {
   final String imageUrl;
   final String title;
@@ -50,6 +52,8 @@ class _ImageViewerPageState
   // ========================================
 
   Future<void> _loadImage() async {
+    final session = await PerformanceLogger.start();
+
 
     try {
 
@@ -111,6 +115,16 @@ class _ImageViewerPageState
         // Start automated test AFTER download
         // ====================================
 
+        await PerformanceLogger.finish(
+          session,
+          mode: widget.mode,
+          operation: 'Open Image',
+          dataSource: widget.imageUrl.startsWith('http')
+              ? 'Network'
+              : 'Local file',
+          recordCount: _imageBytes?.length ?? 0,
+        );
+
         if (widget.testMode) {
 
           _startAutomaticTest();
@@ -157,6 +171,16 @@ class _ImageViewerPageState
               _formatFileSize(bytes.length);
 
         });
+
+        await PerformanceLogger.finish(
+          session,
+          mode: widget.mode,
+          operation: 'Open Image',
+          dataSource: widget.imageUrl.startsWith('http')
+              ? 'Network'
+              : 'Local file',
+          recordCount: _imageBytes?.length ?? 0,
+        );
 
         if (widget.testMode) {
 
@@ -300,6 +324,14 @@ class _ImageViewerPageState
                 child: Image.memory(
                   _imageBytes!,
                   fit: BoxFit.contain,
+                  // NEW: Eco Mode decodes the image at screen
+                  // width instead of full resolution
+                  // (less memory and CPU).
+                  cacheWidth: widget.mode == 'Eco'
+                      ? (MediaQuery.sizeOf(context).width *
+                      MediaQuery.devicePixelRatioOf(context))
+                      .round()
+                      : null,
                 ),
               )
 

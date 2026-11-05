@@ -26,6 +26,20 @@ class QuizService {
     return await db.query('quizzes');
   }
 
+  // Used by Take Quiz in Eco Mode (offline)
+  Future<Map<String, dynamic>?> getQuizById(String id) async {
+    final db = await DatabaseService.instance.database;
+
+    final result = await db.query(
+      'quizzes',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    return result.isEmpty ? null : result.first;
+  }
+
   Future<void> clearQuizzes() async {
 
     final db =
@@ -63,6 +77,7 @@ class QuizService {
       'quiz_questions',
       where: 'quiz_id = ?',
       whereArgs: [quizId],
+      orderBy: 'id ASC',
     );
   }
 

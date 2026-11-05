@@ -29,6 +29,15 @@ class _LessonsPageState extends State<LessonsPage> {
   List<Map<String, dynamic>> sqliteLessons = [];
   bool? _lastEcoMode;
 
+  // CHANGED: the Firestore stream is created ONCE and reused.
+  // Creating it inside build() opened a new listener on every
+  // rebuild.
+  Stream<QuerySnapshot>? _lessonsStream;
+
+  // Measures "screen opened -> lessons shown" in BOTH modes,
+  // so the two modes are timed the same way.
+  PerfSession? _loadSession;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -45,89 +54,111 @@ class _LessonsPageState extends State<LessonsPage> {
 
     _lastEcoMode = settings.ecoMode;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+    if (settings.ecoMode) {
+      // Eco Mode: no Firestore listener at all
+      _lessonsStream = null;
 
-      if (settings.ecoMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         initializeEcoMode();
-      } else {
-        syncLessonsToSQLite();
-      }
-    });
+      });
+    } else {
+      // CHANGED: Normal Mode ONLY uses the live Firestore
+      // listener. It no longer also copies everything into
+      // SQLite (that downloaded the same data twice and made
+      // Normal Mode look worse than it really is).
+      PerformanceLogger.start().then((session) {
+        _loadSession = session;
+      });
+
+      _lessonsStream = FirebaseFirestore.instance
+          .collection('lessons')
+          .orderBy(
+        'created_at',
+        descending: true,
+      )
+          .snapshots();
+    }
   }
 
-  Future<void> syncLessonsToSQLite() async {
-    final stopwatch = Stopwatch()..start();
+  // Called once, when the first Normal Mode snapshot arrives
+  void _finishNormalTiming(QuerySnapshot snapshot) {
+    final session = _loadSession;
+    if (session == null) return;
+    _loadSession = null;
 
-    final lessons = await _lessonController.syncLessons();
-
-    setState(() {
-      sqliteLessons = lessons;
-    });
-
-    stopwatch.stop();
-
-    await PerformanceLogger.log(
+    PerformanceLogger.finish(
+      session,
       mode: 'Normal',
       operation: 'Load Lessons',
-      dataSource: 'Firestore',
-      recordCount: lessons.length,
-      loadTime: stopwatch.elapsedMilliseconds,
+      dataSource: snapshot.metadata.isFromCache
+          ? 'Firestore (cache)'
+          : 'Firestore (server)',
+      recordCount: snapshot.docs.length,
     );
   }
 
-  Future<List<Map<String, dynamic>>> loadSQLiteLessons() async {
+  Future<void> initializeEcoMode() async {
 
-    final stopwatch = Stopwatch()..start();
+    final session = await PerformanceLogger.start();
 
-    final lessons =
+    var lessons =
     await _lessonController.getSQLiteLessons();
 
-    stopwatch.stop();
+    var source = 'SQLite';
 
-    if (!mounted) {
-      return lessons;
+    if (lessons.isEmpty) {
+
+      debugPrint(
+        'ECO MODE: SQLite is empty. Performing initial sync...',
+      );
+
+      try {
+        lessons = await _lessonController.syncLessons();
+        source = 'Firestore->SQLite (first sync)';
+      } catch (e) {
+        debugPrint('ECO MODE: initial sync failed: $e');
+      }
     }
+
+    await PerformanceLogger.finish(
+      session,
+      mode: 'Eco',
+      operation: 'Load Lessons',
+      dataSource: source,
+      recordCount: lessons.length,
+    );
+
+    if (!mounted) return;
 
     setState(() {
       sqliteLessons = lessons;
     });
-
-    await PerformanceLogger.log(
-      mode: 'Eco',
-      operation: 'Load Lessons',
-      dataSource: 'SQLite',
-      recordCount: lessons.length,
-      loadTime: stopwatch.elapsedMilliseconds,
-    );
-
-    return lessons;
   }
 
+  // Eco Mode pull-to-refresh
   Future<void> syncLatestContent() async {
 
     try {
 
-      debugPrint('==============================');
-      debugPrint('REFRESHING LESSON CONTENT');
-      debugPrint('==============================');
+      final session = await PerformanceLogger.start();
 
-      // Check Firestore and synchronize
-      // the latest lessons into SQLite.
       final lessons =
       await _lessonController.syncLessons();
 
+      await PerformanceLogger.finish(
+        session,
+        mode: 'Eco',
+        operation: 'Refresh Lessons',
+        dataSource: 'Firestore->SQLite',
+        recordCount: lessons.length,
+      );
+
       if (!mounted) return;
 
-      // Update the screen using the
-      // newly synchronized SQLite data.
       setState(() {
         sqliteLessons = lessons;
       });
-
-      debugPrint(
-        'Lessons updated: ${lessons.length}',
-      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -146,39 +177,12 @@ class _LessonsPageState extends State<LessonsPage> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
-            'Failed to update lessons: $e',
+            'Could not update lessons. Showing saved lessons.',
           ),
         ),
       );
-    }
-  }
-
-  Future<void> initializeEcoMode() async {
-
-    final lessons =
-    await _lessonController.getSQLiteLessons();
-
-    if (!mounted) return;
-
-    if (lessons.isEmpty) {
-
-      debugPrint(
-        'ECO MODE: SQLite is empty. Performing initial sync...',
-      );
-
-      await syncLessonsToSQLite();
-
-    } else {
-
-      debugPrint(
-        'ECO MODE: SQLite already contains ${lessons.length} lessons.',
-      );
-
-      setState(() {
-        sqliteLessons = lessons;
-      });
     }
   }
 
@@ -250,13 +254,7 @@ class _LessonsPageState extends State<LessonsPage> {
   Widget buildFirebaseLessons(AppSettings settings) {
 
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('lessons')
-          .orderBy(
-        'created_at',
-        descending: true,
-      )
-          .snapshots(),
+      stream: _lessonsStream,
 
       builder: (context, snapshot) {
 
@@ -284,6 +282,13 @@ class _LessonsPageState extends State<LessonsPage> {
 
         final lessons = snapshot.data!.docs;
 
+        if (_loadSession != null) {
+          final data = snapshot.data!;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _finishNormalTiming(data);
+          });
+        }
+
         return ListView.builder(
           padding: const EdgeInsets.all(20),
           itemCount: lessons.length,
@@ -297,7 +302,7 @@ class _LessonsPageState extends State<LessonsPage> {
               title: lesson['title'],
               description: lesson['description'],
               courseCode: lesson['course_code'],
-              progress: lesson['progress'] / 100,
+              progress: ((lesson['progress'] ?? 0) as num) / 100,
 
               onTap: () {
                 Navigator.push(

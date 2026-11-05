@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
+import '../../services/performance_logger.dart';
+
 import '../../provider/app_settings.dart';
 import '../../themes/app_colors.dart';
 import '../../widgets/bottom_nav_bar.dart';
@@ -34,6 +36,11 @@ class _LessonsContentPageState extends State<LessonsContentPage>{
   List<Map<String, dynamic>> sqliteChapters = [];
   bool? _lastEcoMode;
 
+  // CHANGED: created once, not inside build()
+  Stream<QuerySnapshot>? _chaptersStream;
+
+  PerfSession? _loadSession;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -49,38 +56,84 @@ class _LessonsContentPageState extends State<LessonsContentPage>{
 
     _lastEcoMode = settings.ecoMode;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+    if (settings.ecoMode) {
+      _chaptersStream = null;
 
-      if (settings.ecoMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         loadSQLiteChapters();
-      } else {
-        syncChaptersToSQLite();
-      }
-    });
+      });
+    } else {
+      // CHANGED: Normal Mode only uses the live Firestore
+      // listener (no extra copy into SQLite, no extra
+      // per-chapter material queries).
+      PerformanceLogger.start().then((session) {
+        _loadSession = session;
+      });
+
+      _chaptersStream = FirebaseFirestore.instance
+          .collection('chapters')
+          .where('lesson_id', isEqualTo: widget.lessonId)
+          .snapshots();
+    }
   }
 
-  Future<void> syncChaptersToSQLite() async {
+  void _finishNormalTiming(QuerySnapshot snapshot) {
+    final session = _loadSession;
+    if (session == null) return;
+    _loadSession = null;
 
-    // Sync chapters first
-    final chapters = await _chapterController.syncChapters(widget.lessonId);
+    PerformanceLogger.finish(
+      session,
+      mode: 'Normal',
+      operation: 'Load Chapters',
+      dataSource: snapshot.metadata.isFromCache
+          ? 'Firestore (cache)'
+          : 'Firestore (server)',
+      recordCount: snapshot.docs.length,
+    );
+  }
 
-    // Sync materials for every chapter
-    for (final chapter in chapters) {
-      await _materialController.syncMaterials(chapter['id']);
-    }
+  /// Eco Mode: Firestore -> SQLite for the chapters of this
+  /// lesson and ALL their materials (few whereIn queries
+  /// instead of one query per chapter).
+  Future<List<Map<String, dynamic>>> _syncChaptersAndMaterials() async {
+    final chapters =
+    await _chapterController.syncChapters(widget.lessonId);
 
-    if (!mounted) return;
+    await _materialController.syncMaterialsForChapters(
+      chapters.map((c) => c['id'].toString()).toList(),
+    );
 
-    setState(() {
-      sqliteChapters = chapters;
-    });
+    return chapters;
   }
 
   Future<void> loadSQLiteChapters() async {
 
-    final chapters =
+    final session = await PerformanceLogger.start();
+
+    var chapters =
     await _chapterController.getSQLiteChapters(widget.lessonId);
+
+    var source = 'SQLite';
+
+    // NEW: first visit in Eco Mode -> sync once
+    if (chapters.isEmpty) {
+      try {
+        chapters = await _syncChaptersAndMaterials();
+        source = 'Firestore->SQLite (first sync)';
+      } catch (e) {
+        debugPrint('ECO MODE: chapter sync failed: $e');
+      }
+    }
+
+    await PerformanceLogger.finish(
+      session,
+      mode: 'Eco',
+      operation: 'Load Chapters',
+      dataSource: source,
+      recordCount: chapters.length,
+    );
 
     if (!mounted) return;
 
@@ -89,29 +142,50 @@ class _LessonsContentPageState extends State<LessonsContentPage>{
     });
   }
 
+  // Eco Mode pull-to-refresh
   Future<void> syncLatestContent() async {
 
-    await syncChaptersToSQLite();
+    try {
+      final session = await PerformanceLogger.start();
 
-    if (!mounted) return;
+      final chapters = await _syncChaptersAndMaterials();
 
-    setState(() {
-      refreshCounter++;
-    });
+      await PerformanceLogger.finish(
+        session,
+        mode: 'Eco',
+        operation: 'Refresh Chapters',
+        dataSource: 'Firestore->SQLite',
+        recordCount: chapters.length,
+      );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Content updated"),
-      ),
-    );
+      if (!mounted) return;
+
+      setState(() {
+        sqliteChapters = chapters;
+        refreshCounter++;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Content updated"),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Failed to refresh chapters: $e');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Could not update. Showing saved content."),
+        ),
+      );
+    }
   }
 
   Widget buildFirebaseChapters(AppSettings settings) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('chapters')
-          .where('lesson_id', isEqualTo: widget.lessonId)
-          .snapshots(),
+      stream: _chaptersStream,
       builder: (context, snapshot) {
 
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -140,6 +214,13 @@ class _LessonsContentPageState extends State<LessonsContentPage>{
         }
 
         final chapters = snapshot.data!.docs;
+
+        if (_loadSession != null) {
+          final data = snapshot.data!;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _finishNormalTiming(data);
+          });
+        }
 
         return ListView.builder(
           padding: const EdgeInsets.all(20),

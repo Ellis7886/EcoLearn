@@ -25,6 +25,7 @@ class MaterialHandler {
           builder: (_) => PdfViewerPage(
             pdfUrl: path,
             title: title,
+            mode: mode,
           ),
         ),
       );

@@ -32,6 +32,13 @@ class _ProfilePageState extends State<ProfilePage> {
   final QuizController _quizController = QuizController();
   final LessonController _lessonController = LessonController();
   Future<Map<String, dynamic>?>? userFuture;
+
+  // CHANGED: created once per mode, not inside build().
+  // Before, every rebuild (e.g. a theme switch) ran the
+  // queries again and opened new listeners.
+  Future<int>? _lessonCountFuture;
+  Future<double>? _ecoQuizAverageFuture;
+  Stream<QuerySnapshot>? _quizResultsStream;
   bool? _lastEcoMode;
 
   Future<Map<String, dynamic>?> loadUser(
@@ -158,6 +165,33 @@ class _ProfilePageState extends State<ProfilePage> {
     _lastEcoMode = settings.ecoMode;
 
     userFuture = loadUser(settings.ecoMode);
+
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+
+    if (settings.ecoMode) {
+      _lessonCountFuture = _lessonController
+          .getSQLiteLessons()
+          .then((lessons) => lessons.length);
+
+      _ecoQuizAverageFuture =
+          _quizController.getAverageQuizPercentage(uid);
+
+      _quizResultsStream = null;
+    } else {
+      // Server-side count: does not download every lesson
+      _lessonCountFuture = FirebaseFirestore.instance
+          .collection('lessons')
+          .count()
+          .get()
+          .then((snapshot) => snapshot.count ?? 0);
+
+      _ecoQuizAverageFuture = null;
+
+      _quizResultsStream = FirebaseFirestore.instance
+          .collection('quiz_results')
+          .where('user_id', isEqualTo: uid)
+          .snapshots();
+    }
   }
 
   @override
@@ -350,66 +384,23 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
 
                         Expanded(
-                          child: settings.ecoMode
-                              ? FutureBuilder<List<Map<String, dynamic>>>(
-                            future: _lessonController.getSQLiteLessons(),
+                          child: FutureBuilder<int>(
+                            future: _lessonCountFuture,
                             builder: (context, snapshot) {
-
-                              if (!snapshot.hasData) {
-                                return buildStatCard(
-                                  'Lessons',
-                                  '0',
-                                  Icons.menu_book,
-                                  settings.darkTheme,
-                                );
-                              }
-
-                              final lessonCount =
-                                  snapshot.data!.length;
-
                               return buildStatCard(
                                 'Lessons',
-                                lessonCount.toString(),
-                                Icons.menu_book,
-                                settings.darkTheme,
-                              );
-                            },
-                          )
-                              : FutureBuilder<QuerySnapshot>(
-                            future: FirebaseFirestore.instance
-                                .collection('lessons')
-                                .get(),
-                            builder: (context, snapshot) {
-
-                              if (!snapshot.hasData) {
-                                return buildStatCard(
-                                  'Lessons',
-                                  '0',
-                                  Icons.menu_book,
-                                  settings.darkTheme,
-                                );
-                              }
-
-                              final lessonCount =
-                                  snapshot.data!.docs.length;
-
-                              return buildStatCard(
-                                'Lessons',
-                                lessonCount.toString(),
+                                (snapshot.data ?? 0).toString(),
                                 Icons.menu_book,
                                 settings.darkTheme,
                               );
                             },
                           ),
                         ),
-
                         const SizedBox(width: 15),
 
                         Expanded(
                           child: settings.ecoMode ? FutureBuilder<double>(
-                            future: _quizController.getAverageQuizPercentage(
-                              FirebaseAuth.instance.currentUser!.uid,
-                            ),
+                            future: _ecoQuizAverageFuture,
                             builder: (context, snapshot) {
 
                               if (!snapshot.hasData) {
@@ -430,13 +421,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             },
                           )
                               : StreamBuilder<QuerySnapshot>(
-                            stream: FirebaseFirestore.instance
-                                .collection('quiz_results')
-                                .where(
-                              'user_id',
-                              isEqualTo: FirebaseAuth.instance.currentUser!.uid,
-                            )
-                                .snapshots(),
+                            stream: _quizResultsStream,
                             builder: (context, snapshot) {
 
                               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -501,7 +486,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     description: 'Reduce brightness for better comfort',
                     icon: Icons.dark_mode,
                     value: settings.darkTheme,
-                    onChanged: settings.toggleDarkTheme,
+                    // Locked while Eco Mode is on (Eco Mode forces dark theme).
+                    onChanged: settings.ecoMode ? null : settings.toggleDarkTheme,
                   ),
 
                   const SizedBox(height: 40),

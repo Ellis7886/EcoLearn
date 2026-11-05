@@ -68,7 +68,8 @@ class _HomePageState
                   description: 'Reduce brightness for better comfort',
                   icon: Icons.dark_mode,
                   value: settings.darkTheme,
-                  onChanged: settings.toggleDarkTheme,
+                  // Locked while Eco Mode is on (Eco Mode forces dark theme).
+                  onChanged: settings.ecoMode ? null : settings.toggleDarkTheme,
                 ),
 
                 const SizedBox(height: 20),

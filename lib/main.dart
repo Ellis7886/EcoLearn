@@ -14,6 +14,12 @@ import 'services/sync_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // NEW: logging costs CPU time. In profile/release builds
+  // (the builds used for measurements) debugPrint is switched off.
+  if (!kDebugMode) {
+    debugPrint = (String? message, {int? wrapWidth}) {};
+  }
+
   await DatabaseService.instance.database;
 
   await Firebase.initializeApp(
@@ -58,8 +64,9 @@ class EcoLearnApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppSettings>(
       builder: (context, settings, child) {
-        // NEW: Eco Mode always uses dark theme (saves power on OLED screens)
-        final useDark = settings.darkTheme || settings.ecoMode;
+        // Eco Mode always uses dark theme (saves power on OLED screens).
+        // settings.darkTheme already includes Eco Mode.
+        final useDark = settings.darkTheme;
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,
