@@ -165,4 +165,16 @@ class QuizService {
       whereArgs: [id],
     );
   }
+
+  Future<void> markManyAsSynced(List<int> ids) async {
+    if (ids.isEmpty) return;
+
+    final db = await DatabaseService.instance.database;
+    final placeholders = List.filled(ids.length, '?').join(',');
+
+    await db.rawUpdate(
+      'UPDATE quiz_results SET synced = 1 WHERE id IN ($placeholders)',
+      ids,
+    );
+  }
 }
