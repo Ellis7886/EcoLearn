@@ -208,11 +208,29 @@ class _VideoPlayerPageState
 
   @override
   void dispose() {
+    // Log the whole viewing session (network bytes, time, memory).
+    final watch = _watchSession;
+    _watchSession = null;
+
+    if (watch != null) {
+      // Seconds actually played: used to check that playback ran
+      final playedSeconds = _videoController.value.isInitialized
+          ? _videoController.value.position.inSeconds
+          : 0;
+
+      PerformanceLogger.finish(
+        watch,
+        mode: widget.mode,
+        operation: 'Video Session',
+        dataSource: widget.videoUrl.startsWith('http')
+            ? 'Network stream'
+            : 'Local file',
+        recordCount: playedSeconds,
+      );
+    }
 
     _chewieController?.dispose();
-
     _videoController.dispose();
-
     super.dispose();
   }
 
