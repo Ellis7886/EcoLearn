@@ -208,12 +208,10 @@ class _VideoPlayerPageState
 
   @override
   void dispose() {
-    // Log the whole viewing session (network bytes, time, memory).
     final watch = _watchSession;
     _watchSession = null;
 
     if (watch != null) {
-      // Seconds actually played: used to check that playback ran
       final playedSeconds = _videoController.value.isInitialized
           ? _videoController.value.position.inSeconds
           : 0;
