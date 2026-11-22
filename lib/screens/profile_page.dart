@@ -481,14 +481,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     onChanged: settings.toggleEcoMode,
                   ),
 
-                  SettingSwitch(
-                    title: 'Dark Theme',
-                    description: 'Reduce brightness for better comfort',
-                    icon: Icons.dark_mode,
-                    value: settings.darkTheme,
-                    // Locked while Eco Mode is on (Eco Mode forces dark theme).
-                    onChanged: settings.ecoMode ? null : settings.toggleDarkTheme,
-                  ),
+                  // CHANGED: "Dark Theme" switch removed. The theme now
+                  // follows the mode (Eco = dark, Normal = light).
 
                   const SizedBox(height: 40),
 

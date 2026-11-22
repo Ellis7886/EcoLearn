@@ -64,8 +64,7 @@ class EcoLearnApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppSettings>(
       builder: (context, settings, child) {
-        // Eco Mode always uses dark theme (saves power on OLED screens).
-        // settings.darkTheme already includes Eco Mode.
+        // Theme follows the mode: Eco = dark, Normal = light.
         final useDark = settings.darkTheme;
 
         return MaterialApp(
