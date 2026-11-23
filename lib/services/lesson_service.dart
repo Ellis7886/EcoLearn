@@ -21,7 +21,9 @@ class LessonService {
 
     return await db.query(
       'lessons',
-      orderBy: 'created_at DESC',
+      // CHANGED: oldest first (ascending), same order as Normal Mode.
+      // id is the tie-breaker, like Firestore's default.
+      orderBy: 'created_at ASC, id ASC',
     );
   }
 

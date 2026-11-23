@@ -73,9 +73,10 @@ class _LessonsPageState extends State<LessonsPage> {
 
       _lessonsStream = FirebaseFirestore.instance
           .collection('lessons')
+          // CHANGED: oldest first (ascending), same order as Eco Mode
           .orderBy(
         'created_at',
-        descending: true,
+        descending: false,
       )
           .snapshots();
     }
