@@ -99,18 +99,23 @@ function Tap-Screen {
 function Get-CpuPercent {
     param([string]$AppPid)
 
-    $lines = (& $adb shell top -b -n 1 -p $AppPid 2>$null) -split "`r?`n"
+    # CHANGED: two frames, 1 s apart. Android's top calculates %CPU
+    # from the difference between frames, so the SECOND frame is a
+    # proper 1-second measurement. This call itself takes ~1 s,
+    # so the measuring loop no longer needs Start-Sleep.
+    $lines = (& $adb shell top -b -n 2 -d 1 -p $AppPid 2>$null) -split "`r?`n"
 
+    $value = $null
     foreach ($line in $lines) {
         if ($line -match "^\s*$AppPid\s+") {
             # PID USER PR NI VIRT RES SHR S %CPU %MEM TIME+ ARGS
             $parts = ($line.Trim()) -split "\s+"
             if ($parts.Count -gt 8 -and $parts[8] -match '^\d+(\.\d+)?$') {
-                return [double]$parts[8]
+                $value = [double]$parts[8]   # keep the LAST match (frame 2)
             }
         }
     }
-    return $null
+    return $value
 }
 
 function Get-MemoryPssKb {
@@ -213,7 +218,13 @@ try {
         $cpuValues = @()
         $memValues = @()
 
-        for ($i = 1; $i -le $Duration; $i++) {
+        # CHANGED: loop until $Duration seconds have REALLY passed
+        # (before, each pass also spent time in adb calls, so a
+        # "60 s" run lasted much longer and varied between modes).
+        $sw = [System.Diagnostics.Stopwatch]::StartNew()
+        $i = 0
+        while ($sw.Elapsed.TotalSeconds -lt $Duration) {
+            $i++
             $cpu = Get-CpuPercent -AppPid $appPid
 
             $mem = $null
@@ -228,14 +239,13 @@ try {
                 Mode        = $Mode
                 Device      = $Device
                 Run         = $run
-                Second      = $i
+                Second      = [math]::Round($sw.Elapsed.TotalSeconds, 1)
                 Time        = Get-Date -Format "HH:mm:ss"
                 CPU_Percent = $cpu
                 PSS_KB      = $mem
             })
-
-            Start-Sleep -Seconds 1
         }
+        $actualSeconds = [math]::Round($sw.Elapsed.TotalSeconds, 1)
 
         # Leaving the video page makes the app log the
         # "Video Session" row (network bytes, time, memory)
@@ -255,9 +265,10 @@ try {
             PSS_Avg_KB      = $avgMem
             PSS_Max_KB      = $maxMem
             CPU_Samples     = $cpuValues.Count
+            Actual_Seconds  = $actualSeconds
         })
 
-        Write-Host ("Run {0}: CPU avg {1:N2} % | PSS avg {2:N0} KB" -f $run, $avgCpu, $avgMem)
+        Write-Host ("Run {0}: {1} s | CPU avg {2:N2} % | PSS avg {3:N0} KB" -f $run, $actualSeconds, $avgCpu, $avgMem)
     }
 }
 finally {
