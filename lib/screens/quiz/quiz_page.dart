@@ -33,7 +33,7 @@ class _QuizPageState extends State<QuizPage> {
 
   bool? _lastEcoMode;
 
-  // CHANGED: created once, not inside build()
+  // Created once, not inside build()
   Stream<QuerySnapshot>? _quizzesStream;
 
   @override
@@ -61,8 +61,7 @@ class _QuizPageState extends State<QuizPage> {
         loadSQLiteQuizzes();
       });
     } else {
-      // CHANGED: Normal Mode only uses the live Firestore
-      // listener (it no longer also copies quizzes into SQLite).
+      // Normal Mode only uses the live Firestore listener.
       _quizzesStream = FirebaseFirestore.instance
           .collection('quizzes')
           .orderBy(
@@ -89,7 +88,7 @@ class _QuizPageState extends State<QuizPage> {
 
       var source = 'SQLite';
 
-      // NEW: first visit in Eco Mode -> download once
+      // First visit in Eco Mode -> download once
       if (quizzes.isEmpty) {
         try {
           await _quizController.syncQuizzes();

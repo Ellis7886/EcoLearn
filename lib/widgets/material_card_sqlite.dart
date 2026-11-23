@@ -9,7 +9,7 @@ import '../services/performance_logger.dart';
 
 /// Eco Mode material card (data from SQLite).
 ///
-/// CHANGED: the optimised file is downloaded ONCE and then
+/// The optimised file is downloaded ONCE and then
 /// opened from the phone, also without internet (learning
 /// continuity). A small icon shows whether the material is
 /// already available offline.

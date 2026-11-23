@@ -63,7 +63,7 @@ class BottomNavBar extends StatelessWidget {
 
           onTap(index);
 
-          // CHANGED: tab pages now open with tabRoute():
+          // Tab pages now open with tabRoute():
           // Normal Mode = fade + slide in the direction of the tab,
           // Eco Mode = no animation.
           const pages = <Widget>[

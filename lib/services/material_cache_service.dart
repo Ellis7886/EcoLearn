@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'material_service.dart';
 
-/// NEW: Eco Mode offline cache for learning materials.
+/// Eco Mode offline cache for learning materials.
 ///
 /// The optimised file is downloaded ONCE from Firebase Storage,
 /// stored in the app's private folder and its path is saved in

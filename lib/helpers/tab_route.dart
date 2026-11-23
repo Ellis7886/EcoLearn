@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// NEW: route used by the bottom navigation bar.
+/// Route used by the bottom navigation bar.
 ///
 /// Normal Mode: fade + slide (300 ms). The new page comes in from
 /// the side of the tapped tab, so it follows the order of the tabs:

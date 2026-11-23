@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../services/database_service.dart';
@@ -7,24 +6,13 @@ import '../services/lesson_service.dart';
 
 class LessonController {
 
-  Future<String> getUserRole() async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
-
-    return doc['role'];
-  }
-
   Future<List<Map<String, dynamic>>> getSQLiteLessons() async {
     final lessonService = LessonService();
     return await lessonService.getLessons();
   }
 
   /// Firestore -> SQLite (used by Eco Mode only).
-  /// CHANGED: one transaction + batch instead of one write per row.
+  /// One transaction + batch instead of one write per row.
   Future<List<Map<String, dynamic>>> syncLessons() async {
 
     final snapshot = await FirebaseFirestore.instance

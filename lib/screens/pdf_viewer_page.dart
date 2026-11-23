@@ -64,7 +64,7 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
         ),
       ),
 
-      // FIXED: web URLs must use SfPdfViewer.network.
+      // Web URLs must use SfPdfViewer.network.
       // SfPdfViewer.file(File(url)) could never open them.
       body: _isNetwork
           ? SfPdfViewer.network(

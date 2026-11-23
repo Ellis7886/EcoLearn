@@ -63,9 +63,6 @@ class _HomePageState
                   onChanged: settings.toggleEcoMode,
                 ),
 
-                // CHANGED: "Dark Theme" switch removed. The theme now
-                // follows the mode (Eco = dark, Normal = light).
-
                 const SizedBox(height: 20),
 
                 Text(

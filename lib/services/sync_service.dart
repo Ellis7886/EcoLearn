@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // NEW
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../controllers/quiz_controller.dart';
 
@@ -13,10 +13,10 @@ class SyncService {
 
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
-  // NEW: stops two syncs running at the same time
+  // Stops two syncs running at the same time
   bool _isSyncing = false;
 
-  // NEW: connectivity often fires several events in a row
+  // Connectivity often fires several events in a row
   // (e.g. Wi-Fi connecting, then validated). Wait briefly so
   // we only sync once.
   Timer? _debounce;
@@ -41,7 +41,7 @@ class SyncService {
           }
         });
 
-    // NEW: also try once at app start, because the listener
+    // Also try once at app start, because the listener
     // may not fire if the device is already online.
     syncData();
   }
@@ -64,7 +64,7 @@ class SyncService {
         return;
       }
 
-      // NEW: Eco Mode = sync only on Wi-Fi (demand shaping)
+      // Eco Mode = sync only on Wi-Fi (demand shaping)
       final prefs = await SharedPreferences.getInstance();
       final ecoMode = prefs.getBool('ecoMode') ?? false;
 

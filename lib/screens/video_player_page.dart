@@ -31,7 +31,7 @@ class _VideoPlayerPageState
 
   String _fileSize = 'Checking...';
 
-  // NEW: measurements
+  // Measurements
   PerfSession? _openSession;    // open -> ready to play
   PerfSession? _watchSession;   // whole time on this page
   bool _initFailed = false;
@@ -73,7 +73,7 @@ class _VideoPlayerPageState
     try {
       await _videoController.initialize();
     } catch (e) {
-      // NEW: show an error instead of crashing
+      // Show an error instead of crashing
       debugPrint('Video error: $e');
 
       if (!mounted) return;
@@ -137,7 +137,7 @@ class _VideoPlayerPageState
     try {
 
       // Network file
-      // CHANGED: no extra HEAD request just to show the size
+      // No extra HEAD request just to show the size
       // (one less network call in both modes).
       if (widget.videoUrl.startsWith('http')) {
         if (!mounted) return;

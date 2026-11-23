@@ -11,8 +11,7 @@ class AppSettings extends ChangeNotifier {
 
   /// The theme shown on screen.
   ///
-  /// CHANGED: the theme now follows the mode and can no longer
-  /// be chosen by the user:
+  /// The theme follows the mode and cannot be chosen by the user:
   ///   - Eco Mode    -> dark theme (dark pixels use less power
   ///                    on OLED screens)
   ///   - Normal Mode -> light theme

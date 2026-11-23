@@ -29,7 +29,7 @@ class _LessonsPageState extends State<LessonsPage> {
   List<Map<String, dynamic>> sqliteLessons = [];
   bool? _lastEcoMode;
 
-  // CHANGED: the Firestore stream is created ONCE and reused.
+  // The Firestore stream is created ONCE and reused.
   // Creating it inside build() opened a new listener on every
   // rebuild.
   Stream<QuerySnapshot>? _lessonsStream;
@@ -63,17 +63,15 @@ class _LessonsPageState extends State<LessonsPage> {
         initializeEcoMode();
       });
     } else {
-      // CHANGED: Normal Mode ONLY uses the live Firestore
-      // listener. It no longer also copies everything into
-      // SQLite (that downloaded the same data twice and made
-      // Normal Mode look worse than it really is).
+      // Normal Mode only uses the live Firestore listener
+      // (no copy into SQLite).
       PerformanceLogger.start().then((session) {
         _loadSession = session;
       });
 
       _lessonsStream = FirebaseFirestore.instance
           .collection('lessons')
-          // CHANGED: oldest first (ascending), same order as Eco Mode
+          // Oldest first (ascending), same order as Eco Mode
           .orderBy(
         'created_at',
         descending: false,

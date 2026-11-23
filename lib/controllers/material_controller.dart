@@ -19,7 +19,7 @@ class MaterialController {
     return _materialService.getMaterialsByChapter(chapterId);
   }
 
-  /// CHANGED: syncs the materials of MANY chapters with as few
+  /// Syncs the materials of MANY chapters with as few
   /// Firestore queries as possible (whereIn, max 30 ids per
   /// query) instead of one query per chapter.
   ///

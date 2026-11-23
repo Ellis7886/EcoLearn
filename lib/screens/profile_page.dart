@@ -271,9 +271,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
 
-                  // CHANGED: "Learning Statistics" section removed
-                  // (not needed for the study).
-
                   const SizedBox(height: 30),
 
                   Text(
@@ -296,9 +293,6 @@ class _ProfilePageState extends State<ProfilePage> {
                     value: settings.ecoMode,
                     onChanged: settings.toggleEcoMode,
                   ),
-
-                  // CHANGED: "Dark Theme" switch removed. The theme now
-                  // follows the mode (Eco = dark, Normal = light).
 
                   const SizedBox(height: 40),
 

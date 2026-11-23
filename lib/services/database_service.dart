@@ -20,7 +20,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 14, // CHANGED: was 13
+      version: 14, // Was 13
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -60,7 +60,7 @@ class DatabaseService {
         file_name TEXT,
         file_url TEXT,
         eco_file_path TEXT,
-        eco_url TEXT,          -- NEW: cached download URL
+        eco_url TEXT,          -- cached download URL
         local_path TEXT,
         local_mode TEXT
       )
@@ -97,12 +97,12 @@ class DatabaseService {
         total_questions INTEGER,
         percentage REAL,
         completed_at TEXT,
-        mode TEXT,             -- NEW: 'Eco' or 'Normal'
+        mode TEXT,             -- 'Eco' or 'Normal'
         synced INTEGER DEFAULT 0
       )
     ''');
 
-    await _createV14Tables(db); // NEW
+    await _createV14Tables(db);
   }
 
   // ==================================================
@@ -133,7 +133,7 @@ class DatabaseService {
   }
 
   // ==================================================
-  // NEW TABLES (shared by create + upgrade)
+  // Tables (shared by create + upgrade)
   // ==================================================
   Future<void> _createV14Tables(Database db) async {
     // Per-user learning progress (learning continuity)

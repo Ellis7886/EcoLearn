@@ -70,8 +70,6 @@ class MaterialCard extends StatelessWidget {
           ),
         ),
         // Normal Mode only (Eco Mode uses MaterialCardSqlite).
-        // CHANGED: removed the unused Eco branch, which also
-        // passed 'Normal' by mistake.
         onTap: () {
           final fileType = (material['type'] ?? '')
               .toString()

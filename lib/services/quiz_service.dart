@@ -4,19 +4,6 @@ import 'database_service.dart';
 
 class QuizService {
 
-  Future<void> insertQuiz(
-      Map<String, dynamic> quiz) async {
-
-    final db = await DatabaseService.instance.database;
-
-    await db.insert(
-      'quizzes',
-      quiz,
-      conflictAlgorithm:
-      ConflictAlgorithm.replace,
-    );
-  }
-
   Future<List<Map<String, dynamic>>>
   getQuizzes() async {
 
@@ -40,32 +27,6 @@ class QuizService {
     return result.isEmpty ? null : result.first;
   }
 
-  Future<void> clearQuizzes() async {
-
-    final db =
-    await DatabaseService.instance.database;
-
-    await db.delete('quizzes');
-  }
-
-  // ==========================
-  // Quiz Questions
-  // ==========================
-
-  Future<void> insertQuestion(
-      Map<String, dynamic> question) async {
-
-    final db =
-    await DatabaseService.instance.database;
-
-    await db.insert(
-      'quiz_questions',
-      question,
-      conflictAlgorithm:
-      ConflictAlgorithm.replace,
-    );
-  }
-
   Future<List<Map<String, dynamic>>>
   getQuestionsByQuiz(
       String quizId) async {
@@ -78,16 +39,6 @@ class QuizService {
       where: 'quiz_id = ?',
       whereArgs: [quizId],
       orderBy: 'id ASC',
-    );
-  }
-
-  Future<void> clearQuestions() async {
-
-    final db =
-    await DatabaseService.instance.database;
-
-    await db.delete(
-      'quiz_questions',
     );
   }
 
@@ -132,29 +83,6 @@ class QuizService {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getQuizResultsByUser(
-      String userId) async {
-
-    final db = await DatabaseService.instance.database;
-
-    return await db.query(
-      'quiz_results',
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'completed_at DESC',
-    );
-  }
-
-  Future<void> clearQuizResults() async {
-
-    final db =
-    await DatabaseService.instance.database;
-
-    await db.delete(
-      'quiz_results',
-    );
-  }
-
   Future<List<Map<String, dynamic>>> getUnsyncedResults() async {
     final db =
     await DatabaseService.instance.database;
@@ -164,20 +92,6 @@ class QuizService {
       where: 'synced = ?',
       whereArgs: [0],
       orderBy: 'completed_at ASC',
-    );
-  }
-
-  Future<void> markAsSynced(int id) async {
-    final db =
-    await DatabaseService.instance.database;
-
-    await db.update(
-      'quiz_results',
-      {
-        'synced': 1,
-      },
-      where: 'id = ?',
-      whereArgs: [id],
     );
   }
 

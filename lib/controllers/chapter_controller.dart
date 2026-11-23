@@ -6,7 +6,7 @@ import '../services/database_service.dart';
 class ChapterController {
 
   /// Firestore -> SQLite for one lesson.
-  /// CHANGED: one transaction + batch instead of one write per row.
+  /// One transaction + batch instead of one write per row.
   Future<List<Map<String, dynamic>>> syncChapters(
       String lessonId) async {
 

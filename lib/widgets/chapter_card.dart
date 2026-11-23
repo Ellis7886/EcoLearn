@@ -24,7 +24,7 @@ class ChapterCard extends StatefulWidget {
 /// Normal Mode chapter card (live Firestore data).
 class _ChapterCardState extends State<ChapterCard> {
 
-  // CHANGED: the materials query is created once per card,
+  // The materials query is created once per card,
   // not on every rebuild.
   late final Stream<QuerySnapshot> _materialsStream =
   FirebaseFirestore.instance

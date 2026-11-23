@@ -36,7 +36,7 @@ class _LessonsContentPageState extends State<LessonsContentPage>{
   List<Map<String, dynamic>> sqliteChapters = [];
   bool? _lastEcoMode;
 
-  // CHANGED: created once, not inside build()
+  // Created once, not inside build()
   Stream<QuerySnapshot>? _chaptersStream;
 
   PerfSession? _loadSession;
@@ -64,7 +64,7 @@ class _LessonsContentPageState extends State<LessonsContentPage>{
         loadSQLiteChapters();
       });
     } else {
-      // CHANGED: Normal Mode only uses the live Firestore
+      // Normal Mode only uses the live Firestore
       // listener (no extra copy into SQLite, no extra
       // per-chapter material queries).
       PerformanceLogger.start().then((session) {
@@ -117,7 +117,7 @@ class _LessonsContentPageState extends State<LessonsContentPage>{
 
     var source = 'SQLite';
 
-    // NEW: first visit in Eco Mode -> sync once
+    // First visit in Eco Mode -> sync once
     if (chapters.isEmpty) {
       try {
         chapters = await _syncChaptersAndMaterials();

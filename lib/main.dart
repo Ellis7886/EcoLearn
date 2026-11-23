@@ -1,5 +1,5 @@
 import 'package:ecolearn/screens/splash_page.dart';
-import 'package:flutter/foundation.dart'; // NEW: for kDebugMode
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
@@ -7,14 +7,12 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'provider/app_settings.dart';
 import 'services/database_service.dart';
-import 'services/notification_service.dart';
 import 'services/sync_service.dart';
-// CHANGED: connectivity_service.dart import removed (it duplicated SyncService)
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // NEW: logging costs CPU time. In profile/release builds
+  // Logging costs CPU time. In profile/release builds
   // (the builds used for measurements) debugPrint is switched off.
   if (!kDebugMode) {
     debugPrint = (String? message, {int? wrapWidth}) {};
@@ -26,11 +24,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  await NotificationService.initialize();
-
-  // CHANGED: only ONE sync listener now.
-  // ConnectivityService was also uploading quiz results on every
-  // connectivity change, which doubled the network work.
+  // Single listener that uploads unsynced quiz results
+  // when the device is online.
   SyncService.instance.start();
 
   runApp(
@@ -41,7 +36,7 @@ void main() async {
   );
 }
 
-// NEW: page transition with no animation (used in Eco Mode)
+// Page transition with no animation (used in Eco Mode)
 class _NoTransition extends PageTransitionsBuilder {
   const _NoTransition();
 
@@ -70,7 +65,7 @@ class EcoLearnApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
 
-          // CHANGED: touch logger only runs in debug builds.
+          // Touch logger only runs in debug builds.
           // You still get coordinates for your test script while
           // developing, but release builds (used for measurement)
           // have no extra overhead.
@@ -90,7 +85,7 @@ class EcoLearnApp extends StatelessWidget {
           theme: ThemeData(
             brightness: useDark ? Brightness.dark : Brightness.light,
 
-            // NEW: no page-transition animations in Eco Mode
+            // No page-transition animations in Eco Mode
             pageTransitionsTheme: settings.ecoMode
                 ? const PageTransitionsTheme(
               builders: {

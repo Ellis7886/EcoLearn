@@ -29,9 +29,8 @@ class _TakeQuizPageState extends State<TakeQuizPage> {
 
   int score = 0;
 
-  // CHANGED: the quiz is loaded ONCE. Before, the Firestore
-  // query was inside build(), so it ran again on every answer
-  // tap.
+  // The quiz is loaded once (not inside build()), so answer
+  // taps do not query Firestore again.
   Future<Map<String, dynamic>?>? _quizFuture;
   bool? _ecoMode;
 
@@ -57,7 +56,7 @@ class _TakeQuizPageState extends State<TakeQuizPage> {
     String source;
 
     if (ecoMode) {
-      // NEW: Eco Mode reads the quiz from SQLite (works offline)
+      // Eco Mode reads the quiz from SQLite (works offline)
       source = 'SQLite';
 
       final row = await _quizService.getQuizById(widget.quizId);
@@ -127,13 +126,12 @@ class _TakeQuizPageState extends State<TakeQuizPage> {
           ? 0
           : (score / questions.length) * 100,
       'completed_at': DateTime.now().toIso8601String(),
-      // FIXED: the mode is saved, so results can be compared
-      // per mode (before, Firestore always got 'Unknown').
+      // The mode is saved so results can be compared per mode.
       'mode': (_ecoMode ?? false) ? 'Eco' : 'Normal',
       'synced': 0,
     });
 
-    // NEW: try to upload straight away (SyncService applies
+    // Try to upload straight away (SyncService applies
     // the Eco Mode Wi-Fi rule and skips when offline).
     SyncService.instance.syncData();
 

@@ -10,7 +10,7 @@ class QuizController {
 
   // ==================================================
   // Firestore -> SQLite (quizzes + questions)
-  // CHANGED: one transaction + batch instead of
+  // One transaction + batch instead of
   // one database write per row
   // ==================================================
   Future<void> syncQuizzes() async {
@@ -58,21 +58,9 @@ class QuizController {
     });
   }
 
-  // (unchanged)
-  Future<double> getAverageQuizPercentage(String userId) async {
-    final results = await _quizService.getQuizResultsByUser(userId);
-    if (results.isEmpty) return 0;
-
-    double total = 0;
-    for (final r in results) {
-      total += (r['percentage'] as num).toDouble();
-    }
-    return total / results.length;
-  }
-
   // ==================================================
   // SQLite -> Firestore (quiz results)
-  // CHANGED: unique document ID, one batched upload,
+  // Unique document ID, one batched upload,
   // includes mode
   // ==================================================
   Future<void> syncQuizResultsToFirestore() async {
@@ -93,7 +81,7 @@ class QuizController {
       final batch = firestore.batch();
 
       for (final r in chunk) {
-        // NEW: unique across users and devices.
+        // Unique across users and devices.
         // Same result always gets the same ID, so a retry
         // overwrites itself instead of creating duplicates.
         final docId = '${r['user_id']}_${r['quiz_id']}_${r['completed_at']}'
@@ -108,8 +96,8 @@ class QuizController {
             'total_questions': r['total_questions'],
             'percentage': r['percentage'],
             'completed_at': r['completed_at'],
-            'mode': r['mode'] ?? 'Unknown', // NEW
-            'synced_at': FieldValue.serverTimestamp(), // NEW
+            'mode': r['mode'] ?? 'Unknown',
+            'synced_at': FieldValue.serverTimestamp(),
           },
         );
       }
