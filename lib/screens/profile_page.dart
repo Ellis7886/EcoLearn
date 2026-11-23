@@ -17,8 +17,6 @@ import '../widgets/setting_switch.dart';
 
 import 'security/login_page.dart';
 
-import '../controllers/quiz_controller.dart';
-import '../controllers/lesson_controller.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -29,16 +27,8 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
 
-  final QuizController _quizController = QuizController();
-  final LessonController _lessonController = LessonController();
   Future<Map<String, dynamic>?>? userFuture;
 
-  // CHANGED: created once per mode, not inside build().
-  // Before, every rebuild (e.g. a theme switch) ran the
-  // queries again and opened new listeners.
-  Future<int>? _lessonCountFuture;
-  Future<double>? _ecoQuizAverageFuture;
-  Stream<QuerySnapshot>? _quizResultsStream;
   bool? _lastEcoMode;
 
   Future<Map<String, dynamic>?> loadUser(
@@ -91,64 +81,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
 
-  Widget buildStatCard(
-      String title,
-      String value,
-      IconData icon,
-      bool darkTheme,
-      ) {
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-
-      decoration: BoxDecoration(
-        color: AppColors.card(darkTheme,),
-        borderRadius: BorderRadius.circular(25),
-
-        boxShadow: darkTheme ? [] : [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-
-      child: Column(
-        children: [
-
-          Icon(
-            icon,
-            color: AppColors.primary,
-            size: 35,
-          ),
-
-          const SizedBox(height: 10),
-
-          Text(
-            value,
-            style: TextStyle(
-              color: AppColors.text(
-                darkTheme,
-              ),
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 5),
-
-          Text(
-            title,
-            style: TextStyle(
-              color: AppColors.subText(darkTheme,),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -165,33 +97,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _lastEcoMode = settings.ecoMode;
 
     userFuture = loadUser(settings.ecoMode);
-
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-
-    if (settings.ecoMode) {
-      _lessonCountFuture = _lessonController
-          .getSQLiteLessons()
-          .then((lessons) => lessons.length);
-
-      _ecoQuizAverageFuture =
-          _quizController.getAverageQuizPercentage(uid);
-
-      _quizResultsStream = null;
-    } else {
-      // Server-side count: does not download every lesson
-      _lessonCountFuture = FirebaseFirestore.instance
-          .collection('lessons')
-          .count()
-          .get()
-          .then((snapshot) => snapshot.count ?? 0);
-
-      _ecoQuizAverageFuture = null;
-
-      _quizResultsStream = FirebaseFirestore.instance
-          .collection('quiz_results')
-          .where('user_id', isEqualTo: uid)
-          .snapshots();
-    }
   }
 
   @override
@@ -366,97 +271,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
 
-                  if (user.role == 'student')...[
-                    Text(
-                      'Learning Statistics',
-                      style: TextStyle(
-                        color: AppColors.text(
-                          settings.darkTheme,
-                        ),
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    Row(
-                      children: [
-
-                        Expanded(
-                          child: FutureBuilder<int>(
-                            future: _lessonCountFuture,
-                            builder: (context, snapshot) {
-                              return buildStatCard(
-                                'Lessons',
-                                (snapshot.data ?? 0).toString(),
-                                Icons.menu_book,
-                                settings.darkTheme,
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 15),
-
-                        Expanded(
-                          child: settings.ecoMode ? FutureBuilder<double>(
-                            future: _ecoQuizAverageFuture,
-                            builder: (context, snapshot) {
-
-                              if (!snapshot.hasData) {
-                                return buildStatCard(
-                                  'Quiz',
-                                  '0%',
-                                  Icons.quiz,
-                                  settings.darkTheme,
-                                );
-                              }
-
-                              return buildStatCard(
-                                'Quiz',
-                                '${snapshot.data!.toStringAsFixed(1)}%',
-                                Icons.quiz,
-                                settings.darkTheme,
-                              );
-                            },
-                          )
-                              : StreamBuilder<QuerySnapshot>(
-                            stream: _quizResultsStream,
-                            builder: (context, snapshot) {
-
-                              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                                return buildStatCard(
-                                  'Quiz',
-                                  '0%',
-                                  Icons.quiz,
-                                  settings.darkTheme,
-                                );
-                              }
-
-                              double total = 0;
-
-                              for (final doc in snapshot.data!.docs) {
-                                total += (doc['percentage'] as num).toDouble();
-                              }
-
-                              final average = total / snapshot.data!.docs.length;
-
-                              return buildStatCard(
-                                'Quiz',
-                                '${average.toStringAsFixed(1)}%',
-                                Icons.quiz,
-                                settings.darkTheme,
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-
-                  const SizedBox(height: 30),
-
-
+                  // CHANGED: "Learning Statistics" section removed
+                  // (not needed for the study).
 
                   const SizedBox(height: 30),
 
