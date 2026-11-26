@@ -39,7 +39,7 @@ param(
     [switch]$NoWarmUp,
 
     # Screen brightness used during the test (0-255)
-    [int]$Brightness = 128
+    [int]$Brightness = 932
 )
 
 $ErrorActionPreference = "Stop"
